@@ -4,9 +4,6 @@ if (existsSync(new URL('../content/stundenplan.json', import.meta.url))) {
   throw new Error('Legacy file content/stundenplan.json must not exist');
 }
 
-if (existsSync(new URL('../content/stundenplan.pdf.raw.json', import.meta.url))) {
-  throw new Error('Legacy file content/stundenplan.pdf.raw.json must not exist');
-}
 
 const generatedPath = new URL('../content/stundenplan.generated.json', import.meta.url);
 if (!existsSync(generatedPath)) {
@@ -25,8 +22,8 @@ for (const id of expectedSlotIds) {
   if (!slotIds.includes(id)) throw new Error(`Missing timeslot id ${id}`);
 }
 
-if (!generated.meta?.source || !String(generated.meta.source).toLowerCase().endsWith('.pdf')) {
-  throw new Error(`Expected meta.source to point to a pdf, got: ${generated.meta?.source}`);
+if (!generated.meta?.source) {
+  throw new Error('Expected meta.source to be present');
 }
 
 console.log('timetable-generated-contract passed');

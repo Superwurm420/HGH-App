@@ -10,7 +10,6 @@ export const PATHS = Object.freeze({
     adminReadme: './content/README_admin.txt',
   },
   assets: {
-    planDir: './content/timetables/',
     funMessagesJson: './assets/data/fun-messages.json',
     announcements: {
       listTxt: './content/txt/events/files.txt',

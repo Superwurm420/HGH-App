@@ -23,7 +23,7 @@ async function runScenario({ generatedModel }) {
 
 const generatedPreferred = await runScenario({
   generatedModel: {
-    meta: { updatedAt: '2026-03-01T10:00:00.000Z', source: 'Stundenplan_kw_10_Hj2_2025_26.pdf' },
+    meta: { updatedAt: '2026-03-01T10:00:00.000Z', source: 'stundenplan.generated.json' },
     timeslots: [{ id: '1', time: '08:00-08:45' }],
     classes: { HT11: { mo: [{ slotId: '1', subject: 'GENERATED' }] } },
   },

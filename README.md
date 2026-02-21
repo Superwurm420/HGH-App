@@ -17,7 +17,7 @@ python3 -m http.server 8080
 
 ## Häufig bearbeitete Pfade
 
-- Stundenplan (Admin): `content/timetables/` (PDF ersetzen)
+- Stundenplan: `content/stundenplan.generated.json`
 - Kalender: `content/txt/calendars/files.txt`
 - Ankündigungen: `content/txt/events/files.txt`, `content/txt/events/*.txt`
 - Icons/Logos: `assets/icons/`
@@ -34,12 +34,5 @@ python3 -m http.server 8080
 ```bash
 npm install
 node --check src/app.js
-node --check src/parsers/pdf/pdf-timetable-v2.js
 npm test
-```
-
-## Stundenplan aus PDF neu erzeugen
-
-```bash
-npm run generate:timetable
 ```

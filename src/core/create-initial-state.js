@@ -17,7 +17,6 @@ export function createInitialState() {
     countdownTimer: null,
     announcementsTimer: null,
     funMessages: DEFAULT_FUN_MESSAGES,
-    currentPdfHref: null,
     hasTimetableData: false,
     timetableIssues: [],
     announcements: [],
