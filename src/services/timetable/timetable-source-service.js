@@ -18,13 +18,21 @@ function pickPreferredSource({ jsonData, pdfData }) {
   const pdfTs = readTimestamp(pdfData?.meta?.updatedAt) || readTimestamp(pdfData?.meta?.validFrom);
 
   if (!Number.isNaN(jsonTs) && !Number.isNaN(pdfTs)) {
-    return jsonTs >= pdfTs ? 'json' : 'pdf';
+    return jsonTs > pdfTs ? 'json' : 'pdf';
   }
 
   if (!Number.isNaN(jsonTs)) return 'json';
   if (!Number.isNaN(pdfTs)) return 'pdf';
 
   return 'pdf';
+}
+
+function emptyTimetableModel(meta = {}) {
+  return {
+    meta,
+    timeslots: [],
+    classes: {}
+  };
 }
 
 export async function loadTimetableSource() {
@@ -42,18 +50,33 @@ export async function loadTimetableSource() {
     debug.notes.push(`PDF-Rohdaten nicht verfügbar: ${error.message}`);
   }
 
-  const data = await fetchJson(PATHS.content.timetableJson);
+  let data = null;
+  try {
+    data = await fetchJson(PATHS.content.timetableJson);
+  } catch (error) {
+    debug.notes.push(`JSON-Stundenplan nicht verfügbar: ${error.message}`);
+  }
 
-  if (parsedPdf?.ok) {
+  if (parsedPdf?.ok && data) {
     const preferred = pickPreferredSource({ jsonData: data, pdfData: parsedPdf.model });
     debug.source = preferred === 'pdf' ? 'pdf-v2' : 'json';
     if (preferred === 'json') {
       debug.notes.push('JSON hat ein neueres Datum als PDF-Rohdaten und wird daher bevorzugt.');
       return { data, debug };
     }
-    debug.notes.push('PDF-Rohdaten sind aktueller als JSON und werden verwendet.');
+    debug.notes.push('PDF-Rohdaten sind aktueller oder gleich alt wie JSON und werden verwendet.');
     return { data: parsedPdf.model, debug };
   }
 
-  return { data, debug };
+  if (parsedPdf?.ok) {
+    debug.source = 'pdf-v2';
+    debug.notes.push('JSON nicht verfügbar; verwende PDF-Rohdaten als Quelle.');
+    return { data: parsedPdf.model, debug };
+  }
+
+  if (data) return { data, debug };
+
+  debug.source = 'empty';
+  debug.notes.push('Kein Stundenplan gefunden; App zeigt leeren Zustand statt Fehler.');
+  return { data: emptyTimetableModel({ source: 'empty' }), debug };
 }
