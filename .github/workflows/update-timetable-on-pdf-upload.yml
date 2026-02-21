@@ -1,9 +1,24 @@
-name: Rebuild timetable on PDF upload
+name: Rebuild generated offline assets
 
 on:
   push:
     paths:
       - content/timetables/*.pdf
+      - content/txt/events/**
+      - content/txt/calendars/**
+      - content/stundenplan.generated.json
+      - assets/icons/**
+      - assets/tv-slides/**
+      - app.css
+      - index.html
+      - manifest.json
+      - service-worker.js
+      - src/**
+      - scripts/generate-sw-assets.mjs
+      - scripts/build-timetable-from-pdf.mjs
+    paths-ignore:
+      - sw-assets.js
+      - assets/tv-slides/slides.json
   workflow_dispatch:
 
 permissions:
@@ -32,7 +47,7 @@ jobs:
       - name: Install parser dependency
         run: npm install --no-save pdfjs-dist
 
-      - name: Rebuild generated timetable
+      - name: Rebuild generated timetable + SW assets
         run: node scripts/generate-sw-assets.mjs
 
       - name: Commit generated changes
@@ -46,6 +61,6 @@ jobs:
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add content/stundenplan.generated.json src/config/sw-assets.js assets/tv-slides/slides.json
-          git commit -m "chore: regenerate timetable after PDF upload [skip ci]"
+          git add content/stundenplan.generated.json sw-assets.js assets/tv-slides/slides.json
+          git commit -m "chore: regenerate offline assets [skip ci]"
           git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${GITHUB_REF_NAME}"
