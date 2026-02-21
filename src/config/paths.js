@@ -2,8 +2,7 @@
 
 export const PATHS = Object.freeze({
   content: {
-    timetableJson: './content/stundenplan.json',
-    timetablePdfRawJson: './content/stundenplan.pdf.raw.json',
+    timetableGeneratedJson: './content/stundenplan.generated.json',
     calendarIcs: './content/kalender.ics',
     calendarSourcesDir: './content/txt/calendars/',
     calendarSourceIndex: './content/txt/calendars/files.txt',

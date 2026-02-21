@@ -11,29 +11,22 @@ Wenn andere Doku-Dateien abweichen, gilt **diese** Datei.
 
 ## 2) Schnellablauf für Inhalts-Updates
 1. Datei(en) im `content/` oder `assets/data/` anpassen.
-2. Änderungen committen und pushen.
-3. Seite neu laden (ggf. Hard-Reload wegen Service Worker).
+2. Nach neuer Stundenplan-PDF immer `node scripts/build-timetable-from-pdf.mjs` ausführen.
+3. Danach `node scripts/generate-sw-assets.mjs` ausführen.
+4. Änderungen committen und pushen.
+5. Seite neu laden (ggf. Hard-Reload wegen Service Worker).
 
 ---
-
-## 2.1 Automatischer Sync (empfohlen)
-Vor Commit einmal ausführen:
-- `node scripts/generate-sw-assets.mjs`
-
-Das Skript erledigt automatisch:
-- `assets/tv-slides/slides.json` aus allen Bildern in `assets/tv-slides/` neu erzeugen,
-- `meta.source` in `content/stundenplan.json` und `content/stundenplan.pdf.raw.json` auf die neueste Stundenplan-PDF in `content/timetables/` setzen,
-- Service-Worker-Assetliste regenerieren.
 
 ## 3) Stundenplan
 
 ### 3.1 Primäre Datenquelle
-- `content/stundenplan.json`
+- Ausschließlich `content/stundenplan.generated.json`.
+- Diese Datei wird bei jedem PDF-Update neu erzeugt.
 
 ### 3.2 PDF-Link
-- Dateiname in `content/stundenplan.json` unter `meta.source`.
+- Dateiname liegt in `content/stundenplan.generated.json` unter `meta.source`.
 - Datei liegt in `content/timetables/`.
-- Beispiel: `meta.source = "current.pdf"` → `content/timetables/current.pdf`.
 
 ### 3.3 Sondertermine
 Der Parser unterstützt:

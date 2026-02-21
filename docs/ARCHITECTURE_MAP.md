@@ -11,8 +11,8 @@
 ## 2) Datenfluss (PDF → Parsing → Datenmodell → Rendering)
 1. Datenquelle wird über `loadTimetableSource()` geladen (`src/services/timetable/timetable-source-service.js`).
 2. Service lädt parallel/seriell:
-   - `content/stundenplan.pdf.raw.json` (PDF-Rohdaten),
-   - `content/stundenplan.json` (manuelle JSON-Fallbackquelle).
+   - `(internes Extrakt im Generator-Lauf, nicht als Datei persistiert)` (PDF-Rohdaten),
+   - `content/stundenplan.generated.json` (manuelle JSON-Fallbackquelle).
 3. PDF-Rohdaten werden über `importTimetableFromPdfRaw()` (`src/services/timetable/pdf-import-service.js`) und darunter `parsePdfTimetableV2()` in ein Normalmodell transformiert.
 4. Zeitstempelvergleich entscheidet Source-of-Truth zur Laufzeit: neueres Modell gewinnt (PDF vs JSON).
 5. Ergebnis wird im App-State durch `parseAndNormalizeTimetable()` (`src/modules/timetable-parser.js`) final normalisiert/validiert.
@@ -40,8 +40,8 @@
 ## 5) Asset-Handling
 - Pfade/URLs liegen zentral in `src/config/paths.js` + konsumierende Mapping-Konstanten in `src/config/app-constants.js`.
 - Inhaltsdaten für Nicht-Entwickler:
-  - `content/stundenplan.json`,
-  - `content/stundenplan.pdf.raw.json`,
+  - `content/stundenplan.generated.json`,
+  - `(internes Extrakt im Generator-Lauf, nicht als Datei persistiert)`,
   - `content/kalender.ics`,
   - `content/txt/calendars/*.txt`,
   - `assets/tv-slides/slides.json`,

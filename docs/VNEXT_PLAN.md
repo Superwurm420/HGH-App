@@ -4,7 +4,7 @@
 - Routing/Hash-Handling: zentral in `src/app.js` (`hashchange`, `navigate`).
 - Views: in `index.html` via `data-view` + Renderlogik in `src/app.js`.
 - Datenquellen: `content/*` (Stundenplan/Kalender), `assets/data/*` (Announcements/TV), `assets/tv-slides/*`.
-- Stundenplan-Quelle: primär `content/stundenplan.json`, PDF-Link über `meta.source`.
+- Stundenplan-Quelle: primär `content/stundenplan.generated.json`, PDF-Link über `meta.source`.
 - Parser-Logik: `src/modules/timetable-parser.js` (JSON-Normalisierung), neuer PDF-V2 Parser in `src/parsers/pdf/`.
 - Announcements/Kalender/TV/Slideshow: alles im App-Entry orchestriert.
 - PWA/Offline: `service-worker.js` mit App-Shell-Cache + network-first für dynamische Inhalte.
@@ -21,7 +21,7 @@
 4. Daten-Layer `src/data/timetable-source.js` einführen.
 5. PDF-Parser-V2 Pipeline implementieren (`extract → normalize → interpret → validate → output`).
 6. Debug-Ausgabe über `?debugParser=1` ergänzen.
-7. Fallback auf `content/stundenplan.json` bei Parse/Validate-Fehler.
+7. Fallback auf `content/stundenplan.generated.json` bei Parse/Validate-Fehler.
 8. Parser-Fixtures unter `tests/fixtures` anlegen (mind. 2 Fälle).
 9. Parser-Testscript unter `tests/pdf-parser-v2.test.mjs` anlegen.
 10. `index.html` auf neuen Entry `src/app.js` umstellen.

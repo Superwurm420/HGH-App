@@ -1,11 +1,11 @@
-# Contract: `content/stundenplan.json`
+# Contract: `content/stundenplan.generated.json`
 
 ## Mindeststruktur
 ```json
 {
   "meta": {
     "updatedAt": "2026-02-21T12:00:00.000Z",
-    "source": "current.pdf"
+    "source": "Stundenplan_kw_45_Hj1_2025_26.pdf"
   },
   "timeslots": [{ "id": "1", "time": "08:00–08:45" }],
   "classes": {
@@ -21,6 +21,7 @@
 - `classes.<Klasse>.<day>` muss Array sein (`mo`,`di`,`mi`,`do`,`fr`).
 - `slotId` muss zu `timeslots[].id` passen.
 - PDF-Link kommt aus `meta.source`.
+- Datei wird ausschließlich durch den PDF-Generator erstellt.
 
 ## Hinweise zu Sonderterminen
 Sondertermine aus PDF-Rohdaten unterstützen in Tokens u. a.:

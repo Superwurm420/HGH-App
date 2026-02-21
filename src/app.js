@@ -59,7 +59,7 @@ function formatSubject(str) {
 }
 
 function getMissingTimetableMessage() {
-  return 'Kein Stundenplan hochgeladen. Bitte Datei in content/stundenplan.json bzw. PDF-Import bereitstellen.';
+  return 'Kein Stundenplan hochgeladen. Bitte neue PDF hochladen und den Generator ausführen (content/stundenplan.generated.json).';
 }
 
 function getISOWeek(date = new Date()) {
