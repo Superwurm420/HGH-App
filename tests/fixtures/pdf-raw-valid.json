@@ -4,6 +4,11 @@
   },
   "items": [
     {
+      "str": "Gültig ab 24.02.2026",
+      "x": 5,
+      "y": 1
+    },
+    {
       "str": "class:HT11;day:mo;slot:1;subject:Deutsch;teacher:MEL;room:6",
       "x": 10,
       "y": 10

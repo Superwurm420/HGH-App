@@ -10,6 +10,10 @@ if (!valid.ok) {
   throw new Error(`Expected valid fixture to pass, got issues: ${valid.issues.join('; ')}`);
 }
 
+if (valid.model?.meta?.validFrom !== '2026-02-24') {
+  throw new Error(`Expected validFrom=2026-02-24, got ${valid.model?.meta?.validFrom}`);
+}
+
 const invalid = parsePdfTimetableV2(load('pdf-raw-invalid.json'));
 if (invalid.ok) {
   throw new Error('Expected invalid fixture to fail validation');
