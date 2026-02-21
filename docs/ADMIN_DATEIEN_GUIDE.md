@@ -54,3 +54,9 @@ Wichtig: Die Laufzeit verwendet **konkrete Pfade und Dateitypen**. Andere Format
 
 ### Empfehlung
 Für maximale Einfachheit sollte `_legacy/` langfristig in ein separates Archiv-Repository oder einen eigenen Branch ausgelagert werden, damit Nicht-Programmierer im Hauptprojekt nur die wirklich relevanten Ordner sehen.
+
+
+## Manuelles Austauschen ohne Verlinkungen
+- Lege/ersetze lokale Dateien direkt in `assets/icons/` und `assets/images/`.
+- Behalte die Dateinamen aus der Konfiguration (z. B. `icon-192.svg`, `icon-512.svg`, `icon-512-maskable.svg`) bei, dann ist keine Code-Änderung nötig.
+- Für spätere Bildwechsel einfach Datei überschreiben, Commit + Push.

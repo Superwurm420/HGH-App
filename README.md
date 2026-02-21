@@ -101,3 +101,9 @@ Nicht mehr aktive Parser-, Test- und Build-Hilfen liegen unter `_legacy/` und we
 ## Admin-Dokumentation
 
 - Detaillierte Datei-für-Datei-Anleitung: `docs/ADMIN_DATEIEN_GUIDE.md`
+
+
+## Bilder lokal austauschen (ohne externe Verlinkung)
+- Icons liegen lokal in `assets/icons/` und können direkt ersetzt werden.
+- Standardnamen für PWA-Icons: `icon-192.svg`, `icon-512.svg`, `icon-512-maskable.svg`.
+- Für Änderungen nur Datei überschreiben (gleicher Name), dann Commit + Push.
