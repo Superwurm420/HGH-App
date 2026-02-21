@@ -563,6 +563,12 @@ function initThemeToggle() {
   });
 }
 
+function initTvLogoThemeToggle() {
+  state.els.tvLogo?.addEventListener('click', () => {
+    applyTheme(document.documentElement.dataset.theme === 'light' ? 'dark' : 'light');
+  });
+}
+
 // --- Timetable loader ---------------------------------------------------
 
 function setTimetableIssues(issues = [], debugInfo = null) {
@@ -618,8 +624,17 @@ function applyTimetableData(rawData) {
 
 function getTimetableSignature(data) {
   const m = data?.meta || {};
-  const count = data?.classes ? Object.keys(data.classes).length : 0;
-  return `${m.updatedAt || 'n/a'}|${m.source || 'n/a'}|${count}`;
+  const classCount = data?.classes ? Object.keys(data.classes).length : 0;
+  const digestPayload = JSON.stringify({
+    timeslots: data?.timeslots || [],
+    classes: data?.classes || {}
+  });
+  let digest = 0;
+  for (let i = 0; i < digestPayload.length; i += 1) {
+    digest = ((digest << 5) - digest) + digestPayload.charCodeAt(i);
+    digest |= 0;
+  }
+  return `${m.updatedAt || 'n/a'}|${m.source || 'n/a'}|${classCount}|${digest >>> 0}`;
 }
 
 async function loadTimetable({ forceNetwork = false } = {}) {
@@ -765,7 +780,7 @@ function updateTvDateTime(now = new Date()) {
   const dateKey = now.toISOString().slice(0, 10);
   if (dateKey !== state.tv.todayKey) {
     state.tv.todayKey = dateKey;
-    safeSetText(state.els.tvDate, now.toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' }));
+    safeSetText(state.els.tvDate, now.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }));
   }
   safeSetText(state.els.tvTime, now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }));
 }
@@ -793,7 +808,16 @@ function renderTvSchedule(now = new Date()) {
 
   const today = getTodaySchedule(now);
   const dayLabel = WEEKDAY_LABELS[today.dayId] || 'Montag';
-  const dateLabel = today.targetDate.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
+  const dateLabel = today.targetDate.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const availableClassIds = getAvailableClasses();
+  const slots = (state.timeslots || []).filter(Boolean);
+
+  const renderCell = (classId, slotId) => {
+    const row = (state.timetable?.[classId]?.[today.dayId] || []).find(item => String(item?.slotId) === String(slotId));
+    if (!row) return '—';
+    const room = row.room ? ` (${row.room})` : '';
+    return `${row.subject || '—'}${room}`;
+  };
 
   if (!state.hasTimetableData) {
     container.innerHTML = `<article class="tvClassRow missingTimetableNotice"><h3>${escapeHtml(dayLabel)}, ${escapeHtml(dateLabel)}</h3><p>${escapeHtml(getMissingTimetableMessage())}</p></article>`;
@@ -801,38 +825,31 @@ function renderTvSchedule(now = new Date()) {
   }
 
   const hasRows = today.schedules.some(({ rows }) => rows.length > 0);
-  if (!hasRows) {
+  if (!hasRows || !slots.length || !availableClassIds.length) {
     container.innerHTML = `<article class="tvClassRow"><h3>${escapeHtml(dayLabel)}, ${escapeHtml(dateLabel)}</h3><p>Keine Daten</p></article>`;
     return;
   }
 
-  container.innerHTML = `<article class="tvClassHeading"><h3>${escapeHtml(dayLabel)}, ${escapeHtml(dateLabel)}</h3></article>` + today.schedules.map(({ classId, rows }) => {
-    const lesson = getCurrentAndNextLesson(rows, now);
-    const rowsHtml = rows.length
-      ? rows.map((row) => {
-        const slot = state.timeslotMap.get(String(row.slotId));
-        const timeLabel = slot?.time || `Stunde ${escapeHtml(String(row.slotId))}`;
-        const teacherRoom = formatTeacherRoom(row.teacher, row.room) || '—';
-        return `<li><span class="tvLessonTime">${escapeHtml(timeLabel)}</span><span class="tvLessonBody"><strong>${escapeHtml(row.subject || '—')}</strong><small>${escapeHtml(teacherRoom)}</small></span></li>`;
-      }).join('')
-      : '<li class="tvLessonEmpty">Keine Einträge</li>';
+  const headerCells = slots
+    .map(slot => `<div class="tvGridCell tvGridHead">${escapeHtml(`${slot.id}. Stunde`)}</div>`)
+    .join('');
 
-    const statusText = lesson.status === 'running'
-      ? `Jetzt: ${formatLessonLabel(lesson.current)}`
-      : lesson.status === 'break'
-        ? `Nächste Stunde: ${formatLessonLabel(lesson.next)}`
-        : lesson.status === 'finished'
-          ? 'Unterricht beendet'
-          : 'Heute keine laufende Stunde';
+  const bodyRows = availableClassIds
+    .map((classId) => {
+      const cells = slots
+        .map(slot => `<div class="tvGridCell">${escapeHtml(renderCell(classId, slot.id))}</div>`)
+        .join('');
+      return `<div class="tvGridRow"><div class="tvGridCell tvGridClass">${escapeHtml(classId)}</div>${cells}</div>`;
+    })
+    .join('');
 
-    return `
-      <article class="tvClassRow">
-        <h3>${escapeHtml(classId)}</h3>
-        <p class="tvClassStatus">${escapeHtml(statusText)}</p>
-        <ul class="tvClassDayPlan">${rowsHtml}</ul>
-      </article>
-    `;
-  }).join('');
+  container.innerHTML = `
+    <article class="tvClassHeading"><h3>${escapeHtml(dayLabel)}, ${escapeHtml(dateLabel)}</h3></article>
+    <div class="tvGrid" role="table" aria-label="Stundenplan ${escapeHtml(dayLabel)}">
+      <div class="tvGridRow" role="row"><div class="tvGridCell tvGridHead tvGridClass">Klasse</div>${headerCells}</div>
+      ${bodyRows}
+    </div>
+  `;
 }
 
 async function loadTvAnnouncementsFallback() {
@@ -2359,6 +2376,7 @@ function cacheEls() {
     announcementsNext: qs('#announcementNext'),
     tvDate: qs('#tvDate'),
     tvTime: qs('#tvTime'),
+    tvLogo: qs('#tvLogo'),
     tvOffline: qs('#tvOffline'),
     tvClasses: qs('#tvClasses'),
     tvAnnouncementsList: qs('#tvAnnouncementsList'),
@@ -2373,6 +2391,7 @@ async function boot() {
     cacheEls();
     initTheme();
     initThemeToggle();
+    initTvLogoThemeToggle();
     initNav();
     initSelects();
     initWeekSelect();

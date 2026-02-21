@@ -441,21 +441,27 @@
       <div class="tvLayout" role="region" aria-label="TV-Modus">
         <header class="tvHeader">
           <div class="tvDateWrap">
-            <img class="tvLogo" src="./assets/icons/school-logo-header.svg" alt="HGH Logo" loading="eager" />
+            <img id="tvLogo" class="tvLogo" src="./assets/icons/school-logo-header.svg" alt="HGH Logo" loading="eager" />
+            <div class="tvBrand" aria-label="Schulname">
+              <span class="tvBrandEmphasis">HGH</span>
+              <span>Holztechnik und Gestaltung Hildesheim</span>
+            </div>
+          </div>
+          <div class="tvClockWrap">
+            <div id="tvTime" class="tvTime" aria-live="polite">—</div>
             <div id="tvDate" class="tvDate">—</div>
           </div>
-          <div id="tvTime" class="tvTime" aria-live="polite">—</div>
         </header>
 
         <div class="tvMain">
           <section class="tvPanel">
-            <h2>Heute · Klassen</h2>
+            <h2>Stundenplan</h2>
             <div id="tvClasses" class="tvClasses"></div>
           </section>
 
           <div class="tvSideColumn">
             <section class="tvPanel">
-              <h2>Ankündigungen</h2>
+              <h2>Termine</h2>
               <p id="tvOffline" class="tvOffline" hidden>Offline</p>
               <ul id="tvAnnouncementsList" class="tvAnnouncementsList"></ul>
             </section>
