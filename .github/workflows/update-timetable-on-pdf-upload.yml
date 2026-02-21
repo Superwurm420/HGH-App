@@ -3,7 +3,7 @@ name: Rebuild timetable on PDF upload
 on:
   push:
     paths:
-      - 'content/timetables/*.pdf'
+      - content/timetables/*.pdf
   workflow_dispatch:
 
 permissions:
@@ -11,6 +11,7 @@ permissions:
 
 jobs:
   rebuild-timetable:
+    if: github.event_name != 'push' || github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     env:
       NODE_OPTIONS: --experimental-default-type=module
@@ -18,6 +19,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: false
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -31,6 +36,8 @@ jobs:
         run: node scripts/generate-sw-assets.mjs
 
       - name: Commit generated changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if git diff --quiet; then
             echo "No generated file changes detected."
@@ -40,5 +47,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add content/stundenplan.generated.json src/config/sw-assets.js assets/tv-slides/slides.json
-          git commit -m "chore: regenerate timetable after PDF upload"
-          git push
+          git commit -m "chore: regenerate timetable after PDF upload [skip ci]"
+          git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${GITHUB_REF_NAME}"
