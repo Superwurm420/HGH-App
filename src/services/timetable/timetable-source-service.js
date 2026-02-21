@@ -17,14 +17,14 @@ function pickPreferredSource({ jsonData, pdfData }) {
   const jsonTs = readTimestamp(jsonData?.meta?.updatedAt) || readTimestamp(jsonData?.meta?.validFrom);
   const pdfTs = readTimestamp(pdfData?.meta?.updatedAt) || readTimestamp(pdfData?.meta?.validFrom);
 
-  if (!Number.isNaN(jsonTs) && !Number.isNaN(pdfTs)) {
-    return jsonTs > pdfTs ? 'json' : 'pdf';
-  }
+  // Operativ soll der TV-/Stundenplan immer mit der zuletzt hochgeladenen PDF synchron sein.
+  // Daher wird eine valide PDF-Quelle grundsätzlich bevorzugt.
+  if (pdfData) return 'pdf';
 
   if (!Number.isNaN(jsonTs)) return 'json';
   if (!Number.isNaN(pdfTs)) return 'pdf';
 
-  return 'pdf';
+  return 'json';
 }
 
 function emptyTimetableModel(meta = {}) {
@@ -61,10 +61,10 @@ export async function loadTimetableSource() {
     const preferred = pickPreferredSource({ jsonData: data, pdfData: parsedPdf.model });
     debug.source = preferred === 'pdf' ? 'pdf-v2' : 'json';
     if (preferred === 'json') {
-      debug.notes.push('JSON hat ein neueres Datum als PDF-Rohdaten und wird daher bevorzugt.');
+      debug.notes.push('PDF-Rohdaten nicht verwertbar; fallback auf JSON-Quelle.');
       return { data, debug };
     }
-    debug.notes.push('PDF-Rohdaten sind aktueller oder gleich alt wie JSON und werden verwendet.');
+    debug.notes.push('Valide PDF-Rohdaten erkannt; verwende PDF als primäre Stundenplanquelle.');
     return { data: parsedPdf.model, debug };
   }
 

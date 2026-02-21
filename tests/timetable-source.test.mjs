@@ -50,11 +50,11 @@ const newerJson = await runScenario({
   },
 });
 
-if (newerJson.debug.source !== 'json') {
-  throw new Error(`Expected json source for newer JSON, got ${newerJson.debug.source}`);
+if (newerJson.debug.source !== 'pdf-v2') {
+  throw new Error(`Expected pdf-v2 source (PDF-first strategy), got ${newerJson.debug.source}`);
 }
-if (newerJson.data?.classes?.HT11?.mo?.[0]?.subject !== 'JSON') {
-  throw new Error('Expected JSON timetable payload to be selected');
+if (newerJson.data?.classes?.HT11?.mo?.[0]?.subject !== 'PDF') {
+  throw new Error('Expected PDF timetable payload to be selected even when JSON is newer');
 }
 
 const newerPdf = await runScenario({
