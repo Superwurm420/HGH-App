@@ -1003,6 +1003,13 @@ select:focus-visible{
 }
 
 
+.missingTimetableNotice{
+  border:1px solid rgba(255,179,71,.55);
+  background:rgba(255,179,71,.14);
+  color:var(--text);
+}
+
+
 .pipelineStatus{
   margin-top:12px;
   padding:12px;
@@ -1025,6 +1032,11 @@ select:focus-visible{
   border:1px dashed var(--line);
   color:var(--muted);
   font-size:14px;
+}
+
+.timetableEmpty .missingTimetableNotice,
+.weekEmptyState.missingTimetableNotice{
+  color:var(--text);
 }
 
 .trPlaceholder{
