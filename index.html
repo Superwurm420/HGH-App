@@ -4,13 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#007AFF" />
-  <meta name="description" content="HGH Hildesheim – Stundenplan, Links & Instagram als Progressive Web App. Offline-fähig, mobile-first und mit Dark Mode." />
+  <meta name="description" content="HGH Hildesheim – Links, Termine & Instagram als Progressive Web App. Offline-fähig, mobile-first und mit Dark Mode." />
   <meta name="color-scheme" content="dark light" />
   
   <!-- Open Graph / Social Media -->
   <meta property="og:type" content="website" />
   <meta property="og:title" content="HGH Hildesheim – Schüler-PWA" />
-  <meta property="og:description" content="Stundenplan, Links & Instagram – offline-fähig als Progressive Web App" />
+  <meta property="og:description" content="Links, Termine & Instagram – offline-fähig als Progressive Web App" />
   <meta property="og:url" content="https://superwurm420.github.io/HGH/" />
   
   <!-- PWA -->
@@ -72,18 +72,6 @@
       </span>
       <span>Home</span>
     </button>
-    <button class="navItem surface" data-route="timetable" type="button">
-      <span class="navIcon" aria-hidden="true">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 9v12"/></svg>
-      </span>
-      <span>Stundenplan</span>
-    </button>
-    <button class="navItem surface" data-route="week" type="button">
-      <span class="navIcon" aria-hidden="true">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>
-      </span>
-      <span>Woche</span>
-    </button>
     <button class="navItem surface" data-route="links" type="button">
       <span class="navIcon" aria-hidden="true">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/></svg>
@@ -126,22 +114,7 @@
           <div id="funMessage" class="funMessage" aria-live="polite">&nbsp;</div>
         </div>
 
-        <!-- Heute-Vorschau -->
-        <div class="todayMetaRow">
-          <label class="control control--class control--homeClass">
-            <span class="controlLabel">Klasse</span>
-            <span class="selectWrap">
-              <select id="todayClassSelect" class="select" aria-label="Klasse für Heute-Widget auswählen"></select>
-            </span>
-          </label>
-          <p id="ttLastUpdated" class="small muted ttLastUpdated"></p>
-        </div>
-        <div
-          id="todayPreview"
-          class="list"
-          role="region"
-          aria-label="Heutiger Stundenplan (Vorschau)"
-        ></div>
+        <p class="small muted">Die Stundenplan-Funktionen wurden entfernt.</p>
               </div>
 
       <!-- Kalender-Karte -->
@@ -173,99 +146,6 @@
         <div id="announcementsList" class="announcementsList" role="list" aria-live="polite"></div>
       </div>
 
-    </section>
-
-    <!-- WEEK VIEW -->
-    <section class="view" data-view="week" hidden>
-      <div class="card surface">
-        <div class="row wrap">
-          <div>
-            <h2>Wochenübersicht <span id="weekKwLabel" class="weekKwBadge" aria-live="polite"></span></h2>
-                      </div>
-
-          <div class="controls">
-            <label class="control control--class">
-              <span class="controlLabel">Klasse</span>
-              <span class="selectWrap">
-                <select 
-                  id="weekClassSelect" 
-                  class="select" 
-                  aria-label="Klasse für Wochenübersicht auswählen"
-                ></select>
-              </span>
-            </label>
-          </div>
-        </div>
-
-        <div 
-          id="weekGrid" 
-          class="weekGrid" 
-          role="table" 
-          aria-label="Wochenübersicht aller Stunden"
-        ></div>
-              </div>
-    </section>
-
-    <!-- TIMETABLE VIEW -->
-    <section class="view" data-view="timetable" hidden>
-      <div class="card surface">
-        <div class="row wrap">
-          <div>
-            <h2>Stundenplan</h2>
-                      </div>
-
-          <div class="controls">
-            <label class="control control--class">
-              <span class="controlLabel">Klasse</span>
-              <span class="selectWrap">
-                <select
-                  id="classSelect"
-                  class="select"
-                  aria-label="Klasse auswählen"
-                ></select>
-              </span>
-            </label>
-            <span class="dayInfoBadge" id="currentDayInfo" aria-live="polite">Heute: —</span>
-          </div>
-        </div>
-
-        <!-- Tages-Auswahl -->
-        <div class="control dayRow">
-          <span class="controlLabel">Tag</span>
-          <div
-            id="daySelectGroup"
-            class="daySelectGroup"
-            role="group"
-            aria-label="Wochentag auswählen"
-          >
-            <button type="button" class="dayBtn" data-day="mo" aria-label="Montag">Mo</button>
-            <button type="button" class="dayBtn" data-day="di" aria-label="Dienstag">Di</button>
-            <button type="button" class="dayBtn" data-day="mi" aria-label="Mittwoch">Mi</button>
-            <button type="button" class="dayBtn" data-day="do" aria-label="Donnerstag">Do</button>
-            <button type="button" class="dayBtn" data-day="fr" aria-label="Freitag">Fr</button>
-          </div>
-        </div>
-
-        <!-- Stundenplan-Tabelle -->
-        <div
-          class="timetable"
-          role="table"
-          aria-label="Stundenplan-Tabelle"
-        >
-          <div class="timetableHeader" role="row">
-            <div class="th" role="columnheader">Zeit</div>
-            <div class="th" role="columnheader">Fach</div>
-            <div class="th tdMeta" role="columnheader">Lehrer / Raum</div>
-          </div>
-          <div 
-            id="timetableBody" 
-            class="timetableBody" 
-            role="rowgroup"
-          ></div>
-        </div>
-                <div id="timetablePipelineStatus" class="pipelineStatus" role="status" aria-live="polite" hidden></div>
-
-      </div>
     </section>
 
     <!-- LINKS VIEW -->
@@ -434,8 +314,8 @@
 
         <div class="tvMain">
           <section class="tvPanel">
-            <h2>Stundenplan</h2>
-            <div id="tvClasses" class="tvClasses"></div>
+            <h2>Infos</h2>
+            <p class="small muted">Keine Stundenplan-Anzeige im TV-Modus.</p>
           </section>
 
           <div class="tvSideColumn">
