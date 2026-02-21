@@ -28,3 +28,15 @@ Format je Datei:
 4) Bilder
 - content/images/slideshow/
 - content/images/ui/
+
+
+5) Logo-/Icon-Dateinamen (bitte stabil halten)
+- assets/icons/school-logo-header.svg
+- assets/icons/school-logo-tv.svg
+- assets/icons/favicon-school.svg
+- assets/icons/apple-touch-icon-school.svg
+- assets/icons/app-icon-192.svg
+- assets/icons/app-icon-512.svg
+- assets/icons/app-icon-512-maskable.svg
+
+Bei Austausch: gleiche Namen behalten, nur Dateiinhalt ersetzen.

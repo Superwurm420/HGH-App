@@ -58,5 +58,24 @@ Für maximale Einfachheit sollte `docs/archive/_legacy/` langfristig in ein sepa
 
 ## Manuelles Austauschen ohne Verlinkungen
 - Lege/ersetze lokale Dateien direkt in `assets/icons/` und `assets/images/`.
-- Behalte die Dateinamen aus der Konfiguration (z. B. `icon-192.svg`, `icon-512.svg`, `icon-512-maskable.svg`) bei, dann ist keine Code-Änderung nötig.
+- Behalte die Dateinamen aus der Konfiguration (z. B. `app-icon-192.svg`, `app-icon-512.svg`, `app-icon-512-maskable.svg`) bei, dann ist keine Code-Änderung nötig.
 - Für spätere Bildwechsel einfach Datei überschreiben, Commit + Push.
+
+
+## Verbindliche Logo-/Icon-Dateinamen (UI)
+
+Diese Dateien werden im UI direkt verwendet und sollen bei Austausch den gleichen Namen behalten:
+- `assets/icons/school-logo-header.svg` (Header-Logo)
+- `assets/icons/school-logo-tv.svg` (TV-Ansicht Logo)
+- `assets/icons/favicon-school.svg` (Browser-Favicon)
+- `assets/icons/apple-touch-icon-school.svg` (iOS Homescreen Icon)
+- `assets/icons/app-icon-192.svg` (PWA Icon 192)
+- `assets/icons/app-icon-512.svg` (PWA Icon 512)
+- `assets/icons/app-icon-512-maskable.svg` (PWA Maskable Icon)
+- `assets/icons/class-photo-placeholder.svg` (Standard Klassenfoto-Platzhalter)
+- `assets/icons/class-photo-ht11-placeholder.svg`
+- `assets/icons/class-photo-ht12-placeholder.svg`
+- `assets/icons/class-photo-ht21-placeholder.svg`
+- `assets/icons/class-photo-ht22-placeholder.svg`
+
+Regel für später: Datei mit gleichem Namen ersetzen (Format kann z. B. SVG/PNG/JPG sein, solange Pfad + Dateiname in den Referenzen gleich bleiben).

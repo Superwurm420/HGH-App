@@ -108,7 +108,7 @@ Nicht mehr aktive Parser-, Test- und Build-Hilfen liegen unter `docs/archive/_le
 
 ## Bilder lokal austauschen (ohne externe Verlinkung)
 - Icons liegen lokal in `assets/icons/` und können direkt ersetzt werden.
-- Standardnamen für PWA-Icons: `icon-192.svg`, `icon-512.svg`, `icon-512-maskable.svg`.
+- Standardnamen für PWA-Icons: `app-icon-192.svg`, `app-icon-512.svg`, `app-icon-512-maskable.svg`.
 - Für Änderungen nur Datei überschreiben (gleicher Name), dann Commit + Push.
 
 
