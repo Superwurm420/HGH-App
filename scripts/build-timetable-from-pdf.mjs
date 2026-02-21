@@ -24,11 +24,45 @@ function pickLatestPdfFile() {
     .filter((entry) => entry.isFile() && /\.pdf$/i.test(entry.name))
     .map((entry) => {
       const absPath = resolve(TIMETABLE_DIR, entry.name);
-      return { name: entry.name, absPath, mtimeMs: statSync(absPath).mtimeMs };
+      return {
+        name: entry.name,
+        absPath,
+        mtimeMs: statSync(absPath).mtimeMs,
+        filenameOrder: parseTimetableFilenameOrder(entry.name),
+      };
     })
-    .sort((a, b) => b.mtimeMs - a.mtimeMs);
+    .sort((a, b) => {
+      const orderDiff = b.filenameOrder - a.filenameOrder;
+      if (orderDiff !== 0) return orderDiff;
+      return b.mtimeMs - a.mtimeMs;
+    });
 
   return pdfs[0] || null;
+}
+
+export function parseTimetableFilenameOrder(filename) {
+  const base = String(filename || '').replace(/\.pdf$/i, '');
+  const match = base.match(/kw_(\d{1,2})_hj([12])_(\d{4})_(\d{2,4})/i);
+
+  if (!match) {
+    return Number.NEGATIVE_INFINITY;
+  }
+
+  const kw = Number(match[1]);
+  const halfYear = Number(match[2]);
+  const schoolYearStart = Number(match[3]);
+  const schoolYearEndRaw = Number(match[4]);
+
+  if (!Number.isFinite(kw) || !Number.isFinite(halfYear) || !Number.isFinite(schoolYearStart) || !Number.isFinite(schoolYearEndRaw)) {
+    return Number.NEGATIVE_INFINITY;
+  }
+
+  const schoolYearEnd = schoolYearEndRaw < 100
+    ? (Math.floor(schoolYearStart / 100) * 100) + schoolYearEndRaw
+    : schoolYearEndRaw;
+
+  const referenceYear = halfYear === 1 ? schoolYearStart : schoolYearEnd;
+  return (referenceYear * 100) + kw;
 }
 
 async function extractPdfItems(pdfPath, pdfjs) {

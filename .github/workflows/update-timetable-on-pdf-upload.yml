@@ -1,0 +1,46 @@
+name: Rebuild timetable on PDF upload
+
+on:
+  push:
+    paths:
+      - 'content/timetables/*.pdf'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  rebuild-timetable:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install parser dependency
+        run: |
+          npm init -y
+          npm install --save-dev pdfjs-dist
+
+      - name: Rebuild generated timetable
+        run: |
+          node scripts/build-timetable-from-pdf.mjs
+          node scripts/generate-sw-assets.mjs
+
+      - name: Commit generated changes
+        run: |
+          if git diff --quiet; then
+            echo "No generated file changes detected."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add content/stundenplan.generated.json src/config/sw-assets.js assets/tv-slides/slides.json
+          git commit -m "chore: regenerate timetable after PDF upload"
+          git push
