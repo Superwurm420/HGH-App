@@ -2,23 +2,12 @@ name: Update timetable and generated offline assets
 
 on:
   push:
+    # Ziel: nur dann laufen, wenn wirklich eine neue Stundenplan-PDF (oder der Generator) geändert wurde.
     paths:
       - content/timetables/*.pdf
-      - content/txt/events/**
-      - content/txt/calendars/**
-      - content/stundenplan.generated.json
-      - assets/icons/**
-      - assets/tv-slides/**
-      - app.css
-      - index.html
-      - manifest.json
-      - service-worker.js
-      - src/**
-      - scripts/generate-sw-assets.mjs
       - scripts/build-timetable-from-pdf.mjs
-    paths-ignore:
-      - sw-assets.js
-      - assets/tv-slides/slides.json
+      - package.json
+      - package-lock.json
   workflow_dispatch:
 
 permissions:
@@ -26,6 +15,7 @@ permissions:
 
 jobs:
   rebuild-timetable:
+    name: Rebuild timetable after PDF upload
     if: github.event_name != 'push' || github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     env:
@@ -50,9 +40,6 @@ jobs:
       - name: Rebuild generated timetable
         run: npm run generate:timetable
 
-      - name: Rebuild SW assets
-        run: npm run generate:sw-assets
-
       - name: Commit generated changes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -64,6 +51,6 @@ jobs:
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add content/stundenplan.generated.json sw-assets.js assets/tv-slides/slides.json
-          git commit -m "chore: regenerate offline assets [skip ci]"
+          git add content/stundenplan.generated.json
+          git commit -m "chore: regenerate timetable from uploaded pdf [skip ci]"
           git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${GITHUB_REF_NAME}"
