@@ -60,4 +60,24 @@ if (tuesdayEntries.length !== 0) {
   throw new Error(`Expected no HT21 entries on di for multi-day special, got ${tuesdayEntries.length}`);
 }
 
+const gridTeacherRoom = parsePdfTimetableV2(load('pdf-raw-grid-teacher-room.json'));
+if (gridTeacherRoom.ok) {
+  throw new Error('Expected compact grid fixture to fail min-entry validation');
+}
+
+const ht11Monday = gridTeacherRoom.model?.classes?.HT11?.mo?.[0];
+if (!ht11Monday || ht11Monday.subject !== 'Deutsch' || ht11Monday.teacher !== 'MEL' || ht11Monday.room !== '101') {
+  throw new Error(`Expected HT11 Mo slot 1 to map subject/teacher/room correctly, got ${JSON.stringify(ht11Monday)}`);
+}
+
+const ht12Monday = gridTeacherRoom.model?.classes?.HT12?.mo?.[0];
+if (!ht12Monday || ht12Monday.subject !== 'Englisch' || ht12Monday.teacher !== 'WEN' || ht12Monday.room !== '9') {
+  throw new Error(`Expected HT12 Mo slot 1 to map subject/teacher/room correctly, got ${JSON.stringify(ht12Monday)}`);
+}
+
+const ht21Tuesday = gridTeacherRoom.model?.classes?.HT21?.di?.[0];
+if (!ht21Tuesday || ht21Tuesday.subject !== 'CAD' || ht21Tuesday.teacher !== 'HOFF' || ht21Tuesday.room !== '4') {
+  throw new Error(`Expected HT21 Di slot 2 to map subject/teacher/room correctly, got ${JSON.stringify(ht21Tuesday)}`);
+}
+
 console.log('pdf-parser-v2 fixtures passed');

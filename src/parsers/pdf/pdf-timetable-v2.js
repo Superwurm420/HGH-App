@@ -20,6 +20,50 @@ function isTeacherToken(token) {
   return /^[A-ZÄÖÜ]{2,6}$/.test(token || '');
 }
 
+function isRoomToken(token) {
+  const value = clean(token);
+  if (!value) return false;
+  if (/^#[A-Z]{1,3}$/i.test(value)) return true;
+  if (/^\d{1,3}[A-Z]?$/i.test(value)) return true;
+  if (/^[A-Z]\d{1,2}$/i.test(value)) return true;
+  if (/^[A-Z]{1,3}-\d{1,3}$/i.test(value)) return true;
+  return false;
+}
+
+function splitSubjectTeacherRoom(tokens) {
+  const normalized = (Array.isArray(tokens) ? tokens : []).map(clean).filter(Boolean);
+  if (!normalized.length) return { subject: '', teacher: '', room: '' };
+
+  let teacher = '';
+  let room = '';
+  const remaining = [...normalized];
+
+  const maybeRoom = remaining[remaining.length - 1];
+  if (isRoomToken(maybeRoom)) {
+    room = maybeRoom;
+    remaining.pop();
+  }
+
+  const maybeTeacher = remaining[remaining.length - 1];
+  if (isTeacherToken(maybeTeacher)) {
+    teacher = maybeTeacher;
+    remaining.pop();
+  }
+
+  if (!teacher) {
+    const teacherIndex = remaining.findIndex(isTeacherToken);
+    if (teacherIndex >= 0) {
+      teacher = remaining[teacherIndex];
+      const tail = remaining.slice(teacherIndex + 1);
+      if (!room && tail.length) room = clean(tail.join(' '));
+      remaining.splice(teacherIndex);
+    }
+  }
+
+  const subject = clean(remaining.join(' '));
+  return { subject, teacher, room };
+}
+
 function normalizeSlotToken(token) {
   const value = clean(token);
   if (!value) return [];
@@ -161,11 +205,7 @@ function parseLooseLine(text) {
   const afterSlot = tokens.slice(slotIndex + 1);
   if (!afterSlot.length) return [];
 
-  const teacherIndex = afterSlot.findIndex(isTeacherToken);
-  const teacher = teacherIndex >= 0 ? afterSlot[teacherIndex] : '';
-  const room = teacherIndex >= 0 ? clean(afterSlot.slice(teacherIndex + 1).join(' ')) : '';
-  const subjectTokens = teacherIndex >= 0 ? afterSlot.slice(0, teacherIndex) : afterSlot;
-  const subject = clean(subjectTokens.join(' '));
+  const { subject, teacher, room } = splitSubjectTeacherRoom(afterSlot);
   if (!subject) return [];
 
   const note = '';
@@ -200,16 +240,6 @@ function looksLikeSlotToken(token) {
 
 function looksLikeTimeToken(token) {
   return /^\d{1,2}[.:]\d{2}$/.test(clean(token));
-}
-
-function looksLikeTeacherOrRoomToken(token) {
-  const value = clean(token);
-  if (!value) return true;
-  if (/^#[A-Z]{1,3}$/i.test(value)) return true;
-  if (/^[A-ZÄÖÜ]{2,4}$/.test(value)) return true;
-  if (/^\d{1,3}$/.test(value)) return true;
-  if (/^[A-Z]\d{1,2}$/i.test(value)) return true;
-  return false;
 }
 
 function parseGridRows(rows) {
@@ -260,17 +290,16 @@ function parseGridRows(rows) {
 
       if (!parts.length) continue;
 
-      const subject = clean(parts.join(' '));
+      const { subject, teacher, room } = splitSubjectTeacherRoom(parts);
       if (!subject || subject.toUpperCase() === '#NV') continue;
-      if (looksLikeTeacherOrRoomToken(subject)) continue;
 
       entries.push({
         classId: column.classId,
         dayId: currentDayId,
         slotId: slotToken,
         subject,
-        teacher: '',
-        room: '',
+        teacher,
+        room,
         note: '',
         isSpecial: detectSpecialTerm(subject, ''),
         sourceText: row.text
