@@ -15,7 +15,8 @@ python3 -m http.server 8080
 ## 2) Wichtigste Dateien (10 Min)
 - Betrieb: `docs/OPERATIONS.md`
 - Fehlerbehebung: `docs/TROUBLESHOOTING.md`
-- Stundenplan: `content/stundenplan.json`
+- Stundenplan (Runtime): `content/stundenplan.generated.json`
+- PDF-Quelle: `content/timetables/*.pdf`
 - Kalender: `content/txt/calendars/files.txt`
 - Ankündigungen: `content/txt/events/files.txt` + `content/txt/events/*.txt`
 
@@ -38,8 +39,7 @@ node tests/timetable-source.test.mjs
 - Bei Unklarheit zuerst Contracts prüfen (`docs/contracts/*`).
 
 ### Don't
-- Dateinamen „frei erfinden“, wenn sie in Operations/Contracts festgelegt sind.
-- Legacy-Inhalte als produktiv annehmen.
+- Legacy-Inhalte oder alte Stundenplan-Dateien wieder einführen.
 - Ohne grünen CI-Status mergen.
 
 ## Übergabe-Checkliste

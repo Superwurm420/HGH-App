@@ -1,21 +1,17 @@
-# PR Draft: vnext-remake parser + structure hardening
+# PR Draft: generated-only timetable pipeline
 
 ## Summary
-- Moved runtime app code from `/js` to `/src` for clearer long-term maintenance.
-- Added PDF Parser V2 pipeline with staged processing and validation.
-- Added data-layer fallback: use parsed PDF raw source when valid, fallback to `content/stundenplan.json` when invalid/unavailable.
-- Added parser debug output via `?debugParser=1`.
-- Added parser fixtures and automated check script.
-- Updated service worker caching to include new source paths and dynamic timetable raw source.
+- Stundenplan läuft ausschließlich über `content/stundenplan.generated.json`.
+- Neue PDF in `content/timetables/` wird über `scripts/build-timetable-from-pdf.mjs` verarbeitet.
+- Keine Legacy-Fallback-Dateien mehr.
 
 ## Why
-- Robust timetable ingestion is the #1 priority.
-- Structure now better separates app code (`src`), admin content (`content`), static assets (`assets`), and checks (`tests`).
+- Ein eindeutiges System vermeidet veraltete Datenquellen und versteckte Fallbacks.
+- Jeder Upload folgt demselben Pipeline-Schritt und erzeugt dieselbe Runtime-Datei.
 
 ## Test checklist
-- [ ] Home route loads and renders cards.
-- [ ] `#timetable` shows data when online.
-- [ ] `#tv` rotates clock + announcements + slides without duplicate timers.
-- [ ] Parser debug works with `?debugParser=1`.
-- [ ] Invalid `content/stundenplan.pdf.raw.json` falls back to `content/stundenplan.json`.
-- [ ] App shell + dynamic content behave in offline mode with service worker.
+- [ ] `content/stundenplan.generated.json` wird aus der neuesten PDF erzeugt.
+- [ ] `meta.source` zeigt auf die neueste PDF-Datei.
+- [ ] Timeslots 1–9 sind vorhanden.
+- [ ] App zeigt bei fehlender generated-Datei den leeren Zustand statt Legacy-Fallback.
+- [ ] App shell + dynamic content verhalten sich im Offline-Modus korrekt.

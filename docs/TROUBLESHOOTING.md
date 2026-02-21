@@ -29,12 +29,12 @@
 ## 2) PDF-Stundenplan-Link geht nicht
 
 ### Checks
-1. `content/stundenplan.json` → `meta.source` gesetzt?
-2. Datei mit diesem Namen liegt in `content/timetables/`?
-3. Schreibweise exakt gleich (Groß/Kleinschreibung)?
+1. `node scripts/build-timetable-from-pdf.mjs` lief ohne Fehler?
+2. `content/stundenplan.generated.json` wurde neu geschrieben?
+3. `meta.source` in `content/stundenplan.generated.json` zeigt auf die neueste PDF?
 
 ### Fix
-- Dateiname in `meta.source` oder PDF-Datei korrigieren.
+- PDF-Datei in `content/timetables/` korrigieren und Generator erneut ausführen.
 
 ---
 
@@ -55,12 +55,12 @@
 ## 4) Sondertermine werden falsch erkannt
 
 ### Checks
-1. Tokenformat im PDF-Rohtext: `class:...;day:...;slot:...;subject:...`
+1. Tokenformat in extrahiertem PDF-Text: `class:...;day:...;slot:...;subject:...`
 2. `day` nutzt erlaubte Muster (`mo`, `mo-fr`, `mo,mi`, `woche`)
 3. `slot` nutzt Zahlen/Bereiche/Listen (`1`, `1-9`, `1,3-4`)
 
 ### Fix
-- Token in `content/stundenplan.pdf.raw.json` bzw. Importquelle korrigieren.
+- PDF-Datei prüfen und erneut den Generator laufen lassen.
 
 ---
 

@@ -6,13 +6,13 @@ Ziel: Inhalte schnell aktualisieren, ohne Code zu ändern.
 
 1. Neue Stundenplan-PDF bereitstellen.
 2. PDF in `content/timetables/` mit dem erwarteten Dateinamen ersetzen.
-3. Änderungen speichern/veröffentlichen.
-4. (Maintainer/CI) `node scripts/generate-sw-assets.mjs` ausführen, damit automatisch die neueste PDF als Referenz gesetzt wird.
-5. Seite neu laden.
+3. (Maintainer/CI) `node scripts/build-timetable-from-pdf.mjs` ausführen.
+4. Danach `node scripts/generate-sw-assets.mjs` ausführen.
+5. Änderungen speichern/veröffentlichen und Seite neu laden.
 
-**Ergebnis:** Der neue Stundenplan ist sichtbar (immer mit Referenz auf die neueste PDF).
+**Ergebnis:** Der neue Stundenplan ist sichtbar (Quelle ist immer die neueste erfolgreich verarbeitete PDF).
 
-Wenn keine gültige Stundenplan-Datei vorhanden ist, zeigt die App einen leeren Hinweiszustand statt eines Absturzes.
+Wenn die PDF nicht verarbeitet werden kann, bleibt der Stundenplan leer statt auf alte Strukturen zurückzufallen.
 
 ---
 

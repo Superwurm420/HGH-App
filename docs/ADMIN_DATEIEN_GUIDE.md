@@ -8,7 +8,7 @@ Vertiefung:
 - Datenformate: `docs/contracts/`
 
 ## Häufig bearbeitete Dateien
-- `content/stundenplan.json`
+- `content/stundenplan.generated.json` (wird automatisch erzeugt)
 - `content/txt/calendars/files.txt`
 - `content/txt/events/files.txt`
 - `content/txt/events/*.txt`
