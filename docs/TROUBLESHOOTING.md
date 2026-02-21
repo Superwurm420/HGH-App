@@ -29,7 +29,7 @@
 ## 2) PDF-Stundenplan-Link geht nicht
 
 ### Checks
-1. `node scripts/build-timetable-from-pdf.mjs` lief ohne Fehler?
+1. `npm run generate:timetable` lief ohne Fehler?
 2. `content/stundenplan.generated.json` wurde neu geschrieben?
 3. `meta.source` in `content/stundenplan.generated.json` zeigt auf die neueste PDF?
 
@@ -70,8 +70,7 @@
 ```bash
 node --check src/app.js
 node --check src/parsers/pdf/pdf-timetable-v2.js
-node tests/pdf-parser-v2.test.mjs
-node tests/timetable-source.test.mjs
+npm test
 ```
 
 ### Fix

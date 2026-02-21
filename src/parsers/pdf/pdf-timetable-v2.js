@@ -183,6 +183,104 @@ function parseLooseLine(text) {
   }));
 }
 
+function normalizeClassToken(token) {
+  return clean(token).toUpperCase().replace(/\s+/g, '');
+}
+
+function looksLikeClassToken(token) {
+  return /^[A-Z]{1,3}\d{2}$/.test(normalizeClassToken(token));
+}
+
+function looksLikeSlotToken(token) {
+  const match = clean(token).match(/^(\d{1,2})\.$/);
+  if (!match) return null;
+  const value = Number(match[1]);
+  return value >= 1 && value <= 12 ? String(value) : null;
+}
+
+function looksLikeTimeToken(token) {
+  return /^\d{1,2}[.:]\d{2}$/.test(clean(token));
+}
+
+function looksLikeTeacherOrRoomToken(token) {
+  const value = clean(token);
+  if (!value) return true;
+  if (/^#[A-Z]{1,3}$/i.test(value)) return true;
+  if (/^[A-ZÄÖÜ]{2,4}$/.test(value)) return true;
+  if (/^\d{1,3}$/.test(value)) return true;
+  if (/^[A-Z]\d{1,2}$/i.test(value)) return true;
+  return false;
+}
+
+function parseGridRows(rows) {
+  const classHeader = rows.find((row) => row.items.filter((item) => looksLikeClassToken(item.text)).length >= 3);
+  if (!classHeader) return [];
+
+  const classColumns = classHeader.items
+    .filter((item) => looksLikeClassToken(item.text))
+    .map((item) => ({ classId: normalizeClassToken(item.text), x: item.x }))
+    .sort((a, b) => a.x - b.x);
+
+  if (!classColumns.length) return [];
+
+  const boundaries = classColumns.map((column, index) => {
+    const prev = classColumns[index - 1];
+    const next = classColumns[index + 1];
+    const left = prev ? (prev.x + column.x) / 2 : column.x - 35;
+    const right = next ? (column.x + next.x) / 2 : column.x + 35;
+    return { ...column, left, right };
+  });
+
+  const entries = [];
+  let currentDayId = null;
+
+  for (const row of rows) {
+    const dayToken = row.items.find((item) => DAY_MAP.has(clean(item.text).toLowerCase()));
+    if (dayToken) currentDayId = DAY_MAP.get(clean(dayToken.text).toLowerCase());
+    if (!currentDayId) continue;
+
+    const slotToken = row.items.map((item) => looksLikeSlotToken(item.text)).find(Boolean);
+    if (!slotToken) continue;
+
+    const candidates = row.items.filter((item) => {
+      const text = clean(item.text);
+      if (!text) return false;
+      if (DAY_MAP.has(text.toLowerCase())) return false;
+      if (looksLikeSlotToken(text)) return false;
+      if (looksLikeTimeToken(text)) return false;
+      if (/^-$/.test(text)) return false;
+      return true;
+    });
+
+    for (const column of boundaries) {
+      const parts = candidates
+        .filter((item) => item.x >= column.left && item.x < column.right)
+        .map((item) => clean(item.text))
+        .filter(Boolean);
+
+      if (!parts.length) continue;
+
+      const subject = clean(parts.join(' '));
+      if (!subject || subject.toUpperCase() === '#NV') continue;
+      if (looksLikeTeacherOrRoomToken(subject)) continue;
+
+      entries.push({
+        classId: column.classId,
+        dayId: currentDayId,
+        slotId: slotToken,
+        subject,
+        teacher: '',
+        room: '',
+        note: '',
+        isSpecial: detectSpecialTerm(subject, ''),
+        sourceText: row.text
+      });
+    }
+  }
+
+  return entries;
+}
+
 function toIsoDate(value) {
   const match = clean(value).match(/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{2}|\d{4})$/);
   if (!match) return null;
@@ -293,6 +391,17 @@ export function interpretRows(rows, issues = []) {
       }
       classes.add(entry.classId);
       parsedEntries.push(entry);
+    }
+  }
+
+  if (!parsedEntries.length) {
+    const gridEntries = parseGridRows(rows);
+    for (const entry of gridEntries) {
+      classes.add(entry.classId);
+      parsedEntries.push(entry);
+    }
+    if (gridEntries.length) {
+      issues.push('Fallback-Parser für tabellarische PDF-Struktur wurde genutzt.');
     }
   }
 
