@@ -1,0 +1,7 @@
+node_modules/
+archive/
+*.log
+.DS_Store
+.env
+debug-*.txt
+tmp_*.json

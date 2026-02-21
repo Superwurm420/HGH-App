@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#007AFF" />
+  <meta name="description" content="HGH Hildesheim – Stundenplan, Links & Instagram als Progressive Web App. Offline-fähig, mobile-first und mit Dark Mode." />
+  <meta name="color-scheme" content="dark light" />
+  
+  <!-- Open Graph / Social Media -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="HGH Hildesheim – Schüler-PWA" />
+  <meta property="og:description" content="Stundenplan, Links & Instagram – offline-fähig als Progressive Web App" />
+  <meta property="og:url" content="https://superwurm420.github.io/HGH/" />
+  
+  <!-- PWA -->
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="HGH Hildesheim" />
+
+  <title>HGH Hildesheim – Schüler-PWA</title>
+
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" href="https://www.holztechnik-hildesheim.de/wp-content/uploads/2021/01/logo-favicon.png" />
+  <link rel="apple-touch-icon" href="https://www.holztechnik-hildesheim.de/wp-content/uploads/2021/01/logo-favicon.png" />
+
+  <link rel="stylesheet" href="./app.css" />
+</head>
+<body>
+  <!-- Skip Link für Accessibility -->
+  <a class="skip" href="#main">Zum Inhalt springen</a>
+
+  <!-- Header -->
+  <header class="topbar" role="banner">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">
+        <img 
+          class="logoImg" 
+          src="https://www.holztechnik-hildesheim.de/wp-content/uploads/2020/08/hgh-weblogo-intertiert.png" 
+          alt="" 
+          width="44" 
+          height="44" 
+          loading="eager" 
+          style="width:44px;height:44px;max-width:44px;max-height:44px;" 
+        />
+      </div>
+      <div class="brandText">
+        <div class="brandTitle">Holztechnik und Gestaltung Hildesheim</div>
+        <div class="brandSub">Fachschule</div>
+      </div>
+    </div>
+
+    <div class="topActions">
+      <button 
+        id="darkToggle" 
+        class="iconBtn surface" 
+        type="button" 
+        aria-label="Farbschema umschalten" 
+        title="Dark/Light Mode wechseln"
+      >
+        <span class="icon" aria-hidden="true">◐</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Navigation -->
+  <nav class="nav" role="navigation" aria-label="Hauptnavigation">
+    <button class="navItem surface" data-route="home" aria-current="page" type="button">
+      <span class="navIcon" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12L12 3l9 9"/><path d="M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9"/></svg>
+      </span>
+      <span>Home</span>
+    </button>
+    <button class="navItem surface" data-route="timetable" type="button">
+      <span class="navIcon" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 9v12"/></svg>
+      </span>
+      <span>Stundenplan</span>
+    </button>
+    <button class="navItem surface" data-route="week" type="button">
+      <span class="navIcon" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>
+      </span>
+      <span>Woche</span>
+    </button>
+    <button class="navItem surface" data-route="links" type="button">
+      <span class="navIcon" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/></svg>
+      </span>
+      <span>Weiteres</span>
+    </button>
+  </nav>
+
+  <!-- Main Content -->
+  <main id="main" class="main">
+    
+    <!-- HOME VIEW -->
+    <section class="view" data-view="home">
+
+      <!-- Heute-Karte -->
+      <div class="card surface">
+        <h2>Heute</h2>
+
+        <!-- Countdown -->
+        <div class="countdown" role="region" aria-label="Countdown zur nächsten Stunde">
+          <div class="countdownTop">
+            <div class="netRow netRowInline countdownNetStatus" role="status" aria-label="Netzwerkstatus">
+              <span
+                id="netIndicator"
+                class="netIndicator"
+                data-status="unknown"
+                aria-hidden="true"
+              ></span>
+              <span id="netLabel" class="small muted">—</span>
+            </div>
+            <div class="countdownTimeBlock">
+              <div id="todayWeekday" class="small muted countdownDate">—</div>
+              <div class="timeMetaRow">
+                <div id="nowTime" class="nowTime" aria-live="polite">—</div>
+              </div>
+            </div>
+            <div id="countdownText" class="countdownText" aria-live="polite">—</div>
+          </div>
+          <div class="countdownDivider"></div>
+          <div id="funMessage" class="funMessage" aria-live="polite">&nbsp;</div>
+        </div>
+
+        <!-- Heute-Vorschau -->
+        <div class="todayMetaRow">
+          <label class="control control--class control--homeClass">
+            <span class="controlLabel">Klasse</span>
+            <span class="selectWrap">
+              <select id="todayClassSelect" class="select" aria-label="Klasse für Heute-Widget auswählen"></select>
+            </span>
+          </label>
+          <p id="ttLastUpdated" class="small muted ttLastUpdated"></p>
+        </div>
+        <div
+          id="todayPreview"
+          class="list"
+          role="region"
+          aria-label="Heutiger Stundenplan (Vorschau)"
+        ></div>
+        <p class="small muted noteLegend">❗ = Hinweis / wichtige Änderung zur Stunde</p>
+      </div>
+
+      <!-- Kalender-Karte -->
+      <div class="card surface calCard">
+        <div class="calHeader">
+          <h2>Kalender</h2>
+          <div class="calToggles" id="calToggles"></div>
+        </div>
+        <div class="calNav">
+          <button class="calNavBtn" id="calPrev" aria-label="Vorheriger Monat">&#8249;</button>
+          <span id="calMonthLabel" class="calMonthLabel">—</span>
+          <button class="calNavBtn" id="calNext" aria-label="Nächster Monat">&#8250;</button>
+        </div>
+        <div class="calWeekHeader" aria-hidden="true">
+          <span>Mo</span><span>Di</span><span>Mi</span><span>Do</span>
+          <span>Fr</span><span>Sa</span><span>So</span>
+        </div>
+        <div class="calGrid" id="calGrid" role="grid" aria-label="Kalenderansicht"></div>
+        <div class="calEvents" id="calEvents" aria-live="polite"></div>
+      </div>
+
+      <!-- Ankündigungen -->
+      <div class="card surface announcementsCard" id="announcementsCard" hidden>
+        <div class="row wrap">
+          <h2>Ankündigungen</h2>
+        </div>
+        <article id="announcementNext" class="announcementNext" hidden aria-live="polite"></article>
+        <div id="announcementsIssues" class="announcementsIssues" hidden aria-live="polite"></div>
+        <div id="announcementsList" class="announcementsList" role="list" aria-live="polite"></div>
+      </div>
+
+    </section>
+
+    <!-- WEEK VIEW -->
+    <section class="view" data-view="week" hidden>
+      <div class="card surface">
+        <div class="row wrap">
+          <div>
+            <h2>Wochenübersicht <span id="weekKwLabel" class="weekKwBadge" aria-live="polite"></span></h2>
+                      </div>
+
+          <div class="controls">
+            <label class="control control--class">
+              <span class="controlLabel">Klasse</span>
+              <span class="selectWrap">
+                <select 
+                  id="weekClassSelect" 
+                  class="select" 
+                  aria-label="Klasse für Wochenübersicht auswählen"
+                ></select>
+              </span>
+            </label>
+
+            <a 
+              class="btn secondary" 
+              href="./assets/plan/Stundenplan_kw_45_Hj1_2025_26.pdf"
+              target="_blank"
+              rel="noopener"
+              aria-label="Stundenplan als PDF öffnen"
+              data-pdf-link
+            >
+              PDF-Stundenplan
+            </a>
+          </div>
+        </div>
+
+        <div 
+          id="weekGrid" 
+          class="weekGrid" 
+          role="table" 
+          aria-label="Wochenübersicht aller Stunden"
+        ></div>
+        <p class="small muted noteLegend">❗ = Hinweis / wichtige Änderung zur Stunde</p>
+      </div>
+    </section>
+
+    <!-- TIMETABLE VIEW -->
+    <section class="view" data-view="timetable" hidden>
+      <div class="card surface">
+        <div class="row wrap">
+          <div>
+            <h2>Stundenplan</h2>
+                      </div>
+
+          <div class="controls">
+            <label class="control control--class">
+              <span class="controlLabel">Klasse</span>
+              <span class="selectWrap">
+                <select
+                  id="classSelect"
+                  class="select"
+                  aria-label="Klasse auswählen"
+                ></select>
+              </span>
+            </label>
+            <a
+              class="btn secondary"
+              href="./assets/plan/Stundenplan_kw_45_Hj1_2025_26.pdf"
+              target="_blank"
+              rel="noopener"
+              aria-label="Stundenplan als PDF öffnen"
+              data-pdf-link
+            >
+              PDF-Stundenplan
+            </a>
+            <span class="dayInfoBadge" id="currentDayInfo" aria-live="polite">Heute: —</span>
+          </div>
+        </div>
+
+        <!-- Tages-Auswahl -->
+        <div class="control dayRow">
+          <span class="controlLabel">Tag</span>
+          <div
+            id="daySelectGroup"
+            class="daySelectGroup"
+            role="group"
+            aria-label="Wochentag auswählen"
+          >
+            <button type="button" class="dayBtn" data-day="mo" aria-label="Montag">Mo</button>
+            <button type="button" class="dayBtn" data-day="di" aria-label="Dienstag">Di</button>
+            <button type="button" class="dayBtn" data-day="mi" aria-label="Mittwoch">Mi</button>
+            <button type="button" class="dayBtn" data-day="do" aria-label="Donnerstag">Do</button>
+            <button type="button" class="dayBtn" data-day="fr" aria-label="Freitag">Fr</button>
+          </div>
+        </div>
+
+        <!-- Stundenplan-Tabelle -->
+        <div
+          class="timetable"
+          role="table"
+          aria-label="Stundenplan-Tabelle"
+        >
+          <div class="timetableHeader" role="row">
+            <div class="th" role="columnheader">Zeit</div>
+            <div class="th" role="columnheader">Fach</div>
+            <div class="th tdMeta" role="columnheader">Lehrer / Raum</div>
+          </div>
+          <div 
+            id="timetableBody" 
+            class="timetableBody" 
+            role="rowgroup"
+          ></div>
+        </div>
+        <p class="small muted noteLegend">❗ = Hinweis / wichtige Änderung zur Stunde</p>
+        <div id="timetablePipelineStatus" class="pipelineStatus" role="status" aria-live="polite" hidden></div>
+
+      </div>
+    </section>
+
+    <!-- LINKS VIEW -->
+    <section class="view" data-view="links" hidden>
+      <div class="card surface">
+        <h2>Links</h2>
+
+        <nav class="linkCards" aria-label="Wichtige Links">
+          <a
+            class="linkCardBig"
+            href="https://holztechnik-hildesheim.de/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span class="linkCardIcon" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10L12 4l9 6"/><path d="M5 10v9h14v-9"/><path d="M9 19v-5h6v5"/></svg>
+            </span>
+            <div class="linkCardBody">
+              <div class="linkTitle">Schul-Website</div>
+              <div class="linkUrl">holztechnik-hildesheim.de</div>
+            </div>
+            <span class="linkCardArrow" aria-hidden="true">↗</span>
+          </a>
+
+          <a
+            class="linkCardBig"
+            href="https://hgh-hi.regio-box.net/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span class="linkCardIcon" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18h10a4 4 0 0 0 0-8 5 5 0 0 0-9.6-1.5A3.5 3.5 0 0 0 7 18z"/></svg>
+            </span>
+            <div class="linkCardBody">
+              <div class="linkTitle">Nextcloud</div>
+              <div class="linkUrl">hgh-hi.regio-box.net</div>
+            </div>
+            <span class="linkCardArrow" aria-hidden="true">↗</span>
+          </a>
+        </nav>
+
+        <nav class="linkCards" aria-label="Instagram Links" style="margin-top:10px;">
+          <a
+            class="linkCardBig"
+            href="https://www.instagram.com/hgh.hildesheim/"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-ig="schule"
+          >
+            <span class="linkCardIcon" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg>
+            </span>
+            <div class="linkCardBody">
+              <div class="linkTitle">Schule</div>
+              <div class="linkUrl">@hgh.hildesheim</div>
+            </div>
+            <span class="linkCardArrow" aria-hidden="true">↗</span>
+          </a>
+
+          <a
+            class="linkCardBig"
+            href="https://www.instagram.com/usf_ht21"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-ig="ht21"
+          >
+            <span class="linkCardIcon" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg>
+            </span>
+            <div class="linkCardBody">
+              <div class="linkTitle">HT21</div>
+              <div class="linkUrl">@usf_ht21</div>
+            </div>
+            <span class="linkCardArrow" aria-hidden="true">↗</span>
+          </a>
+
+          <a
+            class="linkCardBig"
+            href="https://www.instagram.com/usf_ht22"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-ig="ht22"
+          >
+            <span class="linkCardIcon" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg>
+            </span>
+            <div class="linkCardBody">
+              <div class="linkTitle">HT22</div>
+              <div class="linkUrl">@usf_ht22</div>
+            </div>
+            <span class="linkCardArrow" aria-hidden="true">↗</span>
+          </a>
+        </nav>
+
+        <h2 style="margin-top:20px">Klassenfotos</h2>
+        <div class="classPhotosGrid" id="classPhotos">
+          <a class="classPhotoItem classPhotoItemMissing" href="./assets/images/class-ht11.jpg" target="_blank" rel="noopener noreferrer">
+            <div class="classPhotoTitle">HT11</div>
+            <img src="./assets/icons/class-ht11.svg" alt="Klassenfoto HT11" class="classPhotoLarge" loading="lazy" />
+            <div class="classPhotoHint">Kein Foto vorhanden. Bitte unter <code>assets/images/class-ht11.jpg</code> ablegen.</div>
+          </a>
+          <a class="classPhotoItem classPhotoItemMissing" href="./assets/images/class-ht12.jpg" target="_blank" rel="noopener noreferrer">
+            <div class="classPhotoTitle">HT12</div>
+            <img src="./assets/icons/class-ht12.svg" alt="Klassenfoto HT12" class="classPhotoLarge" loading="lazy" />
+            <div class="classPhotoHint">Kein Foto vorhanden. Bitte unter <code>assets/images/class-ht12.jpg</code> ablegen.</div>
+          </a>
+          <a class="classPhotoItem classPhotoItemMissing" href="./assets/images/class-ht21.jpg" target="_blank" rel="noopener noreferrer">
+            <div class="classPhotoTitle">HT21</div>
+            <img src="./assets/icons/class-ht21.svg" alt="Klassenfoto HT21" class="classPhotoLarge" loading="lazy" />
+            <div class="classPhotoHint">Kein Foto vorhanden. Bitte unter <code>assets/images/class-ht21.jpg</code> ablegen.</div>
+          </a>
+          <a class="classPhotoItem classPhotoItemMissing" href="./assets/images/class-ht22.jpg" target="_blank" rel="noopener noreferrer">
+            <div class="classPhotoTitle">HT22</div>
+            <img src="./assets/icons/class-ht22.svg" alt="Klassenfoto HT22" class="classPhotoLarge" loading="lazy" />
+            <div class="classPhotoHint">Kein Foto vorhanden. Bitte unter <code>assets/images/class-ht22.jpg</code> ablegen.</div>
+          </a>
+          <a class="classPhotoItem classPhotoItemMissing" href="./assets/images/class-g11.jpg" target="_blank" rel="noopener noreferrer">
+            <div class="classPhotoTitle">G11</div>
+            <img src="./assets/icons/class-placeholder.svg" alt="Klassenfoto G11" class="classPhotoLarge" loading="lazy" />
+            <div class="classPhotoHint">Kein Foto vorhanden. Bitte unter <code>assets/images/class-g11.jpg</code> ablegen.</div>
+          </a>
+          <a class="classPhotoItem classPhotoItemMissing" href="./assets/images/class-g12.jpg" target="_blank" rel="noopener noreferrer">
+            <div class="classPhotoTitle">G12</div>
+            <img src="./assets/icons/class-placeholder.svg" alt="Klassenfoto G12" class="classPhotoLarge" loading="lazy" />
+            <div class="classPhotoHint">Kein Foto vorhanden. Bitte unter <code>assets/images/class-g12.jpg</code> ablegen.</div>
+          </a>
+          <a class="classPhotoItem classPhotoItemMissing" href="./assets/images/class-gt01.jpg" target="_blank" rel="noopener noreferrer">
+            <div class="classPhotoTitle">GT01</div>
+            <img src="./assets/icons/class-placeholder.svg" alt="Klassenfoto GT01" class="classPhotoLarge" loading="lazy" />
+            <div class="classPhotoHint">Kein Foto vorhanden. Bitte unter <code>assets/images/class-gt01.jpg</code> ablegen.</div>
+          </a>
+        </div>
+
+        <h2 id="informationen" style="margin-top:20px">Informationen</h2>
+        <a class="btn secondary" href="#informationen-anleitung" aria-label="Informationen zur Nutzung anzeigen">Informationen</a>
+
+        <article id="informationen-anleitung" class="adminWidget" style="margin-top:12px;">
+          <h3>Installation (kurz)</h3>
+          <ol class="adminSteps">
+            <li class="adminStep"><strong>Android:</strong> Browser-Menü öffnen → <strong>„App installieren“</strong>.</li>
+            <li class="adminStep"><strong>iOS:</strong> <strong>Teilen</strong> → <strong>„Zum Home-Bildschirm“</strong>.</li>
+          </ol>
+
+          <h3>Admin-Anleitung (Datei ersetzen → commit → neu laden)</h3>
+          <ol class="adminSteps">
+            <li class="adminStep"><strong>1.</strong> <code>content/stundenplan.json</code> oder <code>content/kalender.ics</code> ersetzen.</li>
+            <li class="adminStep"><strong>2.</strong> Änderungen committen und pushen.</li>
+            <li class="adminStep"><strong>3.</strong> App neu laden (ggf. Hard-Reload).</li>
+          </ol>
+        </article>
+      </div>
+    </section>
+
+
+    <!-- TV VIEW -->
+    <section class="view tvView" data-view="tv" hidden>
+      <div class="tvLayout" role="region" aria-label="TV-Modus">
+        <header class="tvHeader">
+          <div class="tvDateWrap">
+            <img class="tvLogo" src="./assets/icons/icon-512-maskable.png" alt="HGH Logo" loading="eager" />
+            <div id="tvDate" class="tvDate">—</div>
+          </div>
+          <div id="tvTime" class="tvTime" aria-live="polite">—</div>
+        </header>
+
+        <div class="tvMain">
+          <section class="tvPanel">
+            <h2>Heute · Klassen</h2>
+            <div id="tvClasses" class="tvClasses"></div>
+          </section>
+
+          <section class="tvPanel">
+            <h2>Ankündigungen</h2>
+            <p id="tvOffline" class="tvOffline" hidden>Offline</p>
+            <ul id="tvAnnouncementsList" class="tvAnnouncementsList"></ul>
+          </section>
+        </div>
+
+        <div id="tvSlides" class="tvSlides" aria-label="Slideshow">
+          <img id="tvSlideA" class="tvSlideImage" alt="TV-Slide" loading="eager" />
+          <img id="tvSlideB" class="tvSlideImage" alt="TV-Slide" loading="eager" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer" role="contentinfo">
+      <div class="small muted">
+        © <span id="year"></span> HGH Hildesheim · Offline-fähige PWA
+      </div>
+      <div 
+        class="small muted" 
+        id="swStatus" 
+        role="status" 
+        aria-live="polite"
+      ></div>
+
+    </footer>
+  </main>
+
+  <!-- JavaScript -->
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>
