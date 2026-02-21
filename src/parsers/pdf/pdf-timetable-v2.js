@@ -17,17 +17,38 @@ function toNum(v) {
 }
 
 function isTeacherToken(token) {
-  return /^[A-ZÄÖÜ]{2,6}$/.test(token || '');
+  return /^[A-ZÄÖÜ]{3,6}(?:\/[A-ZÄÖÜ]{3,6})*$/.test(clean(token));
 }
 
 function isRoomToken(token) {
   const value = clean(token);
   if (!value) return false;
   if (/^#[A-Z]{1,3}$/i.test(value)) return true;
+  if (/^[A-Z]{1,3}$/.test(value) && !isTeacherToken(value)) return true;
   if (/^\d{1,3}[A-Z]?$/i.test(value)) return true;
   if (/^[A-Z]\d{1,2}$/i.test(value)) return true;
   if (/^[A-Z]{1,3}-\d{1,3}$/i.test(value)) return true;
   return false;
+}
+
+function applySupplementToken(entry, token) {
+  if (!entry) return;
+  const value = clean(token);
+  if (!value || value === '#NV') return;
+
+  if (!entry.room && isRoomToken(value) && !isTeacherToken(value)) {
+    entry.room = value;
+    return;
+  }
+
+  if (!entry.teacher && isTeacherToken(value)) {
+    entry.teacher = value;
+    return;
+  }
+
+  if (!entry.room && isRoomToken(value)) {
+    entry.room = value;
+  }
 }
 
 function splitSubjectTeacherRoom(tokens) {
@@ -263,6 +284,7 @@ function parseGridRows(rows) {
 
   const entries = [];
   let currentDayId = null;
+  let pendingByClass = new Map();
 
   for (const row of rows) {
     const dayToken = row.items.find((item) => DAY_MAP.has(clean(item.text).toLowerCase()));
@@ -270,7 +292,6 @@ function parseGridRows(rows) {
     if (!currentDayId) continue;
 
     const slotToken = row.items.map((item) => looksLikeSlotToken(item.text)).find(Boolean);
-    if (!slotToken) continue;
 
     const candidates = row.items.filter((item) => {
       const text = clean(item.text);
@@ -282,19 +303,55 @@ function parseGridRows(rows) {
       return true;
     });
 
-    for (const column of boundaries) {
-      const parts = candidates
+    if (!slotToken) {
+      if (!pendingByClass.size) continue;
+
+      for (const item of candidates) {
+        const nearest = boundaries.reduce((best, column) => {
+          const center = (column.left + column.right) / 2;
+          const distance = Math.abs(item.x - center);
+          if (!best || distance < best.distance) {
+            return { column, distance };
+          }
+          return best;
+        }, null);
+
+        if (!nearest?.column) continue;
+        applySupplementToken(pendingByClass.get(nearest.column.classId), item.text);
+      }
+      continue;
+    }
+
+    const partsByColumn = boundaries.map((column) => ({
+      classId: column.classId,
+      parts: candidates
         .filter((item) => item.x >= column.left && item.x < column.right)
         .map((item) => clean(item.text))
-        .filter(Boolean);
+        .filter(Boolean)
+    }));
 
+    const hasAnySubjectText = partsByColumn.some(({ parts }) => splitSubjectTeacherRoom(parts).subject);
+    if (!hasAnySubjectText && pendingByClass.size) {
+      for (const { classId, parts } of partsByColumn) {
+        const pending = pendingByClass.get(classId);
+        if (!pending) continue;
+        for (const token of parts) {
+          applySupplementToken(pending, token);
+        }
+      }
+      continue;
+    }
+
+    pendingByClass = new Map();
+
+    for (const { classId, parts } of partsByColumn) {
       if (!parts.length) continue;
 
       const { subject, teacher, room } = splitSubjectTeacherRoom(parts);
       if (!subject || subject.toUpperCase() === '#NV') continue;
 
       entries.push({
-        classId: column.classId,
+        classId,
         dayId: currentDayId,
         slotId: slotToken,
         subject,
@@ -304,6 +361,8 @@ function parseGridRows(rows) {
         isSpecial: detectSpecialTerm(subject, ''),
         sourceText: row.text
       });
+
+      pendingByClass.set(classId, entries[entries.length - 1]);
     }
   }
 

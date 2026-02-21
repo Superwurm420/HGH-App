@@ -80,4 +80,20 @@ if (!ht21Tuesday || ht21Tuesday.subject !== 'CAD' || ht21Tuesday.teacher !== 'HO
   throw new Error(`Expected HT21 Di slot 2 to map subject/teacher/room correctly, got ${JSON.stringify(ht21Tuesday)}`);
 }
 
+
+const gridSupplementRow = parsePdfTimetableV2(load('pdf-raw-grid-supplement-row.json'));
+if (gridSupplementRow.ok) {
+  throw new Error('Expected supplement-row fixture to fail min-entry validation');
+}
+
+const supplementHt11 = gridSupplementRow.model?.classes?.HT11?.mo?.[0];
+if (!supplementHt11 || supplementHt11.teacher !== 'MEL' || supplementHt11.room !== '101') {
+  throw new Error(`Expected HT11 supplement row to set teacher/room, got ${JSON.stringify(supplementHt11)}`);
+}
+
+const supplementHt12 = gridSupplementRow.model?.classes?.HT12?.mo?.[0];
+if (!supplementHt12 || supplementHt12.teacher !== 'WEN' || supplementHt12.room !== '9') {
+  throw new Error(`Expected HT12 supplement row to set teacher/room, got ${JSON.stringify(supplementHt12)}`);
+}
+
 console.log('pdf-parser-v2 fixtures passed');
