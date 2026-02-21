@@ -17,18 +17,60 @@ function toNum(v) {
 }
 
 function isTeacherToken(token) {
-  return /^[A-ZÄÖÜ]{3,6}(?:\/[A-ZÄÖÜ]{3,6})*$/.test(clean(token));
+  const normalized = clean(token).replace(/[.]/g, '').toUpperCase();
+  return /^[A-ZÄÖÜ]{3,6}(?:\/[A-ZÄÖÜ]{3,6})*$/.test(normalized);
 }
 
 function isRoomToken(token) {
-  const value = clean(token);
+  const value = clean(token).replace(/^raum\s*/i, '').replace(/[.]/g, '');
   if (!value) return false;
   if (/^#[A-Z]{1,3}$/i.test(value)) return true;
   if (/^[A-Z]{1,3}$/.test(value) && !isTeacherToken(value)) return true;
   if (/^\d{1,3}[A-Z]?$/i.test(value)) return true;
+  if (/^R\d{1,3}[A-Z]?$/i.test(value)) return true;
+  if (/^[A-Z]{1,3}\s*\d{1,3}[A-Z]?$/i.test(value)) return true;
   if (/^[A-Z]\d{1,2}$/i.test(value)) return true;
+  if (/^\d{1,2}[A-Z]?[-\/]\d{1,3}[A-Z]?$/i.test(value)) return true;
   if (/^[A-Z]{1,3}-\d{1,3}$/i.test(value)) return true;
   return false;
+}
+
+function cleanMetaValue(value) {
+  return clean(value).replace(/^[:\-–]\s*/, '');
+}
+
+function parseLabeledMetaTokens(tokens) {
+  const normalized = (Array.isArray(tokens) ? tokens : []).map(clean).filter(Boolean);
+  const result = { teacher: '', room: '', skipIndexes: new Set() };
+
+  const roomLabels = new Set(['raum', 'r', 'rm']);
+  const teacherLabels = new Set(['lehrer', 'lehrkraft', 'teacher', 'dozent']);
+
+  for (let i = 0; i < normalized.length; i += 1) {
+    const token = normalized[i];
+    const tokenLower = token.toLowerCase().replace(/[.:]/g, '');
+
+    if (!result.room && roomLabels.has(tokenLower)) {
+      const next = cleanMetaValue(normalized[i + 1]);
+      if (next && isRoomToken(next)) {
+        result.room = next;
+        result.skipIndexes.add(i);
+        result.skipIndexes.add(i + 1);
+      }
+      continue;
+    }
+
+    if (!result.teacher && teacherLabels.has(tokenLower)) {
+      const next = cleanMetaValue(normalized[i + 1]);
+      if (next && isTeacherToken(next)) {
+        result.teacher = next;
+        result.skipIndexes.add(i);
+        result.skipIndexes.add(i + 1);
+      }
+    }
+  }
+
+  return result;
 }
 
 function applySupplementToken(entry, token) {
@@ -55,9 +97,12 @@ function splitSubjectTeacherRoom(tokens) {
   const normalized = (Array.isArray(tokens) ? tokens : []).map(clean).filter(Boolean);
   if (!normalized.length) return { subject: '', teacher: '', room: '' };
 
-  let teacher = '';
-  let room = '';
-  const remaining = [...normalized];
+  const labeledMeta = parseLabeledMetaTokens(normalized);
+  const remainingSource = normalized.filter((_, index) => !labeledMeta.skipIndexes.has(index));
+
+  let teacher = labeledMeta.teacher;
+  let room = labeledMeta.room;
+  const remaining = [...remainingSource];
 
   const maybeRoom = remaining[remaining.length - 1];
   if (isRoomToken(maybeRoom)) {

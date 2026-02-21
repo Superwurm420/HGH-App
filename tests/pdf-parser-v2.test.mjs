@@ -96,4 +96,30 @@ if (!supplementHt12 || supplementHt12.teacher !== 'WEN' || supplementHt12.room !
   throw new Error(`Expected HT12 supplement row to set teacher/room, got ${JSON.stringify(supplementHt12)}`);
 }
 
+
+const labeledMeta = parsePdfTimetableV2({
+  meta: { source: 'fixture-labeled.pdf' },
+  items: [
+    { str: 'HT11', x: 120, y: 10 },
+    { str: 'HT12', x: 220, y: 10 },
+    { str: 'HT21', x: 320, y: 10 },
+    { str: 'Mo', x: 20, y: 20 },
+    { str: '1.', x: 40, y: 20 },
+    { str: 'Mathe', x: 120, y: 20 },
+    { str: 'Lehrer', x: 145, y: 20 },
+    { str: 'MEL', x: 166, y: 20 },
+    { str: 'Raum', x: 160, y: 20 },
+    { str: 'B 204', x: 168, y: 20 }
+  ]
+});
+
+if (labeledMeta.ok) {
+  throw new Error('Expected labeled-meta fixture to fail min-entry validation');
+}
+
+const labeledHt11 = labeledMeta.model?.classes?.HT11?.mo?.[0];
+if (!labeledHt11 || labeledHt11.teacher !== 'MEL' || labeledHt11.room !== 'B 204') {
+  throw new Error(`Expected labeled metadata tokens to set teacher/room, got ${JSON.stringify(labeledHt11)}`);
+}
+
 console.log('pdf-parser-v2 fixtures passed');
