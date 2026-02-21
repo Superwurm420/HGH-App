@@ -11,9 +11,9 @@ Wenn andere Doku-Dateien abweichen, gilt **diese** Datei.
 
 ## 2) Schnellablauf für Inhalts-Updates
 1. Datei(en) im `content/` oder `assets/data/` anpassen.
-2. Nach neuer Stundenplan-PDF immer `node scripts/build-timetable-from-pdf.mjs` ausführen.
-3. Danach `node scripts/generate-sw-assets.mjs` ausführen.
-4. Änderungen committen und pushen.
+2. Neue PDF nach `content/timetables/` hochladen (Dateiname: `Stundenplan_kw_<KW>_Hj<1|2>_<YYYY>_<YY>.pdf`).
+3. GitHub Actions Workflow **Rebuild timetable on PDF upload** startet automatisch und erzeugt `content/stundenplan.generated.json` neu.
+4. Optional lokal prüfen: `node scripts/build-timetable-from-pdf.mjs` und danach `node scripts/generate-sw-assets.mjs`.
 5. Seite neu laden (ggf. Hard-Reload wegen Service Worker).
 
 ---

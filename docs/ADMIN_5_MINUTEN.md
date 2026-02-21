@@ -5,10 +5,9 @@ Ziel: Inhalte schnell aktualisieren, ohne Code zu ändern.
 ## 1) Stundenplan aktualisieren (ca. 1–2 Minuten)
 
 1. Neue Stundenplan-PDF bereitstellen.
-2. PDF in `content/timetables/` mit dem erwarteten Dateinamen ersetzen.
-3. (Maintainer/CI) `node scripts/build-timetable-from-pdf.mjs` ausführen.
-4. Danach `node scripts/generate-sw-assets.mjs` ausführen.
-5. Änderungen speichern/veröffentlichen und Seite neu laden.
+2. PDF in `content/timetables/` hochladen (Schema: `Stundenplan_kw_<KW>_Hj<1|2>_<YYYY>_<YY>.pdf`).
+3. Nach dem Push startet der Workflow automatisch und erzeugt den Stundenplan neu (immer aus der neuesten Datei laut Dateiname).
+4. Änderungen speichern/veröffentlichen und Seite neu laden.
 
 **Ergebnis:** Der neue Stundenplan ist sichtbar (Quelle ist immer die neueste erfolgreich verarbeitete PDF).
 
