@@ -2388,6 +2388,9 @@ body.tv-mode .main {
   position: relative;
   overflow: hidden;
   min-height: 180px;
+  background-image: url('./assets/icons/tv-background.jpg');
+  background-size: cover;
+  background-position: center;
 }
 
 .tvSlideImage {

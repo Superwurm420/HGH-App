@@ -104,7 +104,10 @@ async function handleAsset(req) {
     path.includes('/content/txt/calendars/') ||
     // ehemals /data/*
     path.endsWith('/assets/data/runtime/announcements.json') ||
-    path.endsWith('/assets/data/runtime/bell-times.json');
+    path.endsWith('/assets/data/runtime/bell-times.json') ||
+    path.endsWith('/assets/tv-slides/slides.json') ||
+    path.includes('/assets/tv-slides/') ||
+    path.includes('/assets/images/class-');
 
   // Dynamic data should be network-first so newly added timetable/announcement
   // files show up immediately without waiting for a service worker version bump.

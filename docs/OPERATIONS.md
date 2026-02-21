@@ -16,6 +16,15 @@ Wenn andere Doku-Dateien abweichen, gilt **diese** Datei.
 
 ---
 
+## 2.1 Automatischer Sync (empfohlen)
+Vor Commit einmal ausführen:
+- `node scripts/generate-sw-assets.mjs`
+
+Das Skript erledigt automatisch:
+- `assets/tv-slides/slides.json` aus allen Bildern in `assets/tv-slides/` neu erzeugen,
+- `meta.source` in `content/stundenplan.json` und `content/stundenplan.pdf.raw.json` auf die neueste Stundenplan-PDF in `content/timetables/` setzen,
+- Service-Worker-Assetliste regenerieren.
+
 ## 3) Stundenplan
 
 ### 3.1 Primäre Datenquelle
