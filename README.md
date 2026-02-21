@@ -1,6 +1,6 @@
 # HGH – Schüler-PWA
 
-Minimal gehaltene Schul-PWA (Vanilla HTML/CSS/JS) für GitHub Pages.
+Schul-App für Schüler mit dem Ziel: **Inhalte in Minuten aktualisieren – ohne Codewissen**.
 
 ## Schnellstart
 
@@ -9,19 +9,25 @@ python3 -m http.server 8080
 # dann: http://127.0.0.1:8080
 ```
 
-## Für Betrieb & Übergabe (wichtig)
+## Für Schuladmins (wichtigster Einstieg)
 
-- **Single Source of Truth:** `docs/OPERATIONS.md`
-- **Onboarding für neue Maintainer:** `docs/ONBOARDING.md`
-- **Fehlerbehebung:** `docs/TROUBLESHOOTING.md`
-- **Datenformate/Contracts:** `docs/contracts/`
+- **5-Minuten-Anleitung:** `docs/ADMIN_5_MINUTEN.md`
+- **Produktbild (Soll-Zustand):** `docs/PRODUKTBILD.md`
+- **Betriebsleitfaden:** `docs/OPERATIONS.md`
 
-## Häufige Pflege-Dateien
+## Häufig bearbeitete Pfade
 
-- Stundenplan: `content/stundenplan.json`
-- Stundenplan-PDF: `content/timetables/`
-- Kalenderquellen: `content/txt/calendars/files.txt`
-- Ankündigungen: `content/txt/events/files.txt` + `content/txt/events/*.txt`
+- Stundenplan (Admin): `content/timetables/` (PDF ersetzen)
+- Kalender: `content/txt/calendars/files.txt`
+- Ankündigungen: `content/txt/events/files.txt`, `content/txt/events/*.txt`
+- Icons/Logos: `assets/icons/`
+- Bilder: `assets/images/`
+
+## Für Maintainer
+
+- Onboarding: `docs/ONBOARDING.md`
+- Troubleshooting: `docs/TROUBLESHOOTING.md`
+- Datenformate/Contracts: `docs/contracts/`
 
 ## Qualitätschecks
 
