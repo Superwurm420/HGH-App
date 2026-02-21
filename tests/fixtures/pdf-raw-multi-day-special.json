@@ -1,0 +1,11 @@
+{
+  "meta": {
+    "source": "current.pdf",
+    "updatedAt": "2026-02-24T08:00:00.000Z"
+  },
+  "items": [
+    { "str": "class:HT21;day:mo,mi,fr;slot:1,3-4,8;subject:Projektblock;note:Sondertermine", "x": 10, "y": 10 },
+    { "str": "class:HT11;day:di;slot:1;subject:Deutsch;teacher:MEL;room:6", "x": 10, "y": 20 },
+    { "str": "class:HT11;day:do;slot:1;subject:Deutsch;teacher:MEL;room:6", "x": 10, "y": 30 }
+  ]
+}

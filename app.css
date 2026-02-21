@@ -587,21 +587,6 @@ select:focus-visible{
   margin-top:2px;
 }
 
-.noteBadge{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  margin-right:6px;
-  font-size:12px;
-  line-height:1;
-  color:#ff9f0a;
-  vertical-align:middle;
-}
-
-.noteLegend{
-  margin:8px 2px 0;
-  font-size:11px;
-}
 
 .metaCol{
   display:flex;
@@ -2048,8 +2033,28 @@ select:focus-visible{
     grid-column:1 / -1;
   }
 
+  .view[data-view="timetable"] .controls{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+
+  .view[data-view="timetable"] .dayRow{
+    grid-template-columns:64px 1fr;
+  }
+
+  .view[data-view="timetable"] .daySelectGroup{
+    display:grid;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+  }
+
+  .view[data-view="timetable"] .timetable{
+    overflow-x:auto;
+  }
+
   .timetableHeader,
-  .tr{ grid-template-columns:110px minmax(200px,1fr) minmax(120px,auto); }
+  .tr{ grid-template-columns:120px minmax(280px,1fr) minmax(160px,220px); }
+
+  .td,
+  .th{ padding:12px 10px; }
 }
 
 @media (max-width:360px){
@@ -2217,6 +2222,16 @@ body.tv-mode .main {
   gap: 16px;
   min-height: 0;
 }
+
+.tvClassHeading{
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:10px 14px;
+  margin-bottom:10px;
+  background:rgba(255,255,255,.04);
+}
+
+.tvClassHeading h3{ margin:0; font-size:1.1rem; }
 
 .tvPanel {
   padding: 18px;

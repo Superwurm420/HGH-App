@@ -71,12 +71,13 @@ export const URLS = {
   tvBellTimes: PATHS.data.bellTimesJson,
   tvSlides: PATHS.assets.tvSlides.indexJson,
   tvSlidesBase: PATHS.assets.tvSlides.dir,
+  calendarSourceIndex: PATHS.content.calendarSourceIndex,
   calendarSources: PATHS.content.calendarSourceFiles,
 };
 
 export const MESSAGE_PHASES = ['beforeSchool', 'beforeLesson', 'duringLesson', 'betweenBlocks', 'lunch', 'afterSchool', 'weekend', 'holiday', 'noLessons'];
 export const CALENDAR_VISIBLE_WINDOW_DAYS = { past: 30, future: 400 };
-export const CALENDAR_WIDGET_MAX_SOURCES = 2;
+export const CALENDAR_WIDGET_MAX_SOURCES = 12;
 
 export const DEFAULT_FUN_MESSAGES = {
   default: {

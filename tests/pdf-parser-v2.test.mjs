@@ -29,4 +29,35 @@ if (!specials.length) {
   throw new Error('Expected special events to be detected in loose-layout fixture');
 }
 
+
+const weekSpecial = parsePdfTimetableV2(load('pdf-raw-week-special.json'));
+if (!weekSpecial.ok) {
+  throw new Error(`Expected week-special fixture to pass, got issues: ${weekSpecial.issues.join('; ')}`);
+}
+
+for (const day of ['mo', 'di', 'mi', 'do', 'fr']) {
+  const entries = weekSpecial.model?.classes?.HT22?.[day] || [];
+  if (entries.length !== 9) {
+    throw new Error(`Expected 9 HT22 entries for ${day} from full-week special, got ${entries.length}`);
+  }
+}
+
+
+const multiDaySpecial = parsePdfTimetableV2(load('pdf-raw-multi-day-special.json'));
+if (!multiDaySpecial.ok) {
+  throw new Error(`Expected multi-day fixture to pass, got issues: ${multiDaySpecial.issues.join('; ')}`);
+}
+
+for (const day of ['mo', 'mi', 'fr']) {
+  const entries = multiDaySpecial.model?.classes?.HT21?.[day] || [];
+  if (entries.length !== 4) {
+    throw new Error(`Expected 4 HT21 entries for ${day} from multi-day special, got ${entries.length}`);
+  }
+}
+
+const tuesdayEntries = multiDaySpecial.model?.classes?.HT21?.di || [];
+if (tuesdayEntries.length !== 0) {
+  throw new Error(`Expected no HT21 entries on di for multi-day special, got ${tuesdayEntries.length}`);
+}
+
 console.log('pdf-parser-v2 fixtures passed');

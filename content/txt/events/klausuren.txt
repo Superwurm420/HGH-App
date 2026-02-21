@@ -1,0 +1,10 @@
+id: klausur-mathe-ht22-2026-03-18
+titel: Mathe-Klausur HT22
+start: 2026-03-18 09:50
+ende: 2026-03-18 11:20
+ort: Raum 5
+sichtbar: ja
+reihenfolge: 1
+---
+Klausur zu Analysis und technischer Mathematik.
+Bitte Taschenrechner und Zeichengeräte mitbringen.
