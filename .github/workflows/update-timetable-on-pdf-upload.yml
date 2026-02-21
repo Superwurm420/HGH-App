@@ -12,6 +12,8 @@ permissions:
 jobs:
   rebuild-timetable:
     runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: --experimental-default-type=module
 
     steps:
       - name: Checkout repository
@@ -23,14 +25,10 @@ jobs:
           node-version: 20
 
       - name: Install parser dependency
-        run: |
-          npm init -y
-          npm install --save-dev pdfjs-dist
+        run: npm install --no-save pdfjs-dist
 
       - name: Rebuild generated timetable
-        run: |
-          node scripts/build-timetable-from-pdf.mjs
-          node scripts/generate-sw-assets.mjs
+        run: node scripts/generate-sw-assets.mjs
 
       - name: Commit generated changes
         run: |
