@@ -17,7 +17,6 @@ python3 -m http.server 8080
 
 ## Häufig bearbeitete Pfade
 
-- Stundenplan: `content/stundenplan.generated.json`
 - Kalender: `content/txt/calendars/files.txt`
 - Ankündigungen: `content/txt/events/files.txt`, `content/txt/events/*.txt`
 - Icons/Logos: `assets/icons/`

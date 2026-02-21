@@ -898,7 +898,6 @@ function tickTv() {
 async function refreshTvData() {
   try {
     await Promise.all([
-      refreshTimetableIfNeeded({ forceNetwork: true, silent: true }),
       loadAnnouncements(),
       loadBellTimes()
     ]);
@@ -984,11 +983,7 @@ function initNav() {
 // --- Renderer -----------------------------------------------------------
 
 function render() {
-  renderTimetable();
-  renderTodayPreview();
-  renderWeek();
   renderAnnouncements();
-  renderTimetablePipelineStatus();
 }
 
 function renderTimetable() {
@@ -2294,14 +2289,7 @@ function cacheEls() {
   state.els = {
     navItems: qsa('.navItem'),
     views: qsa('.view'),
-    classSelect: qs('#classSelect'),
-    dayButtons: qsa('#daySelectGroup .dayBtn'),
-    todayClassSelect: qs('#todayClassSelect'),
-    currentDayInfo: qs('#currentDayInfo'),
-    timetableBody: qs('#timetableBody'),
-    timetablePipelineStatus: qs('#timetablePipelineStatus'),
     todayWeekday: qs('#todayWeekday'),
-    todayPreview: qs('#todayPreview'),
     nowTime: qs('#nowTime'),
     countdownText: qs('#countdownText'),
     funMessage: qs('#funMessage'),
@@ -2313,8 +2301,6 @@ function cacheEls() {
     calNext: qs('#calNext'),
     calToggles: qs('#calToggles'),
     calEvents: qs('#calEvents'),
-    weekClassSelect: qs('#weekClassSelect'),
-    weekGrid: qs('#weekGrid'),
     swStatus: qs('#swStatus'),
     year: qs('#year'),
     darkToggle: qs('#darkToggle'),
@@ -2326,7 +2312,6 @@ function cacheEls() {
     tvTime: qs('#tvTime'),
     tvLogo: qs('#tvLogo'),
     tvOffline: qs('#tvOffline'),
-    tvClasses: qs('#tvClasses'),
     tvAnnouncementsList: qs('#tvAnnouncementsList'),
     tvSlideA: qs('#tvSlideA'),
     tvSlideB: qs('#tvSlideB'),
@@ -2342,8 +2327,6 @@ async function boot() {
     initThemeToggle();
     initTvLogoThemeToggle();
     initNav();
-    initSelects();
-    initWeekSelect();
     initNetworkIndicator();
     await initClassPhotos();
 
@@ -2351,7 +2334,6 @@ async function boot() {
     const announcementsPromise = loadAnnouncements();
 
     await initCalendar();
-    await refreshTimetableIfNeeded();
     await Promise.allSettled([funMessagesPromise, announcementsPromise]);
     renderAnnouncements();
 

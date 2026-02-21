@@ -11,7 +11,7 @@ export const APP = {
     timetableCacheTs: 'hgh_timetable_cache_ts',
     announcementsCache: 'hgh_announcements_cache_v1'
   },
-  routes: ['home', 'timetable', 'week', 'links', 'tv'],
+  routes: ['home', 'links', 'tv'],
   constants: {
     COUNTDOWN_INTERVAL: 30000,
     ANNOUNCEMENTS_INTERVAL: 1000,
