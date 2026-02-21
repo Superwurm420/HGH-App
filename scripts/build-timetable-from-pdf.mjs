@@ -15,7 +15,7 @@ async function loadPdfJs() {
     return mod;
   } catch (error) {
     const reason = error && error.message ? error.message : String(error);
-    throw new Error(`pdfjs-dist fehlt. Bitte einmalig installieren: npm install --save-dev pdfjs-dist (Details: ${reason})`);
+    throw new Error(`pdfjs-dist fehlt. Bitte einmalig installieren: npm install pdfjs-dist (Details: ${reason})`);
   }
 }
 
