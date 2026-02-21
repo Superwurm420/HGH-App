@@ -20,14 +20,29 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Generate service-worker asset manifest
+        run: node scripts/generate-sw-assets.mjs
+
       - name: Syntax check app.js
         run: node --check src/app.js
 
       - name: Syntax check pdf parser
         run: node --check src/parsers/pdf/pdf-timetable-v2.js
 
+      - name: Syntax check sw asset manifest
+        run: node --check src/config/sw-assets.js
+
       - name: Parser fixtures
         run: node tests/pdf-parser-v2.test.mjs
 
       - name: Timetable source selection tests
         run: node tests/timetable-source.test.mjs
+
+      - name: HTTP client tests
+        run: node tests/http-client.test.mjs
+
+      - name: Lifecycle tests
+        run: node tests/lifecycle.test.mjs
+
+      - name: School model tests
+        run: node tests/school-model.test.mjs

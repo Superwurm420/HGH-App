@@ -1,10 +1,10 @@
 import { PATHS } from '../../config/paths.js';
+import { ERROR_CODES } from '../../config/error-codes.js';
+import { requestJson } from '../http/http-client.js';
 import { importTimetableFromPdfRaw } from './pdf-import-service.js';
 
 async function fetchJson(url) {
-  const res = await fetch(url, { cache: 'no-cache' });
-  if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
-  return res.json();
+  return requestJson(url, { cache: 'no-cache', timeoutMs: 7000, retries: 1 });
 }
 
 function readTimestamp(value) {
@@ -17,13 +17,9 @@ function pickPreferredSource({ jsonData, pdfData }) {
   const jsonTs = readTimestamp(jsonData?.meta?.updatedAt) || readTimestamp(jsonData?.meta?.validFrom);
   const pdfTs = readTimestamp(pdfData?.meta?.updatedAt) || readTimestamp(pdfData?.meta?.validFrom);
 
-  // Operativ soll der TV-/Stundenplan immer mit der zuletzt hochgeladenen PDF synchron sein.
-  // Daher wird eine valide PDF-Quelle grundsätzlich bevorzugt.
   if (pdfData) return 'pdf';
-
   if (!Number.isNaN(jsonTs)) return 'json';
   if (!Number.isNaN(pdfTs)) return 'pdf';
-
   return 'json';
 }
 
@@ -45,16 +41,18 @@ export async function loadTimetableSource() {
     debug.notes.push(...parsedPdf.issues);
     debug.notes.push(`PDF-Zeilen: ${parsedPdf.debug.rowCount}, Einträge: ${parsedPdf.debug.interpretedCount}, Sondertermine: ${parsedPdf.debug.specialEventCount}`);
 
-    if (!parsedPdf.ok) debug.notes.push('Fallback auf content/stundenplan.json wegen fehlgeschlagener PDF-Validierung.');
+    if (!parsedPdf.ok) {
+      debug.notes.push(`${ERROR_CODES.TIMETABLE_PDF_INVALID}: Fallback auf content/stundenplan.json wegen fehlgeschlagener PDF-Validierung.`);
+    }
   } catch (error) {
-    debug.notes.push(`PDF-Rohdaten nicht verfügbar: ${error.message}`);
+    debug.notes.push(`PDF-Rohdaten nicht verfügbar (${error.code || ERROR_CODES.NETWORK_FETCH}): ${error.message}`);
   }
 
   let data = null;
   try {
     data = await fetchJson(PATHS.content.timetableJson);
   } catch (error) {
-    debug.notes.push(`JSON-Stundenplan nicht verfügbar: ${error.message}`);
+    debug.notes.push(`JSON-Stundenplan nicht verfügbar (${error.code || ERROR_CODES.NETWORK_FETCH}): ${error.message}`);
   }
 
   if (parsedPdf?.ok && data) {
@@ -77,6 +75,6 @@ export async function loadTimetableSource() {
   if (data) return { data, debug };
 
   debug.source = 'empty';
-  debug.notes.push('Kein Stundenplan gefunden; App zeigt leeren Zustand statt Fehler.');
+  debug.notes.push(`${ERROR_CODES.TIMETABLE_SOURCE_MISSING}: Kein Stundenplan gefunden; App zeigt leeren Zustand statt Fehler.`);
   return { data: emptyTimetableModel({ source: 'empty' }), debug };
 }

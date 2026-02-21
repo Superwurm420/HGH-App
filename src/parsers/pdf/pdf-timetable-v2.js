@@ -1,12 +1,7 @@
-const DEFAULT_CLASSES = ['HT11', 'HT12', 'HT21', 'HT22', 'G11', 'G21', 'GT01'];
-const DAY_MAP = new Map([
-  ['montag', 'mo'], ['mo', 'mo'],
-  ['dienstag', 'di'], ['di', 'di'],
-  ['mittwoch', 'mi'], ['mi', 'mi'],
-  ['donnerstag', 'do'], ['do', 'do'],
-  ['freitag', 'fr'], ['fr', 'fr']
-]);
-const DAY_IDS = ['mo', 'di', 'mi', 'do', 'fr'];
+import { DEFAULT_CLASSES, DAY_TOKEN_MAP, SCHOOL_DAY_IDS } from '../../domain/school-model.js';
+
+const DAY_MAP = new Map(DAY_TOKEN_MAP);
+const DAY_IDS = [...SCHOOL_DAY_IDS];
 const SPECIAL_KEYWORDS = [
   'projekt', 'projekttag', 'blockunterricht', 'block', 'prüfung', 'klausur', 'ausfall',
   'entfall', 'exkursion', 'interne', 'schulung', 'serviceteam', 'praktikum'
