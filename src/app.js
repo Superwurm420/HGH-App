@@ -28,9 +28,12 @@ import {
   DEFAULT_CAL_CONFIGS,
 } from './config/app-constants.js';
 import { createInitialState } from './core/create-initial-state.js';
+import { createLifecycleRegistry } from './core/lifecycle.js';
 import { qs, qsa, safeSetText } from './utils/dom.js';
 import { storageGet, storageSet } from './utils/storage.js';
 import { escapeHtml } from './utils/text.js';
+import { requestJson, requestText } from './services/http/http-client.js';
+import { ERROR_CODES, createErrorInfo } from './config/error-codes.js';
 
 // --- App-Konfiguration --------------------------------------------------
 let calConfigs = [...DEFAULT_CAL_CONFIGS];
@@ -153,6 +156,7 @@ function getHolidayLabel(date) {
 }
 
 const state = createInitialState();
+const lifecycle = createLifecycleRegistry();
 
 // localStorage-Helper (aus js/utils/storage.js importiert)
 
@@ -459,9 +463,7 @@ function extractAnnouncementFilesFromDirectoryListing(html, baseUrl) {
 
 async function discoverAnnouncementFiles() {
   try {
-    const resp = await fetch(ANNOUNCEMENTS_DIR_URL, { cache: 'no-cache' });
-    if (!resp.ok) return [];
-    const html = await resp.text();
+    const html = await requestText(ANNOUNCEMENTS_DIR_URL, { cache: 'no-cache', timeoutMs: 7000 });
     return extractAnnouncementFilesFromDirectoryListing(html, ANNOUNCEMENTS_DIR_URL)
       .sort((a, b) => a.localeCompare(b, 'de', { sensitivity: 'base' }));
   } catch {
@@ -477,11 +479,8 @@ async function loadAnnouncements() {
     let files = [];
 
     try {
-      const indexResp = await fetch(ANNOUNCEMENTS_LIST_URL, { cache: 'no-cache' });
-      if (indexResp.ok) {
-        const indexText = await indexResp.text();
-        files = indexText.split(/\r?\n/).map(line => line.trim()).filter(line => line && !line.startsWith('#'));
-      }
+      const indexText = await requestText(ANNOUNCEMENTS_LIST_URL, { cache: 'no-cache', timeoutMs: 7000 });
+      files = indexText.split(/\r?\n/).map(line => line.trim()).filter(line => line && !line.startsWith('#'));
     } catch {
       // index.json optional
     }
@@ -501,14 +500,8 @@ async function loadAnnouncements() {
       const name = typeof file === 'string' ? file : file?.file;
       if (!name) return null;
 
-      const resp = await fetch(`${ANNOUNCEMENTS_DIR_URL}${name}`, { cache: 'no-cache' });
-      if (!resp.ok) {
-        state.announcementIssues.push(`Datei fehlt oder nicht lesbar: ${name}`);
-        return null;
-      }
-
       try {
-        const content = await resp.text();
+        const content = await requestText(`${ANNOUNCEMENTS_DIR_URL}${name}`, { cache: 'no-cache', timeoutMs: 7000 });
         const parsed = parseAnnouncementByFileType(name, content);
         if (!parsed) {
           state.announcementIssues.push(`Datei ohne gültigen Inhalt: ${name}`);
@@ -519,8 +512,8 @@ async function loadAnnouncements() {
         for (const issue of itemIssues) state.announcementIssues.push(issue);
 
         return parsed;
-      } catch {
-        state.announcementIssues.push(`Formatfehler in Datei: ${name}`);
+      } catch (error) {
+        state.announcementIssues.push(`Datei fehlt/Formatfehler (${error.code || ERROR_CODES.ANNOUNCEMENTS_LOAD_FAILED}): ${name}`);
         return null;
       }
     }));
@@ -713,13 +706,13 @@ function initAutoRefresh() {
     refreshTimetableIfNeeded({ forceNetwork: true, silent: true });
   };
 
-  state.autoRefreshTimer = setInterval(refresh, APP.constants.AUTO_REFRESH_INTERVAL);
+  state.autoRefreshTimer = lifecycle.registerInterval(refresh, APP.constants.AUTO_REFRESH_INTERVAL);
 
   // Visibility + Online als Trigger
-  document.addEventListener('visibilitychange', () => {
+  lifecycle.registerListener(document, 'visibilitychange', () => {
     if (!document.hidden) refresh();
   });
-  window.addEventListener('online', refresh);
+  lifecycle.registerListener(window, 'online', refresh);
 }
 
 // --- TV mode ------------------------------------------------------------
@@ -854,9 +847,7 @@ function renderTvSchedule(now = new Date()) {
 
 async function loadTvAnnouncementsFallback() {
   try {
-    const res = await fetch(TV_ANNOUNCEMENTS_URL, { cache: 'no-cache' });
-    if (!res.ok) return;
-    const data = await res.json();
+    const data = await requestJson(TV_ANNOUNCEMENTS_URL, { cache: 'no-cache', timeoutMs: 5000 });
     if (Array.isArray(data)) state.announcements = normalizeAnnouncements(data);
   } catch {
     // optional fallback file
@@ -865,9 +856,7 @@ async function loadTvAnnouncementsFallback() {
 
 async function loadBellTimes() {
   try {
-    const res = await fetch(TV_BELL_TIMES_URL, { cache: 'no-cache' });
-    if (!res.ok) return;
-    const data = await res.json();
+    const data = await requestJson(TV_BELL_TIMES_URL, { cache: 'no-cache', timeoutMs: 5000 });
     if (Array.isArray(data?.timeslots) && data.timeslots.length) {
       state.timeslots = data.timeslots;
       state.timeslotMap = new Map(data.timeslots.map(s => [String(s.id), s]));
@@ -884,17 +873,15 @@ function setTvOffline(isOffline) {
 
 async function loadTvSlides() {
   try {
-    const res = await fetch(TV_SLIDES_URL, { cache: 'no-cache' });
-    if (!res.ok) throw new Error('slides.json fehlt');
-    const files = await res.json();
+    const files = await requestJson(TV_SLIDES_URL, { cache: 'no-cache', timeoutMs: 5000 });
     if (!Array.isArray(files)) throw new Error('slides.json ungültig');
 
     const checks = await Promise.all(files.map(async (file) => {
       if (typeof file !== 'string' || !file.trim()) return null;
       const src = `${TV_SLIDES_BASE_URL}${file}`;
       try {
-        const imgResp = await fetch(src, { method: 'HEAD', cache: 'no-cache' });
-        return imgResp.ok ? src : null;
+        await requestText(src, { method: 'HEAD', cache: 'no-cache', timeoutMs: 3000 });
+        return src;
       } catch {
         return null;
       }
@@ -976,9 +963,9 @@ async function startTvMode() {
 
   renderTvSlide();
 
-  state.tv.clockTimer = setInterval(() => updateTvDateTime(new Date()), 1000);
-  state.tv.refreshTimer = setInterval(refreshTvData, APP.constants.TV_REFRESH_INTERVAL);
-  if (state.tv.slides.length) state.tv.slideTimer = setInterval(renderTvSlide, APP.constants.TV_SLIDE_INTERVAL);
+  state.tv.clockTimer = lifecycle.registerInterval(() => updateTvDateTime(new Date()), 1000);
+  state.tv.refreshTimer = lifecycle.registerInterval(refreshTvData, APP.constants.TV_REFRESH_INTERVAL);
+  if (state.tv.slides.length) state.tv.slideTimer = lifecycle.registerInterval(renderTvSlide, APP.constants.TV_SLIDE_INTERVAL);
 }
 
 function stopTvMode() {
@@ -1633,10 +1620,10 @@ function initCountdown() {
   };
   tick();
   if (state.countdownTimer) clearInterval(state.countdownTimer);
-  state.countdownTimer = setInterval(tick, APP.constants.COUNTDOWN_INTERVAL);
+  state.countdownTimer = lifecycle.registerInterval(tick, APP.constants.COUNTDOWN_INTERVAL);
 
   if (state.announcementsTimer) clearInterval(state.announcementsTimer);
-  state.announcementsTimer = setInterval(() => updateAnnouncementCountdowns(new Date()), APP.constants.ANNOUNCEMENTS_INTERVAL);
+  state.announcementsTimer = lifecycle.registerInterval(() => updateAnnouncementCountdowns(new Date()), APP.constants.ANNOUNCEMENTS_INTERVAL);
 }
 
 // --- Network indicator --------------------------------------------------
@@ -1651,19 +1638,19 @@ function updateNetworkIndicator() {
 
 function initNetworkIndicator() {
   updateNetworkIndicator();
-  window.addEventListener('online', updateNetworkIndicator);
-  window.addEventListener('offline', updateNetworkIndicator);
+  lifecycle.registerListener(window, 'online', updateNetworkIndicator);
+  lifecycle.registerListener(window, 'offline', updateNetworkIndicator);
 }
 
 function initPdfLinkGuards() {
   const disabledLinkSelector = 'a[data-pdf-link][aria-disabled="true"]';
 
-  document.addEventListener('click', (e) => {
+  lifecycle.registerListener(document, 'click', (e) => {
     const disabledPdfLink = e.target.closest?.(disabledLinkSelector);
     if (disabledPdfLink) e.preventDefault();
   });
 
-  document.addEventListener('keydown', (e) => {
+  lifecycle.registerListener(document, 'keydown', (e) => {
     if (e.key !== 'Enter' && e.key !== ' ') return;
     const disabledPdfLink = e.target.closest?.(disabledLinkSelector);
     if (!disabledPdfLink) return;
@@ -1845,20 +1832,15 @@ async function loadCalendarConfigs() {
     let lines = [];
 
     try {
-      const idxRes = await fetch(`${CALENDAR_SOURCE_INDEX_URL}?_=${Date.now()}`, { cache: 'no-store' });
-      if (idxRes.ok) {
-        const idxText = await idxRes.text();
-        lines = idxText.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
-      }
+      const idxText = await requestText(`${CALENDAR_SOURCE_INDEX_URL}?_=${Date.now()}`, { cache: 'no-store', timeoutMs: 7000 });
+      lines = idxText.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
     } catch {
       // optional index file
     }
 
     if (!lines.length) {
       const sourceTexts = await Promise.all(CALENDAR_SOURCE_URLS.map(async (url) => {
-        const res = await fetch(`${url}?_=${Date.now()}`, { cache: 'no-store' });
-        if (!res.ok) return '';
-        return (await res.text()).trim();
+        return (await requestText(`${url}?_=${Date.now()}`, { cache: 'no-store', timeoutMs: 7000 })).trim();
       }));
       lines = sourceTexts;
     }
@@ -1877,11 +1859,7 @@ async function loadCalendarConfigs() {
 }
 
 async function fetchCalendar(cfg) {
-  const tryFetch = async url => {
-    const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return res.text();
-  };
+  const tryFetch = async url => requestText(url, { cache: 'no-store', timeoutMs: 7000 });
 
   const withCacheBypass = (url) => `${url}${url.includes('?') ? '&' : '?'}_=${Date.now()}`;
 
@@ -2305,7 +2283,8 @@ async function initServiceWorker() {
       });
     });
   } catch (e) {
-    console.warn('SW Fehler:', e);
+    const info = createErrorInfo(ERROR_CODES.SW_REGISTER_FAILED, e?.message || 'unknown');
+    console.warn('SW Fehler:', info);
     safeSetText(status, 'Service Worker konnte nicht geladen werden.');
   }
 }
@@ -2314,9 +2293,7 @@ async function initServiceWorker() {
 
 async function loadInstagramPreviews() {
   try {
-    const resp = await fetch('./assets/data/instagram.json');
-    if (!resp.ok) return;
-    const data = await resp.json();
+    const data = await requestJson('./assets/data/instagram.json', { cache: 'no-cache', timeoutMs: 5000 });
     if (!data?.profiles) return;
 
     for (const [id, profile] of Object.entries(data.profiles)) {
@@ -2388,6 +2365,7 @@ function cacheEls() {
 
 async function boot() {
   try {
+    lifecycle.disposeAll();
     cacheEls();
     initTheme();
     initThemeToggle();
@@ -2418,4 +2396,4 @@ async function boot() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', boot);
+lifecycle.registerListener(document, 'DOMContentLoaded', boot);

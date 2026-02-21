@@ -3,34 +3,9 @@
 const VERSION = 'v1.7.1';
 const CACHE = `hgh-school-pwa-${VERSION}`;
 
-const ASSETS = [
-  './',
-  './index.html',
-      './content/txt/events/files.txt',
-  './app.css',
-  './src/app.js',
-  './src/modules/timetable-parser.js',
-  './src/config/paths.js',
-  './src/config/app-constants.js',
-  './src/core/create-initial-state.js',
-  './src/services/timetable/timetable-source-service.js',
-  './src/services/timetable/pdf-import-service.js',
-  './src/data/timetable-source.js',
-  './src/parsers/pdf/pdf-timetable-v2.js',
-  './manifest.json',
-  './content/stundenplan.json',
-  './content/stundenplan.pdf.raw.json',
-  './content/kalender.ics',
-  './content/README_admin.txt',
-  './assets/icons/favicon-school.svg',
-  './assets/icons/apple-touch-icon-school.svg',
-  './assets/icons/school-logo-header.svg',
-  './assets/icons/school-logo-tv.svg',
-  './assets/icons/app-icon-192.svg',
-  './assets/icons/app-icon-512.svg',
-  './assets/icons/app-icon-512-maskable.svg',
-  './assets/icons/class-photo-placeholder.svg',
-];
+importScripts('./src/config/sw-assets.js');
+
+const ASSETS = Array.isArray(self.__HGH_SW_ASSETS) ? self.__HGH_SW_ASSETS : ['./', './index.html', './app.css'];
 
 const isDev = self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1';
 const log = isDev ? (msg, data) => console.log(`[SW ${VERSION}] ${msg}`, data || '') : () => {};
