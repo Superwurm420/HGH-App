@@ -32,8 +32,14 @@ python3 -m http.server 8080
 ## Qualitätschecks
 
 ```bash
+npm install
 node --check src/app.js
 node --check src/parsers/pdf/pdf-timetable-v2.js
-node tests/pdf-parser-v2.test.mjs
-node tests/timetable-source.test.mjs
+npm test
+```
+
+## Stundenplan aus PDF neu erzeugen
+
+```bash
+npm run generate:timetable
 ```

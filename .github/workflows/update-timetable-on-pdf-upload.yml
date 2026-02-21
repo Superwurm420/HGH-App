@@ -1,4 +1,4 @@
-name: Rebuild generated offline assets
+name: Update timetable and generated offline assets
 
 on:
   push:
@@ -44,11 +44,14 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install parser dependency
-        run: npm install --no-save pdfjs-dist
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Rebuild generated timetable + SW assets
-        run: node scripts/generate-sw-assets.mjs
+      - name: Rebuild generated timetable
+        run: npm run generate:timetable
+
+      - name: Rebuild SW assets
+        run: npm run generate:sw-assets
 
       - name: Commit generated changes
         env:
