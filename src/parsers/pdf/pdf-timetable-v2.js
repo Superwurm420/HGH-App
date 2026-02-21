@@ -26,17 +26,76 @@ function isTeacherToken(token) {
 }
 
 function normalizeSlotToken(token) {
-  const value = clean(token).replace(',', '-');
-  if (/^\d{1,2}$/.test(value)) return [value];
-  const match = value.match(/^(\d{1,2})\s*[-/]\s*(\d{1,2})$/);
-  if (!match) return [];
+  const value = clean(token);
+  if (!value) return [];
 
-  const start = Number(match[1]);
-  const end = Number(match[2]);
-  if (!Number.isFinite(start) || !Number.isFinite(end) || end < start || end - start > 6) return [];
+  const normalized = value
+    .toLowerCase()
+    .replace(/bis/g, '-')
+    .replace(/und/g, ',')
+    .replace(/\s+/g, '');
 
-  return Array.from({ length: (end - start) + 1 }, (_, idx) => String(start + idx));
+  const chunks = normalized.split(/[,+]/).filter(Boolean);
+  if (!chunks.length) return [];
+
+  const slots = [];
+  for (const chunk of chunks) {
+    if (/^\d{1,2}$/.test(chunk)) {
+      slots.push(chunk);
+      continue;
+    }
+
+    const match = chunk.match(/^(\d{1,2})[-/](\d{1,2})$/);
+    if (!match) continue;
+
+    const start = Number(match[1]);
+    const end = Number(match[2]);
+    if (!Number.isFinite(start) || !Number.isFinite(end) || end < start || end - start > 20) continue;
+
+    for (let current = start; current <= end; current += 1) slots.push(String(current));
+  }
+
+  return [...new Set(slots)];
 }
+
+function normalizeDayToken(dayRaw) {
+  const dayValue = clean(dayRaw).toLowerCase();
+  if (!dayValue) return [];
+
+  const normalized = dayValue
+    .replace(/\s+und\s+/g, ',')
+    .replace(/\s*\+\s*/g, ',')
+    .replace(/\s+/g, '');
+
+  const allWeekTokens = new Set(['woche', 'ganzewoche', 'alle', 'all', 'mo-fr', 'montag-freitag', 'montagbisfreitag']);
+  if (allWeekTokens.has(normalized)) return [...DAY_IDS];
+
+  const parts = normalized.split(/[,;]/).filter(Boolean);
+  const out = [];
+
+  for (const part of parts.length ? parts : [normalized]) {
+    if (DAY_MAP.has(part)) {
+      out.push(DAY_MAP.get(part));
+      continue;
+    }
+
+    const rangeMatch = part.match(/^([a-zäöü]{2,12})-([a-zäöü]{2,12})$/);
+    if (!rangeMatch) continue;
+
+    const from = DAY_MAP.get(rangeMatch[1]);
+    const to = DAY_MAP.get(rangeMatch[2]);
+    if (!from || !to) continue;
+
+    const startIdx = DAY_IDS.indexOf(from);
+    const endIdx = DAY_IDS.indexOf(to);
+    if (startIdx < 0 || endIdx < 0 || endIdx < startIdx) continue;
+
+    for (let i = startIdx; i <= endIdx; i += 1) out.push(DAY_IDS[i]);
+  }
+
+  return [...new Set(out)];
+}
+
 
 function parseTokenLine(text) {
   const parts = text.split(';').map((part) => part.trim()).filter(Boolean);
@@ -56,31 +115,35 @@ function detectSpecialTerm(subject, note) {
 
 function parseTokenPayload(payload, rowText = '') {
   const classId = clean(payload.class || payload.klasse).toUpperCase();
-  const dayRaw = clean(payload.day || payload.tag).toLowerCase();
+  const dayIds = normalizeDayToken(payload.day || payload.tag);
   const slotValues = normalizeSlotToken(clean(payload.slot || payload.std || payload.stunde));
   const subject = clean(payload.subject || payload.fach);
 
-  if (!classId || !dayRaw || !slotValues.length || !subject) return [];
-
-  const dayId = DAY_MAP.get(dayRaw);
-  if (!dayId) return [];
+  if (!classId || !dayIds.length || !slotValues.length || !subject) return [];
 
   const teacher = clean(payload.teacher || payload.lehrer);
   const room = clean(payload.room || payload.raum);
   const note = clean(payload.note || payload.notiz);
   const isSpecial = detectSpecialTerm(subject, note) || (!teacher && !room && subject.length > 20);
 
-  return slotValues.map((slotId) => ({
-    classId,
-    dayId,
-    slotId,
-    subject,
-    teacher,
-    room,
-    note,
-    isSpecial,
-    sourceText: rowText
-  }));
+  const rows = [];
+  for (const dayId of dayIds) {
+    for (const slotId of slotValues) {
+      rows.push({
+        classId,
+        dayId,
+        slotId,
+        subject,
+        teacher,
+        room,
+        note,
+        isSpecial,
+        sourceText: rowText
+      });
+    }
+  }
+
+  return rows;
 }
 
 function parseLooseLine(text) {

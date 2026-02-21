@@ -43,6 +43,7 @@ const TV_ANNOUNCEMENTS_URL = URLS.tvAnnouncements;
 const TV_BELL_TIMES_URL = URLS.tvBellTimes;
 const TV_SLIDES_URL = URLS.tvSlides;
 const TV_SLIDES_BASE_URL = URLS.tvSlidesBase;
+const CALENDAR_SOURCE_INDEX_URL = URLS.calendarSourceIndex;
 const CALENDAR_SOURCE_URLS = URLS.calendarSources;
 
 
@@ -63,6 +64,19 @@ function getISOWeek(date = new Date()) {
 }
 
 function getTodayId() { return DAY_NUM_MAP[new Date().getDay()] || 'mo'; }
+function getNextSchoolDayInfo(now = new Date()) {
+  const date = new Date(now);
+  date.setHours(0, 0, 0, 0);
+  const day = date.getDay();
+
+  if (day === 0) {
+    date.setDate(date.getDate() + 1);
+  } else if (day === 6) {
+    date.setDate(date.getDate() + 2);
+  }
+
+  return { date, dayId: DAY_NUM_MAP[date.getDay()] || 'mo' };
+}
 function isWeekday() { const d = new Date().getDay(); return d >= 1 && d <= 5; }
 function getDateByDayOffset(base, offsetDays) { const d = new Date(base); d.setDate(d.getDate() + offsetDays); return d; }
 function getEasterSunday(year) {
@@ -525,19 +539,8 @@ function setTimetableIssues(issues = [], debugInfo = null) {
 function renderTimetablePipelineStatus() {
   const el = state.els.timetablePipelineStatus;
   if (!el) return;
-
-  if (!state.timetableIssues.length) {
-    el.hidden = true;
-    el.innerHTML = '';
-    return;
-  }
-
-  el.hidden = false;
-  el.innerHTML = `
-    <strong>Stundenplan-Hinweis:</strong>
-    <ul>${state.timetableIssues.map((msg) => `<li>${escapeHtml(msg)}</li>`).join('')}</ul>
-    <p class="small muted">Tipp: Datei in <code>content/stundenplan.json</code> prüfen oder neu ersetzen.</p>
-  `;
+  el.hidden = true;
+  el.innerHTML = '';
 }
 
 function applyTimetableData(rawData) {
@@ -557,7 +560,11 @@ function applyTimetableData(rawData) {
   state.hasTimetableData = hasTimetableEntries(classes);
 
   // PDF-Links aktualisieren
-  state.currentPdfHref = data?.meta?.source ? (/^https?:\/\//i.test(data.meta.source) ? data.meta.source : `./content/timetables/${data.meta.source}`) : null;
+  state.currentPdfHref = data?.meta?.source
+    ? (/^https?:\/\//i.test(data.meta.source)
+      ? data.meta.source
+      : (String(data.meta.source).startsWith('content/') ? `./${data.meta.source}` : `./content/timetables/${data.meta.source}`))
+    : './content/timetables/current.pdf';
   for (const link of qsa('a[data-pdf-link]')) {
     if (state.currentPdfHref) {
       link.href = state.currentPdfHref;
@@ -670,14 +677,17 @@ function initAutoRefresh() {
 // --- TV mode ------------------------------------------------------------
 
 function getTodaySchedule(now = new Date()) {
-  const dayId = DAY_NUM_MAP[now.getDay()];
-  if (!dayId) return [];
+  const { date: targetDate, dayId } = getNextSchoolDayInfo(now);
 
   const classes = getAvailableClasses();
-  return classes.map((classId) => ({
-    classId,
-    rows: (state.timetable?.[classId]?.[dayId] || []).filter(r => r && r.slotId && String(r.slotId) !== '7')
-  }));
+  return {
+    dayId,
+    targetDate,
+    schedules: classes.map((classId) => ({
+      classId,
+      rows: (state.timetable?.[classId]?.[dayId] || []).filter(r => r && r.slotId && String(r.slotId) !== '7')
+    }))
+  };
 }
 
 function getCurrentAndNextLesson(rows, now = new Date()) {
@@ -747,12 +757,15 @@ function renderTvSchedule(now = new Date()) {
   if (!container) return;
 
   const today = getTodaySchedule(now);
-  if (!today.length) {
-    container.innerHTML = '<article class="tvClassRow"><h3>Keine Daten</h3></article>';
+  const dayLabel = WEEKDAY_LABELS[today.dayId] || 'Montag';
+  const dateLabel = today.targetDate.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
+
+  if (!today.schedules.length) {
+    container.innerHTML = `<article class="tvClassRow"><h3>${escapeHtml(dayLabel)}, ${escapeHtml(dateLabel)}</h3><p>Keine Daten</p></article>`;
     return;
   }
 
-  container.innerHTML = today.map(({ classId, rows }) => {
+  container.innerHTML = `<article class="tvClassHeading"><h3>${escapeHtml(dayLabel)}, ${escapeHtml(dateLabel)}</h3></article>` + today.schedules.map(({ classId, rows }) => {
     const lesson = getCurrentAndNextLesson(rows, now);
     let currentLabel = 'Keine Daten';
     let nextLabel = 'Keine Daten';
@@ -1029,21 +1042,19 @@ function renderTimetable() {
       skip.add(secondId);
       const timeFrom = s.time.split('–')[0];
       const timeTo = secondSlot.time.split('–')[1];
-      const noteBadge = r?.note ? '<span class="noteBadge" aria-label="Hinweis vorhanden" title="Hinweis vorhanden">❗</span>' : '';
       return `
         <div class="tr${noteClass}${currentClass}" role="row" aria-label="Stunde ${escapeHtml(s.id)}+${escapeHtml(secondId)}">
           <div class="td tdTime"><span class="timeFrom">${escapeHtml(timeFrom)}</span><span class="small muted">${escapeHtml(timeTo)}</span></div>
-          <div class="td">${noteBadge}${formatSubject(r?.subject)}</div>
+          <div class="td">${formatSubject(r?.subject)}</div>
           ${metaCell(r?.teacher, r?.room)}
         </div>`;
     }
 
     const [tFrom, tTo] = s.time.split('–');
-    const noteBadge = r?.note ? '<span class="noteBadge" aria-label="Hinweis vorhanden" title="Hinweis vorhanden">❗</span>' : '';
     return `
       <div class="tr${noteClass}${currentClass}" role="row" aria-label="Stunde ${escapeHtml(s.id)}: ${escapeHtml(s.time)}">
         <div class="td tdTime"><span class="timeFrom">${escapeHtml(tFrom)}</span>${tTo ? `<span class="small muted">${escapeHtml(tTo)}</span>` : ''}</div>
-        <div class="td">${noteBadge}${formatSubject(r?.subject)}</div>
+        <div class="td">${formatSubject(r?.subject)}</div>
         ${metaCell(r?.teacher, r?.room)}
       </div>`;
   }).join('');
@@ -1093,7 +1104,6 @@ function renderTodayPreview() {
     const secondId = DOUBLE_PAIRS[r.slotId];
     const slotLabel = secondId ? `${r.slotId}/${secondId}` : r.slotId;
     const noteClass = r.note ? ' note' : '';
-    const noteBadge = r.note ? '<span class="noteBadge" aria-label="Hinweis vorhanden" title="Hinweis vorhanden">❗</span>' : '';
     const noteHtml = r.note ? `<div class="sub">${escapeHtml(r.note)}</div>` : '';
 
     const firstSlot = state.timeslotMap.get(r.slotId);
@@ -1113,7 +1123,7 @@ function renderTodayPreview() {
         ${timeTo ? `<div class="small muted">${escapeHtml(timeTo)}</div>` : ''}
       </div>
       <div class="subjectCol">
-        <div>${noteBadge}${formatSubject(subject)}</div>
+        <div>${formatSubject(subject)}</div>
         ${noteHtml}
       </div>
       <div class="metaCol">
@@ -1727,20 +1737,14 @@ function normalizeGoogleCalendarUrl(url) {
   return url;
 }
 
-async function loadCalendarConfigs() {
-  try {
-    const sourceTexts = await Promise.all(CALENDAR_SOURCE_URLS.map(async (url) => {
-      const res = await fetch(`${url}?_=${Date.now()}`, { cache: 'no-store' });
-      if (!res.ok) return '';
-      return (await res.text()).trim();
-    }));
-    const lines = sourceTexts
-      .map(text => text.trim())
-      .filter(line => line && !line.startsWith('#'))
-      .map((line, idx) => (line.includes('|') ? line : `Kalender ${idx + 1}|${line}`));
+function parseCalendarConfigLines(lines = []) {
+  const palette = ['#58b4ff', '#ffc857', '#a67dff', '#4dd599', '#ff7aa2', '#6bd5b1', '#ffd166', '#7aa6ff'];
 
-    const palette = ['#58b4ff', '#ffc857', '#a67dff', '#4dd599'];
-    const parsed = lines.map((line, idx) => {
+  return lines
+    .map(line => String(line || '').trim())
+    .filter(line => line && !line.startsWith('#'))
+    .map((line, idx) => (line.includes('|') ? line : `Kalender ${idx + 1}|${line}`))
+    .map((line, idx) => {
       const [labelRaw, urlRaw] = line.split('|').map(part => part?.trim());
       if (!labelRaw || !urlRaw) return null;
       return {
@@ -1749,9 +1753,41 @@ async function loadCalendarConfigs() {
         icsUrl: normalizeGoogleCalendarUrl(urlRaw),
         color: palette[idx % palette.length],
       };
-    }).filter(Boolean).slice(0, CALENDAR_WIDGET_MAX_SOURCES);
+    })
+    .filter(Boolean)
+    .slice(0, CALENDAR_WIDGET_MAX_SOURCES);
+}
 
-    if (parsed.length) calConfigs = parsed;
+async function loadCalendarConfigs() {
+  try {
+    let lines = [];
+
+    try {
+      const idxRes = await fetch(`${CALENDAR_SOURCE_INDEX_URL}?_=${Date.now()}`, { cache: 'no-store' });
+      if (idxRes.ok) {
+        const idxText = await idxRes.text();
+        lines = idxText.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+      }
+    } catch {
+      // optional index file
+    }
+
+    if (!lines.length) {
+      const sourceTexts = await Promise.all(CALENDAR_SOURCE_URLS.map(async (url) => {
+        const res = await fetch(`${url}?_=${Date.now()}`, { cache: 'no-store' });
+        if (!res.ok) return '';
+        return (await res.text()).trim();
+      }));
+      lines = sourceTexts;
+    }
+
+    const parsed = parseCalendarConfigLines(lines);
+    if (parsed.length) {
+      calConfigs = parsed;
+      return;
+    }
+
+    calConfigs = [...DEFAULT_CAL_CONFIGS];
   } catch (e) {
     console.warn('[Cal] Konfiguration konnte nicht geladen werden, nutze Standardwerte.', e);
     calConfigs = [...DEFAULT_CAL_CONFIGS];
@@ -1765,20 +1801,48 @@ async function fetchCalendar(cfg) {
     return res.text();
   };
 
+  const withCacheBypass = (url) => `${url}${url.includes('?') ? '&' : '?'}_=${Date.now()}`;
+
   try {
-    const text = await tryFetch(`${cfg.icsUrl}${cfg.icsUrl.includes('?') ? '&' : '?'}_=${Date.now()}`);
+    let text;
+    const url = withCacheBypass(cfg.icsUrl);
+
+    try {
+      text = await tryFetch(url);
+    } catch (directError) {
+      const isRemote = /^https?:\/\//i.test(cfg.icsUrl);
+      if (!isRemote) throw directError;
+
+      const proxyCandidates = [
+        `https://r.jina.ai/http://${cfg.icsUrl.replace(/^https?:\/\//i, '')}`,
+        `https://r.jina.ai/${cfg.icsUrl}`,
+      ];
+
+      let proxyOk = false;
+      for (const proxyUrl of proxyCandidates) {
+        try {
+          text = await tryFetch(withCacheBypass(proxyUrl));
+          proxyOk = true;
+          break;
+        } catch {
+          // try next proxy
+        }
+      }
+
+      if (!proxyOk) throw directError;
+    }
+
     const parsed = parseICS(text);
     state.cal.events[cfg.id] = parsed;
     if (!Array.isArray(parsed) || !parsed.length) {
-      state.cal.issues.push(`Kalender ohne Einträge: ${cfg.label}. Prüfe content/txt/calendars/*.txt.`);
+      state.cal.issues.push(`Kalender ohne Einträge: ${cfg.label}. Prüfe content/txt/calendars/files.txt.`);
     }
   } catch (e) {
     console.warn(`[Cal] ${cfg.id}:`, e);
-    state.cal.issues.push(`Kalender-Datei fehlt/defekt: ${cfg.label}. Prüfe content/txt/calendars/*.txt.`);
+    state.cal.issues.push(`Kalender-Datei fehlt/defekt: ${cfg.label}. Prüfe content/txt/calendars/files.txt.`);
     if (!state.cal.events[cfg.id]) state.cal.events[cfg.id] = [];
   }
 }
-
 async function loadCalendars() {
   state.cal.events = {};
   state.cal.issues = [];
@@ -2096,10 +2160,9 @@ function renderWeek() {
       const noteClass = r.note ? ' note' : '';
       const currentClass = d.id === todayId && currentPairStart === pair.first ? ' current' : '';
 
-      const noteBadge = r.note ? '<span class="noteBadge" aria-label="Hinweis vorhanden" title="Hinweis vorhanden">❗</span>' : '';
       return `
         <div class="weekCell${noteClass}${currentClass}" role="cell">
-          <div class="weekSubject">${noteBadge}${formatSubject(r.subject)}</div>
+          <div class="weekSubject">${formatSubject(r.subject)}</div>
           <div class="weekMetaRow">
             <div class="weekMeta weekMetaTeacher">${teacher}</div>
             <div class="weekMeta weekMetaRoom">${room}</div>

@@ -1,0 +1,10 @@
+id: projektwoche-alle-2026-03
+titel: Projektwoche Werkstatt
+start: 2026-03-23
+ende: 2026-03-27
+ort: Werkstätten
+sichtbar: ja
+reihenfolge: 2
+---
+In dieser Woche laufen klassenübergreifende Projekte.
+Details und Gruppeneinteilung hängen am schwarzen Brett aus.

@@ -1,0 +1,9 @@
+id: infoabend-ausbildung-2026-04
+titel: Infoabend Ausbildung
+start: 2026-04-14 18:00
+ende: 2026-04-14 20:00
+ort: Aula
+sichtbar: ja
+reihenfolge: 3
+---
+Vorstellung der Ausbildungsprojekte und Austausch mit Betrieben.

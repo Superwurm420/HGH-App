@@ -1,0 +1,33 @@
+name: QA Checks
+
+on:
+  pull_request:
+  push:
+    branches: ["main", "work"]
+
+permissions:
+  contents: read
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Syntax check app.js
+        run: node --check src/app.js
+
+      - name: Syntax check pdf parser
+        run: node --check src/parsers/pdf/pdf-timetable-v2.js
+
+      - name: Parser fixtures
+        run: node tests/pdf-parser-v2.test.mjs
+
+      - name: Timetable source selection tests
+        run: node tests/timetable-source.test.mjs
