@@ -1,7 +1,7 @@
 {
   "meta": {
     "source": "Stundenplan_kw_45_Hj1_2025_26.pdf",
-    "updatedAt": "2026-02-21T19:38:03.609Z",
+    "updatedAt": "2026-02-21T20:11:15.245Z",
     "extractedWith": "pdfjs-dist",
     "itemCount": 533,
     "validFrom": "2025-11-03",
@@ -10,99 +10,18 @@
     "generatedFrom": "pdf-upload"
   },
   "classes": {
-    "G11": {
+    "HT12": {
       "mo": [
         {
           "slotId": "1",
-          "subject": "Fertigungstechnik W2",
-          "teacher": "",
-          "room": "",
-          "note": ""
-        },
-        {
-          "slotId": "3",
-          "subject": "Entwurf/Konstruktion WEN",
-          "teacher": "",
-          "room": "",
-          "note": ""
-        },
-        {
-          "slotId": "5",
-          "subject": "Entwurf/Konstruktion WEN",
-          "teacher": "",
-          "room": "",
-          "note": ""
-        },
-        {
-          "slotId": "6",
-          "subject": "WEZ/BER",
-          "teacher": "",
-          "room": "",
-          "note": ""
-        },
-        {
-          "slotId": "7",
-          "subject": "Deutsch",
-          "teacher": "",
-          "room": "",
-          "note": ""
-        }
-      ],
-      "di": [
-        {
-          "slotId": "1",
-          "subject": "Englisch",
-          "teacher": "",
-          "room": "",
-          "note": ""
-        },
-        {
-          "slotId": "5",
-          "subject": "Freihandzeichnen",
-          "teacher": "",
-          "room": "",
-          "note": ""
-        }
-      ],
-      "mi": [
-        {
-          "slotId": "1",
-          "subject": "KuSti",
-          "teacher": "",
-          "room": "",
-          "note": ""
-        },
-        {
-          "slotId": "3",
-          "subject": "KüGest",
-          "teacher": "",
-          "room": "",
-          "note": ""
-        }
-      ],
-      "do": [
-        {
-          "slotId": "1",
-          "subject": "Politik",
+          "subject": "Fertigungstechnik W1/W2",
           "teacher": "",
           "room": "",
           "note": ""
         },
         {
           "slotId": "2",
-          "subject": "STI/WEZ",
-          "teacher": "",
-          "room": "",
-          "note": ""
-        }
-      ],
-      "fr": []
-    },
-    "HT12": {
-      "mo": [
-        {
-          "slotId": "1",
-          "subject": "Fertigungstechnik W1/W2",
+          "subject": "GRO",
           "teacher": "",
           "room": "",
           "note": ""
@@ -115,6 +34,13 @@
           "note": ""
         },
         {
+          "slotId": "4",
+          "subject": "STI",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
           "slotId": "5",
           "subject": "Modul2/Freihandzeichnen",
           "teacher": "",
@@ -122,8 +48,22 @@
           "note": ""
         },
         {
+          "slotId": "6",
+          "subject": "GRO",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
           "slotId": "7",
           "subject": "Deutsch",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "8",
+          "subject": "MEL",
           "teacher": "",
           "room": "",
           "note": ""
@@ -138,6 +78,13 @@
           "note": ""
         },
         {
+          "slotId": "2",
+          "subject": "WEN",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
           "slotId": "3",
           "subject": "Modul2/EDV",
           "teacher": "",
@@ -145,8 +92,22 @@
           "note": ""
         },
         {
+          "slotId": "4",
+          "subject": "HOFF",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
           "slotId": "5",
           "subject": "Modul2/Statik",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "6",
+          "subject": "BÜ",
           "teacher": "",
           "room": "",
           "note": ""
@@ -161,6 +122,13 @@
           "note": ""
         },
         {
+          "slotId": "2",
+          "subject": "MEL",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
           "slotId": "3",
           "subject": "Modul1/Werkstoffkunde",
           "teacher": "",
@@ -168,8 +136,22 @@
           "note": ""
         },
         {
+          "slotId": "4",
+          "subject": "TAM",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
           "slotId": "5",
           "subject": "Modul1/Werkstoffkunde",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "6",
+          "subject": "HOFF",
           "teacher": "",
           "room": "",
           "note": ""
@@ -198,127 +180,45 @@
           "note": ""
         },
         {
+          "slotId": "6",
+          "subject": "TAM",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
           "slotId": "7",
           "subject": "Modul1/CNC",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "8",
+          "subject": "HOFF",
           "teacher": "",
           "room": "",
           "note": ""
         }
       ],
       "fr": [
+        {
+          "slotId": "4",
+          "subject": "HOFF",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
         {
           "slotId": "5",
           "subject": "Modul2/Fertigungstechnik",
           "teacher": "",
           "room": "",
           "note": ""
-        }
-      ]
-    },
-    "HT21": {
-      "mo": [
-        {
-          "slotId": "1",
-          "subject": "Modul4/Vorrichtungsbau",
-          "teacher": "",
-          "room": "",
-          "note": ""
         },
         {
-          "slotId": "3",
-          "subject": "Deutsch",
-          "teacher": "",
-          "room": "",
-          "note": ""
-        },
-        {
-          "slotId": "5",
-          "subject": "Mathe",
-          "teacher": "",
-          "room": "",
-          "note": ""
-        },
-        {
-          "slotId": "7",
-          "subject": "Buchführung",
-          "teacher": "",
-          "room": "",
-          "note": ""
-        }
-      ],
-      "di": [
-        {
-          "slotId": "1",
-          "subject": "Modul3/CNC",
-          "teacher": "",
-          "room": "",
-          "note": ""
-        },
-        {
-          "slotId": "3",
-          "subject": "Modul4/EDV/Excel",
-          "teacher": "",
-          "room": "",
-          "note": ""
-        },
-        {
-          "slotId": "5",
-          "subject": "Modul5/Arbeitsvorbereitung",
-          "teacher": "",
-          "room": "",
-          "note": ""
-        }
-      ],
-      "mi": [
-        {
-          "slotId": "1",
-          "subject": "Modul3/Möbelkonstruktion",
-          "teacher": "",
-          "room": "",
-          "note": ""
-        },
-        {
-          "slotId": "3",
-          "subject": "Modul4/Oberflächentechnik",
-          "teacher": "",
-          "room": "",
-          "note": ""
-        },
-        {
-          "slotId": "5",
-          "subject": "Modul4/AP",
-          "teacher": "",
-          "room": "",
-          "note": ""
-        },
-        {
-          "slotId": "7",
-          "subject": "Modul5/Arbeitsvorbereitung",
-          "teacher": "",
-          "room": "",
-          "note": ""
-        }
-      ],
-      "do": [
-        {
-          "slotId": "3",
-          "subject": "Modul8/Rechnungswesen",
-          "teacher": "",
-          "room": "",
-          "note": ""
-        },
-        {
-          "slotId": "7",
-          "subject": "Geschäftskunde",
-          "teacher": "",
-          "room": "",
-          "note": ""
-        }
-      ],
-      "fr": [
-        {
-          "slotId": "5",
-          "subject": "Modul8/Rechnungswesen",
+          "slotId": "6",
+          "subject": "STE",
           "teacher": "",
           "room": "",
           "note": ""
@@ -335,8 +235,22 @@
           "note": ""
         },
         {
+          "slotId": "2",
+          "subject": "BÜ",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
           "slotId": "3",
           "subject": "Mathe",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "4",
+          "subject": "TAM",
           "teacher": "",
           "room": "",
           "note": ""
@@ -349,8 +263,22 @@
           "note": ""
         },
         {
+          "slotId": "6",
+          "subject": "TAM",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
           "slotId": "7",
           "subject": "Buchführung",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "8",
+          "subject": "TAM",
           "teacher": "",
           "room": "",
           "note": ""
@@ -365,6 +293,13 @@
           "note": ""
         },
         {
+          "slotId": "2",
+          "subject": "BÜ",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
           "slotId": "3",
           "subject": "Modul3/Möbelkonstruktion",
           "teacher": "",
@@ -372,8 +307,22 @@
           "note": ""
         },
         {
+          "slotId": "4",
+          "subject": "STE",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
           "slotId": "5",
           "subject": "Modul4/EDV/Excel",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "6",
+          "subject": "WED",
           "teacher": "",
           "room": "",
           "note": ""
@@ -388,6 +337,13 @@
           "note": ""
         },
         {
+          "slotId": "4",
+          "subject": "STI",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
           "slotId": "5",
           "subject": "Modul8/Rechnungswesen",
           "teacher": "",
@@ -395,8 +351,22 @@
           "note": ""
         },
         {
+          "slotId": "6",
+          "subject": "WED",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
           "slotId": "7",
           "subject": "Modul4/Vorrichtungsbau",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "8",
+          "subject": "HOFF",
           "teacher": "",
           "room": "",
           "note": ""
@@ -411,8 +381,22 @@
           "note": ""
         },
         {
+          "slotId": "2",
+          "subject": "HOFF",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
           "slotId": "3",
           "subject": "Modul4/Oberflächentechnik",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "6",
+          "subject": "STI",
           "teacher": "",
           "room": "",
           "note": ""
@@ -423,9 +407,404 @@
           "teacher": "",
           "room": "",
           "note": ""
+        },
+        {
+          "slotId": "8",
+          "subject": "STE",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        }
+      ],
+      "fr": [
+        {
+          "slotId": "4",
+          "subject": "WED",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        }
+      ]
+    },
+    "G11": {
+      "mo": [
+        {
+          "slotId": "1",
+          "subject": "Fertigungstechnik W2",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "2",
+          "subject": "GRO",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "3",
+          "subject": "Entwurf/Konstruktion WEN",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "4",
+          "subject": "WEN",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "5",
+          "subject": "Entwurf/Konstruktion WEN",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "6",
+          "subject": "WEZ/BER",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "7",
+          "subject": "Deutsch",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "8",
+          "subject": "MEL",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        }
+      ],
+      "di": [
+        {
+          "slotId": "1",
+          "subject": "Englisch",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "2",
+          "subject": "WEN",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "3",
+          "subject": "EDV",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "4",
+          "subject": "HOFF",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "5",
+          "subject": "Freihandzeichnen",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "6",
+          "subject": "WEN",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        }
+      ],
+      "mi": [
+        {
+          "slotId": "1",
+          "subject": "KuSti",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "2",
+          "subject": "MEL",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "3",
+          "subject": "KüGest",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "4",
+          "subject": "WEN",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "5",
+          "subject": "CAD",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "6",
+          "subject": "WEN",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        }
+      ],
+      "do": [
+        {
+          "slotId": "1",
+          "subject": "Politik",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "2",
+          "subject": "STI/WEZ",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "6",
+          "subject": "WEN",
+          "teacher": "",
+          "room": "",
+          "note": ""
         }
       ],
       "fr": []
+    },
+    "HT21": {
+      "mo": [
+        {
+          "slotId": "1",
+          "subject": "Modul4/Vorrichtungsbau",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "2",
+          "subject": "HOFF",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "3",
+          "subject": "Deutsch",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "4",
+          "subject": "WED",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "5",
+          "subject": "Mathe",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "7",
+          "subject": "Buchführung",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "8",
+          "subject": "TAM",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        }
+      ],
+      "di": [
+        {
+          "slotId": "1",
+          "subject": "Modul3/CNC",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "2",
+          "subject": "HOFF",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "3",
+          "subject": "Modul4/EDV/Excel",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "4",
+          "subject": "WED",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "5",
+          "subject": "Modul5/Arbeitsvorbereitung",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "6",
+          "subject": "TAM",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        }
+      ],
+      "mi": [
+        {
+          "slotId": "1",
+          "subject": "Modul3/Möbelkonstruktion",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "2",
+          "subject": "STE",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "3",
+          "subject": "Modul4/Oberflächentechnik",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "4",
+          "subject": "WED",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "5",
+          "subject": "Modul4/AP",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "6",
+          "subject": "TAM",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "7",
+          "subject": "Modul5/Arbeitsvorbereitung",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "8",
+          "subject": "TAM",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        }
+      ],
+      "do": [
+        {
+          "slotId": "3",
+          "subject": "Modul8/Rechnungswesen",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "6",
+          "subject": "WED",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "7",
+          "subject": "Geschäftskunde",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "8",
+          "subject": "STE",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        }
+      ],
+      "fr": [
+        {
+          "slotId": "4",
+          "subject": "STI",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "5",
+          "subject": "Modul8/Rechnungswesen",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "6",
+          "subject": "STI",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        }
+      ]
     },
     "G21": {
       "mo": [
@@ -437,8 +816,22 @@
           "note": ""
         },
         {
+          "slotId": "2",
+          "subject": "WEN",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
           "slotId": "3",
           "subject": "Mathe",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "4",
+          "subject": "TAM",
           "teacher": "",
           "room": "",
           "note": ""
@@ -456,6 +849,13 @@
           "teacher": "",
           "room": "",
           "note": ""
+        },
+        {
+          "slotId": "8",
+          "subject": "TAM",
+          "teacher": "",
+          "room": "",
+          "note": ""
         }
       ],
       "di": [
@@ -467,8 +867,36 @@
           "note": ""
         },
         {
+          "slotId": "2",
+          "subject": "BÜ",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "3",
+          "subject": "CAD",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "4",
+          "subject": "WEN",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
           "slotId": "5",
           "subject": "Designgeschichte",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "6",
+          "subject": "WED",
           "teacher": "",
           "room": "",
           "note": ""
@@ -497,6 +925,13 @@
           "note": ""
         },
         {
+          "slotId": "4",
+          "subject": "STI",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
           "slotId": "5",
           "subject": "BWL/Rechnungswesen",
           "teacher": "",
@@ -504,8 +939,22 @@
           "note": ""
         },
         {
+          "slotId": "6",
+          "subject": "STE",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
           "slotId": "7",
           "subject": "Farbe und Form",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "8",
+          "subject": "BÜ",
           "teacher": "",
           "room": "",
           "note": ""
@@ -520,8 +969,22 @@
           "note": ""
         },
         {
+          "slotId": "2",
+          "subject": "WEN",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
           "slotId": "3",
           "subject": "Entwurf/Konstruktion WEN",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "6",
+          "subject": "STI",
           "teacher": "",
           "room": "",
           "note": ""
@@ -532,12 +995,33 @@
           "teacher": "",
           "room": "",
           "note": ""
+        },
+        {
+          "slotId": "8",
+          "subject": "STE",
+          "teacher": "",
+          "room": "",
+          "note": ""
         }
       ],
       "fr": [
         {
+          "slotId": "4",
+          "subject": "WEN",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
           "slotId": "5",
           "subject": "Entwurf/Konstruktion WEN",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "6",
+          "subject": "WEN",
           "teacher": "",
           "room": "",
           "note": ""
@@ -554,8 +1038,22 @@
           "note": ""
         },
         {
+          "slotId": "2",
+          "subject": "WEN",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
           "slotId": "3",
           "subject": "Entwurf/Konstruktion WEN",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "4",
+          "subject": "WEN",
           "teacher": "",
           "room": "",
           "note": ""
@@ -570,8 +1068,29 @@
       ],
       "di": [
         {
+          "slotId": "3",
+          "subject": "CAD",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "4",
+          "subject": "WEN",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
           "slotId": "5",
           "subject": "Designgeschichte",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "6",
+          "subject": "WEN",
           "teacher": "",
           "room": "",
           "note": ""
@@ -586,14 +1105,50 @@
           "note": ""
         },
         {
+          "slotId": "4",
+          "subject": "WEN",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "5",
+          "subject": "CAD",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
+          "slotId": "6",
+          "subject": "STE",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        },
+        {
           "slotId": "7",
           "subject": "Farbe und Form",
           "teacher": "",
           "room": "",
           "note": ""
+        },
+        {
+          "slotId": "8",
+          "subject": "BÜ",
+          "teacher": "",
+          "room": "",
+          "note": ""
         }
       ],
-      "do": [],
+      "do": [
+        {
+          "slotId": "6",
+          "subject": "WEN",
+          "teacher": "",
+          "room": "",
+          "note": ""
+        }
+      ],
       "fr": []
     }
   },

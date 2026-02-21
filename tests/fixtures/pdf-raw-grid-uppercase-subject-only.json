@@ -1,0 +1,14 @@
+{
+  "meta": {
+    "source": "fixture-grid-uppercase-subject-only.pdf"
+  },
+  "items": [
+    { "str": "HT11", "x": 120, "y": 10 },
+    { "str": "HT12", "x": 220, "y": 10 },
+    { "str": "HT21", "x": 320, "y": 10 },
+
+    { "str": "Mo", "x": 20, "y": 20 },
+    { "str": "1.", "x": 40, "y": 20 },
+    { "str": "CAD", "x": 120, "y": 20 }
+  ]
+}

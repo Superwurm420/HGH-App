@@ -1,0 +1,16 @@
+{
+  "meta": {
+    "source": "fixture-grid-variable-teacher-token.pdf"
+  },
+  "items": [
+    { "str": "HT11", "x": 120, "y": 10 },
+    { "str": "HT12", "x": 220, "y": 10 },
+    { "str": "HT21", "x": 320, "y": 10 },
+
+    { "str": "Mo", "x": 20, "y": 20 },
+    { "str": "1.", "x": 40, "y": 20 },
+    { "str": "Elektrotechnik", "x": 120, "y": 20 },
+    { "str": "Müller-L", "x": 148, "y": 20 },
+    { "str": "C12", "x": 166, "y": 20 }
+  ]
+}

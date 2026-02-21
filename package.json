@@ -7,7 +7,7 @@
     "generate:sw-assets": "node scripts/generate-sw-assets.mjs",
     "test": "node tests/pdf-parser-v2.test.mjs && node tests/timetable-source.test.mjs && node tests/build-timetable-from-pdf.test.mjs && node tests/timetable-generated-contract.test.mjs && node tests/lifecycle.test.mjs && node tests/http-client.test.mjs && node tests/school-model.test.mjs"
   },
-  "devDependencies": {
+  "dependencies": {
     "pdfjs-dist": "^4.10.38"
   }
 }
