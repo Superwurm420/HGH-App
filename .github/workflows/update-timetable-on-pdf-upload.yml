@@ -25,6 +25,7 @@ jobs:
       - name: Install parser dependency
         run: |
           npm init -y
+          npm pkg set type=module
           npm install --save-dev pdfjs-dist
 
       - name: Rebuild generated timetable
