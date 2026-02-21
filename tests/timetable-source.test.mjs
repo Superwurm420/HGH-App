@@ -73,6 +73,30 @@ if (newerPdf.data?.classes?.HT11?.mo?.[0]?.subject !== 'PDF') {
   throw new Error('Expected parsed PDF timetable payload to be selected');
 }
 
+
+
+const newerPdfByValidFrom = await runScenario({
+  pdfRaw: {
+    meta: { source: 'current.pdf' },
+    items: [
+      { str: 'Gültig ab 24.02.2026', x: 5, y: 1 },
+      ...makePdfRaw('not-a-date', 'PDF-VALIDFROM').items,
+    ],
+  },
+  jsonModel: {
+    meta: { validFrom: '2026-02-21' },
+    timeslots: [{ id: '1', time: '08:00-08:45' }],
+    classes: { HT11: { mo: [{ slotId: '1', subject: 'JSON' }] } },
+  },
+});
+
+if (newerPdfByValidFrom.debug.source !== 'pdf-v2') {
+  throw new Error(`Expected pdf-v2 source by validFrom, got ${newerPdfByValidFrom.debug.source}`);
+}
+if (newerPdfByValidFrom.data?.meta?.validFrom !== '2026-02-24') {
+  throw new Error(`Expected parsed validFrom from PDF header, got ${newerPdfByValidFrom.data?.meta?.validFrom}`);
+}
+
 globalThis.fetch = originalFetch;
 
 console.log('timetable-source source-selection passed');

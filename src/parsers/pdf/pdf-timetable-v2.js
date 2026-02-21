@@ -125,6 +125,42 @@ function parseLooseLine(text) {
   }));
 }
 
+function toIsoDate(value) {
+  const match = clean(value).match(/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{2}|\d{4})$/);
+  if (!match) return null;
+
+  const day = Number(match[1]);
+  const month = Number(match[2]);
+  const yearRaw = Number(match[3]);
+  const year = match[3].length === 2 ? 2000 + yearRaw : yearRaw;
+  if (!Number.isInteger(day) || !Number.isInteger(month) || !Number.isInteger(year)) return null;
+
+  const date = new Date(Date.UTC(year, month - 1, day));
+  if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return null;
+
+  return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+function extractValidFrom(items) {
+  const rows = extractRowsFromPdfItems(items, { yTolerance: 2 });
+  const patterns = [
+    /gültig\s*(?:ab)?\s*(\d{1,2}[.\/-]\d{1,2}[.\/-]\d{2,4})/i,
+    /\bab\s*(\d{1,2}[.\/-]\d{1,2}[.\/-]\d{2,4})\b/i,
+    /\b(\d{1,2}[.\/-]\d{1,2}[.\/-]\d{4})\b/
+  ];
+
+  for (const row of rows) {
+    for (const pattern of patterns) {
+      const match = row.text.match(pattern);
+      if (!match) continue;
+      const iso = toIsoDate(match[1]);
+      if (iso) return iso;
+    }
+  }
+
+  return null;
+}
+
 export function extractRowsFromPdfItems(items, { yTolerance = 2 } = {}) {
   const usable = (Array.isArray(items) ? items : [])
     .map((item) => ({ text: clean(item?.str), x: toNum(item?.x), y: toNum(item?.y) }))
@@ -271,6 +307,7 @@ export function parsePdfTimetableV2(raw) {
   }
 
   const rows = extractRowsFromPdfItems(raw.items || []);
+  const extractedValidFrom = extractValidFrom(raw.items || []);
   const interpreted = interpretRows(rows, issues);
   const validation = validateEntries(interpreted.entries);
   issues.push(...validation.issues);
@@ -283,6 +320,9 @@ export function parsePdfTimetableV2(raw) {
       interpretedCount: interpreted.entries.length,
       specialEventCount: interpreted.specialEvents.length
     },
-    model: toTimetableModel(interpreted, raw.meta || {})
+    model: toTimetableModel(interpreted, {
+      ...(raw.meta || {}),
+      validFrom: extractedValidFrom || raw?.meta?.validFrom || ''
+    })
   };
 }
