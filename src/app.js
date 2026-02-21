@@ -878,12 +878,18 @@ async function loadTvSlides() {
 
     const checks = await Promise.all(files.map(async (file) => {
       if (typeof file !== 'string' || !file.trim()) return null;
-      const src = `${TV_SLIDES_BASE_URL}${file}`;
+      const src = `${TV_SLIDES_BASE_URL}${file.trim()}`;
       try {
         await requestText(src, { method: 'HEAD', cache: 'no-cache', timeoutMs: 3000 });
         return src;
       } catch {
-        return null;
+        try {
+          await requestText(src, { cache: 'no-cache', timeoutMs: 3000 });
+          return src;
+        } catch (error) {
+          console.warn('[TV] Slide nicht ladbar:', src, error?.message || error);
+          return null;
+        }
       }
     }));
 
@@ -1658,6 +1664,32 @@ function initPdfLinkGuards() {
   });
 }
 
+async function initClassPhotos() {
+  const cards = qsa('#classPhotos .classPhotoItem');
+  if (!cards.length) return;
+
+  await Promise.all(cards.map(async (card) => {
+    const href = card.getAttribute('href');
+    if (!href) return;
+
+    try {
+      await requestText(href, { method: 'HEAD', cache: 'no-cache', timeoutMs: 3000 });
+    } catch {
+      try {
+        await requestText(href, { cache: 'no-cache', timeoutMs: 3000 });
+      } catch {
+        return;
+      }
+    }
+
+    const img = qs('img', card);
+    if (img) img.src = href;
+    card.classList.remove('classPhotoItemMissing');
+    const hint = qs('.classPhotoHint', card);
+    if (hint) hint.hidden = true;
+  }));
+}
+
 // --- Calendar -----------------------------------------------------------
 
 function parseICSDate(s) {
@@ -2375,6 +2407,7 @@ async function boot() {
     initWeekSelect();
     initNetworkIndicator();
     initPdfLinkGuards();
+    await initClassPhotos();
 
     const funMessagesPromise = loadFunMessages();
     const announcementsPromise = loadAnnouncements();

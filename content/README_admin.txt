@@ -23,14 +23,17 @@ Format je Datei:
 3) Stundenplan
 - content/stundenplan.json (strukturiertes Modell)
 - content/stundenplan.pdf.raw.json (Rohdaten)
-- content/timetables/current.pdf (aktuelles PDF)
+- content/timetables/*.pdf (neueste PDF wird automatisch als Referenz gesetzt)
 
 4) Bilder
+- assets/images/class-*.jpg (Klassenfotos, z. B. class-ht11.jpg)
 - content/images/slideshow/
 - content/images/ui/
 
 
 5) Logo-/Icon-Dateinamen (bitte stabil halten)
+- assets/icons/tv-background.jpg (TV-Hintergrund, einzige Referenz)
+- assets/tv-slides/slides.json (wird automatisch aus assets/tv-slides/ erzeugt)
 - assets/icons/school-logo-header.svg
 - assets/icons/school-logo-tv.svg
 - assets/icons/favicon-school.svg
@@ -40,3 +43,10 @@ Format je Datei:
 - assets/icons/app-icon-512-maskable.svg
 
 Bei Austausch: gleiche Namen behalten, nur Dateiinhalt ersetzen.
+
+
+Automations-Skript (Maintainer/CI):
+- node scripts/generate-sw-assets.mjs
+  - erzeugt TV-Slides-Liste automatisch
+  - setzt Stundenplan-Referenz auf neueste PDF
+  - aktualisiert Service-Worker-Assets
