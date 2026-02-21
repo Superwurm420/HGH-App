@@ -37,13 +37,13 @@ let calConfigs = [...DEFAULT_CAL_CONFIGS];
 const PARSER_DEBUG = new URLSearchParams(window.location.search).get('debugParser') === '1';
 
 const FUN_MESSAGES_URL = URLS.funMessages;
-const ANNOUNCEMENTS_INDEX_URL = URLS.announcementsIndex;
+const ANNOUNCEMENTS_LIST_URL = URLS.announcementsList;
 const ANNOUNCEMENTS_DIR_URL = URLS.announcementsDir;
 const TV_ANNOUNCEMENTS_URL = URLS.tvAnnouncements;
 const TV_BELL_TIMES_URL = URLS.tvBellTimes;
 const TV_SLIDES_URL = URLS.tvSlides;
 const TV_SLIDES_BASE_URL = URLS.tvSlidesBase;
-const CALENDAR_SOURCES_URL = URLS.calendarSources;
+const CALENDAR_SOURCE_URLS = URLS.calendarSources;
 
 
 // --- Utils --------------------------------------------------------------
@@ -383,7 +383,7 @@ function collectAnnouncementIssuesFromItem(item, fileName) {
 function extractAnnouncementFilesFromDirectoryListing(html, baseUrl) {
   const doc = new DOMParser().parseFromString(String(html || ''), 'text/html');
   const links = Array.from(doc.querySelectorAll('a[href]'));
-  const allowedExt = ['.txt', '.json'];
+  const allowedExt = ['.txt'];
   const files = new Set();
 
   for (const link of links) {
@@ -399,7 +399,7 @@ function extractAnnouncementFilesFromDirectoryListing(html, baseUrl) {
     }
 
     const lower = fileName.toLowerCase();
-    if (lower === 'index.json') continue;
+    if (lower === 'files.txt') continue;
     if (allowedExt.some(ext => lower.endsWith(ext))) files.add(fileName);
   }
 
@@ -426,10 +426,10 @@ async function loadAnnouncements() {
     let files = [];
 
     try {
-      const indexResp = await fetch(ANNOUNCEMENTS_INDEX_URL, { cache: 'no-cache' });
+      const indexResp = await fetch(ANNOUNCEMENTS_LIST_URL, { cache: 'no-cache' });
       if (indexResp.ok) {
-        const indexData = await indexResp.json();
-        files = Array.isArray(indexData?.files) ? indexData.files : [];
+        const indexText = await indexResp.text();
+        files = indexText.split(/\r?\n/).map(line => line.trim()).filter(line => line && !line.startsWith('#'));
       }
     } catch {
       // index.json optional
@@ -438,7 +438,7 @@ async function loadAnnouncements() {
     if (!files.length) {
       files = await discoverAnnouncementFiles();
       if (files.length) {
-        state.announcementIssues.push('index.json nicht gefunden – nutze automatische Dateierkennung.');
+        state.announcementIssues.push('files.txt nicht gefunden – nutze automatische Dateierkennung.');
       }
     }
 
@@ -450,7 +450,7 @@ async function loadAnnouncements() {
       const name = typeof file === 'string' ? file : file?.file;
       if (!name) return null;
 
-      const resp = await fetch(`./assets/data/announcements/${name}`, { cache: 'no-cache' });
+      const resp = await fetch(`${ANNOUNCEMENTS_DIR_URL}${name}`, { cache: 'no-cache' });
       if (!resp.ok) {
         state.announcementIssues.push(`Datei fehlt oder nicht lesbar: ${name}`);
         return null;
@@ -557,7 +557,7 @@ function applyTimetableData(rawData) {
   state.hasTimetableData = hasTimetableEntries(classes);
 
   // PDF-Links aktualisieren
-  state.currentPdfHref = data?.meta?.source ? (/^https?:\/\//i.test(data.meta.source) ? data.meta.source : `./assets/plan/${data.meta.source}`) : null;
+  state.currentPdfHref = data?.meta?.source ? (/^https?:\/\//i.test(data.meta.source) ? data.meta.source : `./content/timetables/${data.meta.source}`) : null;
   for (const link of qsa('a[data-pdf-link]')) {
     if (state.currentPdfHref) {
       link.href = state.currentPdfHref;
@@ -1729,13 +1729,15 @@ function normalizeGoogleCalendarUrl(url) {
 
 async function loadCalendarConfigs() {
   try {
-    const res = await fetch(`${CALENDAR_SOURCES_URL}?_=${Date.now()}`, { cache: 'no-store' });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const text = await res.text();
-    const lines = text
-      .split(/\r?\n/)
-      .map(line => line.trim())
-      .filter(line => line && !line.startsWith('#'));
+    const sourceTexts = await Promise.all(CALENDAR_SOURCE_URLS.map(async (url) => {
+      const res = await fetch(`${url}?_=${Date.now()}`, { cache: 'no-store' });
+      if (!res.ok) return '';
+      return (await res.text()).trim();
+    }));
+    const lines = sourceTexts
+      .map(text => text.trim())
+      .filter(line => line && !line.startsWith('#'))
+      .map((line, idx) => (line.includes('|') ? line : `Kalender ${idx + 1}|${line}`));
 
     const palette = ['#58b4ff', '#ffc857', '#a67dff', '#4dd599'];
     const parsed = lines.map((line, idx) => {
@@ -1768,11 +1770,11 @@ async function fetchCalendar(cfg) {
     const parsed = parseICS(text);
     state.cal.events[cfg.id] = parsed;
     if (!Array.isArray(parsed) || !parsed.length) {
-      state.cal.issues.push(`Kalender ohne Einträge: ${cfg.label}. Prüfe content/kalender-quellen.txt.`);
+      state.cal.issues.push(`Kalender ohne Einträge: ${cfg.label}. Prüfe content/txt/calendars/*.txt.`);
     }
   } catch (e) {
     console.warn(`[Cal] ${cfg.id}:`, e);
-    state.cal.issues.push(`Kalender-Datei fehlt/defekt: ${cfg.label}. Prüfe content/kalender-quellen.txt.`);
+    state.cal.issues.push(`Kalender-Datei fehlt/defekt: ${cfg.label}. Prüfe content/txt/calendars/*.txt.`);
     if (!state.cal.events[cfg.id]) state.cal.events[cfg.id] = [];
   }
 }

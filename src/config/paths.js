@@ -5,15 +5,16 @@ export const PATHS = Object.freeze({
     timetableJson: './content/stundenplan.json',
     timetablePdfRawJson: './content/stundenplan.pdf.raw.json',
     calendarIcs: './content/kalender.ics',
-    calendarSourcesTxt: './content/kalender-quellen.txt',
+    calendarSourcesDir: './content/txt/calendars/',
+    calendarSourceFiles: ['./content/txt/calendars/schule.txt','./content/txt/calendars/klasse-hgt2.txt','./content/txt/calendars/ferien.txt'],
     adminReadme: './content/README_admin.txt',
   },
   assets: {
-    planDir: './assets/plan/',
+    planDir: './content/timetables/',
     funMessagesJson: './assets/data/fun-messages.json',
     announcements: {
-      indexJson: './assets/data/announcements/index.json',
-      dir: './assets/data/announcements/',
+      listTxt: './content/txt/events/files.txt',
+      dir: './content/txt/events/',
     },
     tvSlides: {
       indexJson: './assets/tv-slides/slides.json',

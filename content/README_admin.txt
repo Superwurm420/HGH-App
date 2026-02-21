@@ -1,18 +1,30 @@
-Admin-Quickstart (Datei ersetzen → fertig)
+CONTENT-BEREICH (nur redaktionelle Pflege)
 
-1) Stundenplan Standard/Fallback:
-   - Datei ersetzen: content/stundenplan.json
+Regel:
+- Alles, was Schule später ändern darf, liegt in /content
+- Codeänderungen sind dafür nicht nötig
 
-2) PDF Parser V2 Quelle (optional, bevorzugt):
-   - Datei ersetzen: content/stundenplan.pdf.raw.json
-   - Falls Parse/Validierung fehlschlägt, nutzt die App automatisch stundenplan.json.
+Wichtige Pfade und Dateinamen:
 
-3) Kalender:
-   - Datei ersetzen: content/kalender-quellen.txt
+1) Kalender (TXT)
+- content/txt/calendars/schule.txt
+- content/txt/calendars/klasse-hgt2.txt
+- content/txt/calendars/ferien.txt
+Format je Datei:
+- entweder nur URL
+- oder Label|URL
 
-4) TV Laufzeitdaten:
-   - assets/data/runtime/announcements.json
-   - assets/data/runtime/bell-times.json
+2) Termine / Ankündigungen (TXT)
+- content/txt/events/files.txt   (Liste aktiver Dateien)
+- content/txt/events/klausuren.txt
+- content/txt/events/projekte.txt
+- content/txt/events/veranstaltungen.txt
 
-5) TV Slides:
-   - assets/tv-slides/slides.json (+ Bilddateien im gleichen Ordner)
+3) Stundenplan
+- content/stundenplan.json (strukturiertes Modell)
+- content/stundenplan.pdf.raw.json (Rohdaten)
+- content/timetables/current.pdf (aktuelles PDF)
+
+4) Bilder
+- content/images/slideshow/
+- content/images/ui/

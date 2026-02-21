@@ -6,11 +6,7 @@ const CACHE = `hgh-school-pwa-${VERSION}`;
 const ASSETS = [
   './',
   './index.html',
-      './assets/data/announcements/index.json',
-  './assets/data/announcements/vorlage-ohne-datum.txt',
-  './assets/data/announcements/vorlage-mit-termin.txt',
-  './assets/data/announcements/testtermin-ablauf-2026-04-20.txt',
-  './assets/data/announcements/testankuendigung-ohne-datum.txt',
+      './content/txt/events/files.txt',
   './app.css',
   './src/app.js',
   './src/modules/timetable-parser.js',
@@ -120,8 +116,9 @@ async function handleAsset(req) {
     path.endsWith('/content/stundenplan.json') ||
     path.endsWith('/content/stundenplan.pdf.raw.json') ||
     path.endsWith('/content/kalender.ics') ||
-    path.endsWith('/assets/data/announcements/index.json') ||
-    path.includes('/assets/data/announcements/') ||
+    path.endsWith('/content/txt/events/files.txt') ||
+    path.includes('/content/txt/events/') ||
+    path.includes('/content/txt/calendars/') ||
     // ehemals /data/*
     path.endsWith('/assets/data/runtime/announcements.json') ||
     path.endsWith('/assets/data/runtime/bell-times.json');

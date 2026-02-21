@@ -35,7 +35,10 @@ Minimal gehaltene Schul-PWA (Vanilla HTML/CSS/JS) für GitHub Pages.
 ├─ service-worker.js
 ├─ content/
 │  ├─ stundenplan.json
-│  ├─ kalender-quellen.txt
+│  ├─ txt/
+│  │  ├─ calendars/
+│  │  └─ events/
+│  ├─ timetables/
 │  └─ README_admin.txt
 ├─ assets/
 │  ├─ data/
@@ -51,8 +54,8 @@ Minimal gehaltene Schul-PWA (Vanilla HTML/CSS/JS) für GitHub Pages.
 ├─ tests/
 │  ├─ fixtures/
 │  └─ pdf-parser-v2.test.mjs
-└─ _legacy/
-   └─ ... (alte Tools/Workflows/Archive)
+└─ docs/archive/_legacy/
+   └─ ... (archivierte Alt-Tools, nicht produktiv)
 ```
 
 ## Installation (für Nutzer)
@@ -69,17 +72,17 @@ Minimal gehaltene Schul-PWA (Vanilla HTML/CSS/JS) für GitHub Pages.
 
 **Hinweis (PDF-Link):**
 - Das PDF wird automatisch aus `content/stundenplan.json` gelesen (`meta.source`).
-- Das PDF muss unter `assets/plan/<meta.source>` liegen.
+- Das PDF muss unter `content/timetables/<meta.source>` liegen.
 
 
 
-### B) Kalender (Quellenliste)
-1. Datei ersetzen: `content/kalender-quellen.txt`
+### B) Kalender (TXT-Quellen)
+1. Dateien in `content/txt/calendars/` pflegen (`schule.txt`, `klasse-hgt2.txt`, `ferien.txt`)
 2. Commit + Push
 3. Neu laden
 
 ### C) PDF-Stundenplan austauschen
-1. Neue PDF nach `assets/plan/` hochladen
+1. Neue PDF nach `content/timetables/` hochladen
 2. In `content/stundenplan.json` in `meta.source` den Dateinamen setzen (oder beibehalten, wenn du denselben Dateinamen nutzt)
 3. Commit + Push
 
@@ -89,7 +92,7 @@ Minimal gehaltene Schul-PWA (Vanilla HTML/CSS/JS) für GitHub Pages.
 
 ## Hinweis zu Legacy-Dateien
 
-Nicht mehr aktive Parser-, Test- und Build-Hilfen liegen unter `_legacy/` und werden von der Laufzeit nicht benötigt.
+Nicht mehr aktive Parser-, Test- und Build-Hilfen liegen unter `docs/archive/_legacy/` und werden von der Laufzeit nicht benötigt.
 
 ## Refactor Notes
 
@@ -107,3 +110,9 @@ Nicht mehr aktive Parser-, Test- und Build-Hilfen liegen unter `_legacy/` und we
 - Icons liegen lokal in `assets/icons/` und können direkt ersetzt werden.
 - Standardnamen für PWA-Icons: `icon-192.svg`, `icon-512.svg`, `icon-512-maskable.svg`.
 - Für Änderungen nur Datei überschreiben (gleicher Name), dann Commit + Push.
+
+
+## Neue Content-Regeln
+- Nicht-Programmierbare Inhalte liegen unter `content/`.
+- Pflichtdateien und Dateinamen stehen in `docs/UPDATE_GUIDE.md`.
+- Legacy liegt archiviert unter `docs/archive/_legacy/`.

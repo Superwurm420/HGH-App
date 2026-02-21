@@ -65,13 +65,13 @@ export const WEEKDAY_LABELS = {
 
 export const URLS = {
   funMessages: PATHS.assets.funMessagesJson,
-  announcementsIndex: PATHS.assets.announcements.indexJson,
+  announcementsList: PATHS.assets.announcements.listTxt,
   announcementsDir: PATHS.assets.announcements.dir,
   tvAnnouncements: PATHS.data.announcementsJson,
   tvBellTimes: PATHS.data.bellTimesJson,
   tvSlides: PATHS.assets.tvSlides.indexJson,
   tvSlidesBase: PATHS.assets.tvSlides.dir,
-  calendarSources: PATHS.content.calendarSourcesTxt,
+  calendarSources: PATHS.content.calendarSourceFiles,
 };
 
 export const MESSAGE_PHASES = ['beforeSchool', 'beforeLesson', 'duringLesson', 'betweenBlocks', 'lunch', 'afterSchool', 'weekend', 'holiday', 'noLessons'];
