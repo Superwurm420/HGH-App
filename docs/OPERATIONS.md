@@ -12,12 +12,23 @@ Wenn andere Doku-Dateien abweichen, gilt **diese** Datei.
 ## 2) Schnellablauf für Inhalts-Updates
 1. Datei(en) im `content/` oder `assets/data/` anpassen.
 2. Neue PDF nach `content/timetables/` hochladen (Dateiname: `Stundenplan_kw_<KW>_Hj<1|2>_<YYYY>_<YY>.pdf`).
-3. GitHub Actions Workflow **Rebuild timetable on PDF upload** startet automatisch und erzeugt `content/stundenplan.generated.json` neu.
+3. GitHub Actions Workflow **Rebuild generated offline assets** startet automatisch bei relevanten Änderungen und erzeugt generierte Dateien (u. a. `content/stundenplan.generated.json`, `sw-assets.js`) neu.
 4. Optional lokal prüfen: `node scripts/build-timetable-from-pdf.mjs` und danach `node scripts/generate-sw-assets.mjs`.
-5. Seite neu laden (ggf. Hard-Reload wegen Service Worker).
+5. Dabei wird `sw-assets.js` neu generiert (Asset-Liste + deterministische Manifest-Version für den Cache-Namen).
+6. Seite neu laden (ggf. Hard-Reload wegen Service Worker).
+
+
+## 2.1 Service-Worker Asset-Manifest
+- Quelle: `scripts/generate-sw-assets.mjs` erzeugt `sw-assets.js`.
+- Inhalt: `self.__HGH_SW_ASSETS` + `self.__HGH_SW_MANIFEST_VERSION` (Hash über die Asset-Liste).
+- `service-worker.js` lädt das Manifest scope-sicher über `new URL('./sw-assets.js', self.registration.scope)`.
+- CI-Workflow **Rebuild generated offline assets** regeneriert die Datei automatisch bei relevanten Änderungen und committet nur bei Diff.
+
+Prüfen:
+- Lokal: `node scripts/generate-sw-assets.mjs` und `git diff -- sw-assets.js`.
+- Browser: DevTools → Application → Service Workers (Version muss sich nach Asset-Änderungen aktualisieren).
 
 ---
-
 ## 3) Stundenplan
 
 ### 3.1 Primäre Datenquelle

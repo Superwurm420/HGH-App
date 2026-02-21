@@ -1,9 +1,11 @@
-/* Service Worker – offline-first for app shell (v1.7.1, optimiert) */
+/* Service Worker – offline-first for app shell */
 
-const VERSION = 'v1.7.1';
+const SW_ASSETS_URL = new URL('./sw-assets.js', self.registration.scope).toString();
+importScripts(SW_ASSETS_URL);
+
+const MANIFEST_VERSION = self.__HGH_SW_MANIFEST_VERSION || 'dev';
+const VERSION = `v2-${MANIFEST_VERSION}`;
 const CACHE = `hgh-school-pwa-${VERSION}`;
-
-importScripts('./src/config/sw-assets.js');
 
 const ASSETS = Array.isArray(self.__HGH_SW_ASSETS) ? self.__HGH_SW_ASSETS : ['./', './index.html', './app.css'];
 
