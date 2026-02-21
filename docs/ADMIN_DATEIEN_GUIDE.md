@@ -73,9 +73,5 @@ Diese Dateien werden im UI direkt verwendet und sollen bei Austausch den gleiche
 - `assets/icons/app-icon-512.svg` (PWA Icon 512)
 - `assets/icons/app-icon-512-maskable.svg` (PWA Maskable Icon)
 - `assets/icons/class-photo-placeholder.svg` (Standard Klassenfoto-Platzhalter)
-- `assets/icons/class-photo-ht11-placeholder.svg`
-- `assets/icons/class-photo-ht12-placeholder.svg`
-- `assets/icons/class-photo-ht21-placeholder.svg`
-- `assets/icons/class-photo-ht22-placeholder.svg`
 
-Regel für später: Datei mit gleichem Namen ersetzen (Format kann z. B. SVG/PNG/JPG sein, solange Pfad + Dateiname in den Referenzen gleich bleiben).
+Regel für später: Datei mit gleichem Namen ersetzen. Für fehlende Klassenfotos wird immer **nur** `class-photo-placeholder.svg` genutzt.

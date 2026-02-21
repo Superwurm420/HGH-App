@@ -30,10 +30,6 @@ const ASSETS = [
   './assets/icons/app-icon-512.svg',
   './assets/icons/app-icon-512-maskable.svg',
   './assets/icons/class-photo-placeholder.svg',
-  './assets/icons/class-photo-ht11-placeholder.svg',
-  './assets/icons/class-photo-ht12-placeholder.svg',
-  './assets/icons/class-photo-ht21-placeholder.svg',
-  './assets/icons/class-photo-ht22-placeholder.svg',
 ];
 
 const isDev = self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1';
