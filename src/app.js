@@ -55,12 +55,49 @@ function formatSubject(str) {
   return str.split('/').map(p => escapeHtml(p.trim())).join('<br>');
 }
 
+function getMissingTimetableMessage() {
+  return 'Kein Stundenplan hochgeladen. Bitte Datei in content/stundenplan.json bzw. PDF-Import bereitstellen.';
+}
+
 function getISOWeek(date = new Date()) {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
   const dayNum = d.getUTCDay() || 7;
   d.setUTCDate(d.getUTCDate() + 4 - dayNum);
   const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
   return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+}
+
+function getSchoolYearSuffix(date = new Date()) {
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const startYear = month >= 7 ? year : year - 1;
+  const nextShort = String((startYear + 1) % 100).padStart(2, '0');
+  return `${startYear}_${nextShort}`;
+}
+
+function getHalfYear(date = new Date()) {
+  const month = date.getMonth();
+  return month >= 1 && month <= 6 ? 'Hj2' : 'Hj1';
+}
+
+function getCurrentWeekPdfHref(meta = {}) {
+  const metaSource = typeof meta?.source === 'string' ? meta.source.trim() : '';
+  if (metaSource && /^https?:\/\//i.test(metaSource)) return metaSource;
+
+  const sourceFile = metaSource.replace(/^content\/timetables\//, '');
+  if (sourceFile && sourceFile.toLowerCase().endsWith('.pdf') && sourceFile.toLowerCase() !== 'current.pdf') {
+    return `./content/timetables/${sourceFile}`;
+  }
+
+  const baseDate = meta?.validFrom ? new Date(meta.validFrom) : new Date();
+  const validDate = Number.isNaN(baseDate.getTime()) ? new Date() : baseDate;
+  const kw = String(getISOWeek(validDate)).padStart(2, '0');
+
+  const sourcePattern = sourceFile.match(/_Hj([12])_(\d{4}_\d{2})\.pdf$/i);
+  const halfYear = sourcePattern ? `Hj${sourcePattern[1]}` : getHalfYear(validDate);
+  const schoolYear = sourcePattern ? sourcePattern[2] : getSchoolYearSuffix(validDate);
+
+  return `./content/timetables/Stundenplan_kw_${kw}_${halfYear}_${schoolYear}.pdf`;
 }
 
 function getTodayId() { return DAY_NUM_MAP[new Date().getDay()] || 'mo'; }
@@ -560,11 +597,7 @@ function applyTimetableData(rawData) {
   state.hasTimetableData = hasTimetableEntries(classes);
 
   // PDF-Links aktualisieren
-  state.currentPdfHref = data?.meta?.source
-    ? (/^https?:\/\//i.test(data.meta.source)
-      ? data.meta.source
-      : (String(data.meta.source).startsWith('content/') ? `./${data.meta.source}` : `./content/timetables/${data.meta.source}`))
-    : './content/timetables/current.pdf';
+  state.currentPdfHref = state.hasTimetableData ? getCurrentWeekPdfHref(data?.meta || {}) : '';
   for (const link of qsa('a[data-pdf-link]')) {
     if (state.currentPdfHref) {
       link.href = state.currentPdfHref;
@@ -685,7 +718,7 @@ function getTodaySchedule(now = new Date()) {
     targetDate,
     schedules: classes.map((classId) => ({
       classId,
-      rows: (state.timetable?.[classId]?.[dayId] || []).filter(r => r && r.slotId && String(r.slotId) !== '7')
+      rows: (state.timetable?.[classId]?.[dayId] || []).filter(r => r && r.slotId)
     }))
   };
 }
@@ -722,8 +755,10 @@ function getActiveAnnouncements(now = new Date(), max = 8) {
 
 function formatLessonLabel(row) {
   if (!row) return '—';
+  const slot = state.timeslotMap.get(String(row.slotId));
+  const timeLabel = slot?.time ? `${slot.time}: ` : '';
   const room = row.room ? ` (${row.room})` : '';
-  return `${row.subject || '—'}${room}`;
+  return `${timeLabel}${row.subject || '—'}${room}`;
 }
 
 function updateTvDateTime(now = new Date()) {
@@ -760,32 +795,41 @@ function renderTvSchedule(now = new Date()) {
   const dayLabel = WEEKDAY_LABELS[today.dayId] || 'Montag';
   const dateLabel = today.targetDate.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
 
-  if (!today.schedules.length) {
+  if (!state.hasTimetableData) {
+    container.innerHTML = `<article class="tvClassRow missingTimetableNotice"><h3>${escapeHtml(dayLabel)}, ${escapeHtml(dateLabel)}</h3><p>${escapeHtml(getMissingTimetableMessage())}</p></article>`;
+    return;
+  }
+
+  const hasRows = today.schedules.some(({ rows }) => rows.length > 0);
+  if (!hasRows) {
     container.innerHTML = `<article class="tvClassRow"><h3>${escapeHtml(dayLabel)}, ${escapeHtml(dateLabel)}</h3><p>Keine Daten</p></article>`;
     return;
   }
 
   container.innerHTML = `<article class="tvClassHeading"><h3>${escapeHtml(dayLabel)}, ${escapeHtml(dateLabel)}</h3></article>` + today.schedules.map(({ classId, rows }) => {
     const lesson = getCurrentAndNextLesson(rows, now);
-    let currentLabel = 'Keine Daten';
-    let nextLabel = 'Keine Daten';
+    const rowsHtml = rows.length
+      ? rows.map((row) => {
+        const slot = state.timeslotMap.get(String(row.slotId));
+        const timeLabel = slot?.time || `Stunde ${escapeHtml(String(row.slotId))}`;
+        const teacherRoom = formatTeacherRoom(row.teacher, row.room) || '—';
+        return `<li><span class="tvLessonTime">${escapeHtml(timeLabel)}</span><span class="tvLessonBody"><strong>${escapeHtml(row.subject || '—')}</strong><small>${escapeHtml(teacherRoom)}</small></span></li>`;
+      }).join('')
+      : '<li class="tvLessonEmpty">Keine Einträge</li>';
 
-    if (lesson.status === 'finished') {
-      currentLabel = 'Unterricht beendet';
-      nextLabel = '—';
-    } else if (lesson.status === 'break') {
-      currentLabel = 'Pause';
-      nextLabel = lesson.next ? formatLessonLabel(lesson.next) : 'Keine Daten';
-    } else if (lesson.status === 'running') {
-      currentLabel = formatLessonLabel(lesson.current);
-      nextLabel = lesson.next ? formatLessonLabel(lesson.next) : 'Keine Daten';
-    }
+    const statusText = lesson.status === 'running'
+      ? `Jetzt: ${formatLessonLabel(lesson.current)}`
+      : lesson.status === 'break'
+        ? `Nächste Stunde: ${formatLessonLabel(lesson.next)}`
+        : lesson.status === 'finished'
+          ? 'Unterricht beendet'
+          : 'Heute keine laufende Stunde';
 
     return `
       <article class="tvClassRow">
         <h3>${escapeHtml(classId)}</h3>
-        <p><strong>Jetzt:</strong> ${escapeHtml(currentLabel)}</p>
-        <p><strong>Nächste:</strong> ${escapeHtml(nextLabel)}</p>
+        <p class="tvClassStatus">${escapeHtml(statusText)}</p>
+        <ul class="tvClassDayPlan">${rowsHtml}</ul>
       </article>
     `;
   }).join('');
@@ -889,12 +933,15 @@ async function refreshTvData() {
     await Promise.all([
       refreshTimetableIfNeeded({ forceNetwork: true, silent: true }),
       loadAnnouncements(),
-      loadTvAnnouncementsFallback(),
       loadBellTimes()
     ]);
     setTvOffline(false);
   } catch {
     setTvOffline(true);
+  }
+
+  if (!state.announcements.length) {
+    await loadTvAnnouncementsFallback();
   }
 
   tickTv();
@@ -994,7 +1041,7 @@ function renderTimetable() {
   if (!state.hasTimetableData) {
     body.innerHTML = `
       <div class="timetableEmpty" role="status">
-        <p>Keine Stundenplan-Daten verfügbar.</p>
+        <p class="missingTimetableNotice">${escapeHtml(getMissingTimetableMessage())}</p>
         <button class="btn secondary" id="retryInline" type="button">Erneut laden</button>
       </div>`;
     qs('#retryInline')?.addEventListener('click', async () => {
@@ -1070,6 +1117,24 @@ function renderTodayPreview() {
   const dayLabel = !isWeekday() ? 'Nächster Schultag (Montag)' : (DAYS.find(d => d.id === todayId)?.label || 'Heute');
   const dateLabel = displayDate.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
   safeSetText(todayWeekday, `${dayLabel}, ${dateLabel} · KW ${getISOWeek(displayDate)}`);
+
+  if (!state.hasTimetableData) {
+    list.innerHTML = `
+      <div class="listItem listItemPlaceholder missingTimetable" role="status" aria-live="polite">
+        <div>
+          <div class="small muted">Hinweis</div>
+          <div class="timeFrom">⚠</div>
+        </div>
+        <div class="subjectCol">
+          <div>Kein Stundenplan hochgeladen</div>
+          <div class="sub muted">${escapeHtml(getMissingTimetableMessage())}</div>
+        </div>
+        <div class="metaCol">
+          <div class="sub">—</div>
+        </div>
+      </div>`;
+    return;
+  }
 
   const allRows = (state.timetable?.[classId]?.[todayId] || [])
     .filter(r => r.slotId !== '7');
@@ -2127,6 +2192,14 @@ function renderWeek() {
     grid.innerHTML = `
       <div class="weekEmptyState" role="status" aria-live="polite">
         Wochenübersicht wird geladen …
+      </div>`;
+    return;
+  }
+
+  if (!state.hasTimetableData) {
+    grid.innerHTML = `
+      <div class="weekEmptyState missingTimetableNotice" role="status" aria-live="polite">
+        ${escapeHtml(getMissingTimetableMessage())}
       </div>`;
     return;
   }

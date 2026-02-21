@@ -421,20 +421,15 @@
         </div>
 
         <h2 id="informationen" style="margin-top:20px">Informationen</h2>
-        <a class="btn secondary" href="#informationen-anleitung" aria-label="Informationen zur Nutzung anzeigen">Informationen</a>
+        <a class="btn secondary" href="https://github.com/hgh-app/hgh-app" target="_blank" rel="noopener" aria-label="Repository mit aktueller Anleitung öffnen">Informationen</a>
 
         <article id="informationen-anleitung" class="adminWidget" style="margin-top:12px;">
-          <h3>Installation (kurz)</h3>
+          <h3>Aktuelle Anleitung &amp; Update-Dokumentation</h3>
+          <p class="muted">Die vollständige, gepflegte Anleitung liegt im Repository. Bitte immer diese Quelle verwenden.</p>
           <ol class="adminSteps">
-            <li class="adminStep"><strong>Android:</strong> Browser-Menü öffnen → <strong>„App installieren“</strong>.</li>
-            <li class="adminStep"><strong>iOS:</strong> <strong>Teilen</strong> → <strong>„Zum Home-Bildschirm“</strong>.</li>
-          </ol>
-
-          <h3>Admin-Anleitung (Datei ersetzen → commit → neu laden)</h3>
-          <ol class="adminSteps">
-            <li class="adminStep"><strong>1.</strong> <code>content/stundenplan.json</code> oder <code>content/kalender.ics</code> ersetzen.</li>
-            <li class="adminStep"><strong>2.</strong> Änderungen committen und pushen.</li>
-            <li class="adminStep"><strong>3.</strong> App neu laden (ggf. Hard-Reload).</li>
+            <li class="adminStep"><strong>1.</strong> Repository öffnen: <a href="https://github.com/hgh-app/hgh-app" target="_blank" rel="noopener">github.com/hgh-app/hgh-app</a></li>
+            <li class="adminStep"><strong>2.</strong> In <code>docs/OPERATIONS.md</code> findest du den gesamten Update-Prozess.</li>
+            <li class="adminStep"><strong>3.</strong> Zusätzliche Hilfe: <code>docs/ONBOARDING.md</code>, <code>docs/TROUBLESHOOTING.md</code>, <code>docs/contracts/</code>.</li>
           </ol>
         </article>
       </div>
@@ -446,7 +441,7 @@
       <div class="tvLayout" role="region" aria-label="TV-Modus">
         <header class="tvHeader">
           <div class="tvDateWrap">
-            <img class="tvLogo" src="./assets/icons/school-logo-tv.svg" alt="HGH Logo" loading="eager" />
+            <img class="tvLogo" src="./assets/icons/school-logo-header.svg" alt="HGH Logo" loading="eager" />
             <div id="tvDate" class="tvDate">—</div>
           </div>
           <div id="tvTime" class="tvTime" aria-live="polite">—</div>
@@ -458,16 +453,18 @@
             <div id="tvClasses" class="tvClasses"></div>
           </section>
 
-          <section class="tvPanel">
-            <h2>Ankündigungen</h2>
-            <p id="tvOffline" class="tvOffline" hidden>Offline</p>
-            <ul id="tvAnnouncementsList" class="tvAnnouncementsList"></ul>
-          </section>
-        </div>
+          <div class="tvSideColumn">
+            <section class="tvPanel">
+              <h2>Ankündigungen</h2>
+              <p id="tvOffline" class="tvOffline" hidden>Offline</p>
+              <ul id="tvAnnouncementsList" class="tvAnnouncementsList"></ul>
+            </section>
 
-        <div id="tvSlides" class="tvSlides" aria-label="Slideshow">
-          <img id="tvSlideA" class="tvSlideImage" alt="TV-Slide" loading="eager" />
-          <img id="tvSlideB" class="tvSlideImage" alt="TV-Slide" loading="eager" />
+            <div id="tvSlides" class="tvSlides" aria-label="Slideshow">
+              <img id="tvSlideA" class="tvSlideImage" alt="TV-Slide" loading="eager" />
+              <img id="tvSlideB" class="tvSlideImage" alt="TV-Slide" loading="eager" />
+            </div>
+          </div>
         </div>
       </div>
     </section>

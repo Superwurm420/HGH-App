@@ -1003,6 +1003,13 @@ select:focus-visible{
 }
 
 
+.missingTimetableNotice{
+  border:1px solid rgba(255,179,71,.55);
+  background:rgba(255,179,71,.14);
+  color:var(--text);
+}
+
+
 .pipelineStatus{
   margin-top:12px;
   padding:12px;
@@ -1025,6 +1032,11 @@ select:focus-visible{
   border:1px dashed var(--line);
   color:var(--muted);
   font-size:14px;
+}
+
+.timetableEmpty .missingTimetableNotice,
+.weekEmptyState.missingTimetableNotice{
+  color:var(--text);
 }
 
 .trPlaceholder{
@@ -1797,7 +1809,7 @@ select:focus-visible{
 
   .view[data-view="timetable"]:not([hidden]){
     display:grid;
-    grid-template-columns:minmax(280px,340px) minmax(0,1fr);
+    grid-template-columns:minmax(240px,300px) minmax(0,1fr);
     gap:14px;
     align-items:start;
   }
@@ -1834,15 +1846,20 @@ select:focus-visible{
 
   .view[data-view="timetable"] .daySelectGroup{
     display:grid;
-    grid-template-columns:repeat(2,minmax(0,1fr));
+    grid-template-columns:repeat(1,minmax(0,1fr));
   }
 
   .view[data-view="timetable"] .timetable{
     grid-column:2;
     grid-row:1 / span 2;
     margin-top:0;
-    max-height:min(75vh,760px);
+    max-height:min(78vh,820px);
     overflow:auto;
+  }
+
+  .view[data-view="timetable"] .timetableHeader,
+  .view[data-view="timetable"] .tr{
+    grid-template-columns:130px minmax(360px,1fr) minmax(220px,280px);
   }
 
   .view[data-view="timetable"] .timetableHeader{
@@ -2176,7 +2193,7 @@ body.tv-mode .main {
 .tvLayout {
   height: calc(100vh - 48px);
   display: grid;
-  grid-template-rows: auto 1fr 26vh;
+  grid-template-rows: auto 1fr;
   gap: 16px;
 }
 
@@ -2218,7 +2235,14 @@ body.tv-mode .main {
 
 .tvMain {
   display: grid;
-  grid-template-columns: 1.3fr 1fr;
+  grid-template-columns: minmax(0, 1.7fr) minmax(360px, 1fr);
+  gap: 16px;
+  min-height: 0;
+}
+
+.tvSideColumn {
+  display: grid;
+  grid-template-rows: 1fr minmax(180px, 28vh);
   gap: 16px;
   min-height: 0;
 }
@@ -2242,8 +2266,11 @@ body.tv-mode .main {
 
 .tvClasses {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 10px;
+  max-height: 100%;
+  overflow: auto;
+  padding-right: 4px;
 }
 
 .tvClassRow {
@@ -2253,8 +2280,29 @@ body.tv-mode .main {
   background: rgba(0,0,0,.12);
 }
 
-.tvClassRow h3 { margin: 0 0 6px; font-size: 1.4rem; }
-.tvClassRow p { margin: 0; font-size: 1.05rem; }
+.tvClassRow h3 { margin: 0 0 6px; font-size: 1.2rem; }
+.tvClassRow p { margin: 0; font-size: .98rem; }
+.tvClassStatus { margin-bottom: 8px; color: var(--muted); }
+.tvClassDayPlan {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+.tvClassDayPlan li {
+  display: grid;
+  grid-template-columns: minmax(96px, 122px) minmax(0, 1fr);
+  gap: 10px;
+  align-items: baseline;
+  border-top: 1px dashed rgba(255,255,255,.12);
+  padding-top: 6px;
+}
+.tvLessonTime { font-weight: 700; font-size: .95rem; }
+.tvLessonBody { display:flex; flex-direction:column; min-width:0; }
+.tvLessonBody strong { font-size: 1rem; }
+.tvLessonBody small { color: var(--muted); }
+.tvLessonEmpty { color: var(--muted); }
 
 .tvAnnouncementsList {
   margin: 0;
@@ -2262,6 +2310,8 @@ body.tv-mode .main {
   list-style: none;
   display: grid;
   gap: 10px;
+  max-height: 100%;
+  overflow: auto;
 }
 
 .tvAnnouncementItem {
@@ -2277,6 +2327,7 @@ body.tv-mode .main {
 .tvSlides {
   position: relative;
   overflow: hidden;
+  min-height: 180px;
 }
 
 .tvSlideImage {
@@ -2291,4 +2342,10 @@ body.tv-mode .main {
 
 .tvSlideImage.isVisible {
   opacity: 1;
+}
+
+
+@media (max-width:1100px){
+  .tvMain{ grid-template-columns:1fr; }
+  .tvSideColumn{ grid-template-rows:auto minmax(180px,24vh); }
 }
