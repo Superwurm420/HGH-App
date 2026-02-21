@@ -1,0 +1,3 @@
+klausuren.txt
+projekte.txt
+veranstaltungen.txt
