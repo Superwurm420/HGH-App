@@ -43,7 +43,7 @@
   - `content/stundenplan.json`,
   - `content/stundenplan.pdf.raw.json`,
   - `content/kalender.ics`,
-  - `content/kalender-quellen.txt`,
+  - `content/txt/calendars/*.txt`,
   - `assets/tv-slides/slides.json`,
   - `assets/data/*` (Fun-Messages, Ankündigungen).
 
