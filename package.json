@@ -1,9 +1,0 @@
-{
-  "name": "hgh-app",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "generate:sw-assets": "node scripts/generate-sw-assets.mjs",
-    "test": "node tests/lifecycle.test.mjs && node tests/http-client.test.mjs && node tests/school-model.test.mjs"
-  }
-}
