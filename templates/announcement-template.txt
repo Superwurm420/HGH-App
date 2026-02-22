@@ -1,0 +1,6 @@
+title: Titel der Ankündigung
+date: 24.06.2026 08:30
+audience: alle
+expires: 30.06.2026 16:00
+---
+Hier steht der eigentliche Ankündigungstext.
