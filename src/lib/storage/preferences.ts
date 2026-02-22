@@ -1,20 +1,17 @@
 'use client';
 
-import { SchoolClass } from '@/lib/timetable/types';
-
 const CLASS_KEY = 'hgh:selected-class';
 const THEME_KEY = 'hgh:theme';
 const CACHE_KEY = 'hgh:last-data';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
-export function saveSelectedClass(value: SchoolClass) {
+export function saveSelectedClass(value: string) {
   localStorage.setItem(CLASS_KEY, value);
 }
 
-export function loadSelectedClass(): SchoolClass | null {
-  const value = localStorage.getItem(CLASS_KEY);
-  return value as SchoolClass | null;
+export function loadSelectedClass(): string | null {
+  return localStorage.getItem(CLASS_KEY);
 }
 
 export function saveTheme(mode: ThemeMode) {

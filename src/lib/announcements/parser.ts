@@ -1,4 +1,4 @@
-import { CLASSES, SchoolClass, SpecialEvent } from '@/lib/timetable/types';
+import { SchoolClass, SpecialEvent } from '@/lib/timetable/types';
 
 export type Announcement = {
   file: string;
@@ -11,6 +11,7 @@ export type Announcement = {
 };
 
 const DE_DATE = /^\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}$/;
+const CLASS_TOKEN = /\b[A-Z]{1,3}\d{2}\b/g;
 
 export function parseAnnouncement(raw: string, file: string): Announcement {
   const [headerRaw, ...bodyParts] = raw.split('\n---\n');
@@ -75,7 +76,7 @@ export function toSpecialEvent(item: Announcement): SpecialEvent | null {
 
 function extractClasses(audience?: string): SchoolClass[] | 'alle' {
   if (!audience || audience.toLowerCase() === 'alle') return 'alle';
-  const upper = audience.toUpperCase();
-  const found = CLASSES.filter((cls) => upper.includes(cls));
-  return found.length > 0 ? found : 'alle';
+  const matches = audience.toUpperCase().match(CLASS_TOKEN) ?? [];
+  const classes = [...new Set(matches)];
+  return classes.length > 0 ? classes : 'alle';
 }
