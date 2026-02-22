@@ -1,40 +1,53 @@
-# HGH-App – Schulstundenplan als PWA
+# HGH-App – Stundenplan als installierbare PWA
 
-Dieses Repository enthält das **Projektfundament** für eine einfache, installierbare Stundenplan-App (PWA) für Schüler:innen.
+Die App liest automatisch die neueste Stundenplan-PDF ein, erkennt verfügbare Klassen aus der PDF-Struktur und zeigt auf der Startseite die aktuelle Uhrzeit (Europe/Berlin), Sondertermine und den Unterricht vom heutigen Tag.
 
-## Ziele
-- Klassenbezogene Stundenplanansicht
-- Sondertermine als Abweichungen vom Standardtag
-- Einfache Inhaltsaktualisierung über Dateien in GitHub
-- Deutschsprachige Oberfläche
-- "Original-PDF anzeigen" als Fallback für volle Transparenz
+## Seiten
+- **Heute (`/`)**: Uhrzeit, Klassenauswahl, heutiger Unterricht, Sondertermine
+- **Wochenplan (`/stundenplan`)**: komplette Wochenansicht der Klasse + Button „Original-PDF anzeigen“
+- **Pinnwand (`/pinnwand`)**: TXT-basierte Meldungen inkl. Warnungen bei Teilfehlern
+- **Einstellungen (`/einstellungen`)**: Klasse ändern
 
-## Inhalt des Repos
-- `docs/PROJEKTIDEE.md` – Produktgedanke, Ziele, Nicht-Ziele
-- `docs/ARCHITEKTUR.md` – technische Leitplanken & Datenfluss
-- `docs/CONTENT_FORMATS.md` – verbindliche Dateiformate
-- `docs/CONTENT_GUIDE.md` – Schritt-für-Schritt für Dateiaustausch
-- `docs/PROJECT_START_CHECKLIST.md` – Start-/Qualitätscheckliste
-- `templates/announcement-template.txt` – Vorlage für Pinnwandtexte
-- `scripts/validate-content.mjs` – prüft Dateinamen und TXT-Formate
-- `scripts/select-latest-timetable.mjs` – ermittelt die neueste Stundenplan-PDF
+## Lokal starten
+```bash
+npm install
+npm run dev
+```
 
-## Struktur für austauschbare Inhalte
+## Build
+```bash
+npm run build
+npm run start
+```
+
+## Content-Checks
+```bash
+npm run validate-content
+npm run select-latest-timetable
+```
+
+## Kostenlos veröffentlichen (empfohlen: Vercel)
+Vercel ist für Next.js am einfachsten und kostenlos nutzbar (Hobby-Plan).
+
+1. Repo auf GitHub pushen.
+2. Auf [vercel.com](https://vercel.com) mit GitHub anmelden.
+3. **New Project** → Repo `HGH-App` auswählen.
+4. Framework erkennt Vercel automatisch als **Next.js**.
+5. **Deploy** klicken.
+6. Nach dem Deploy die URL öffnen (z. B. `https://hgh-app.vercel.app`).
+7. Auf dem Handy im Browser „Zum Home-Bildschirm“ / „Installieren“ wählen.
+
+Hinweis: GitHub Pages ist nur für statische Seiten gedacht. Diese App nutzt serverseitige Next.js-Funktionen und läuft deshalb auf Vercel deutlich zuverlässiger.
+
+## Inhalte
 ```text
 public/content/
-  timetables/
-  announcements/
+  timetables/      # Stundenplan-PDFs (Schema bevorzugt: Stundenplan_kw_XX_HjY_YYYY_YY.pdf)
+  announcements/   # TXT für Pinnwand/Sondertermine
   branding/
 ```
 
-## Validierung verwenden
-```bash
-node scripts/validate-content.mjs
-```
-
-## Neueste Stundenplan-PDF ermitteln
-```bash
-node scripts/select-latest-timetable.mjs
-```
-
-Beide Skripte sind bewusst einfach gehalten, damit Mitwirkende schnell verstehen, was zu tun ist.
+## Fachlogik kurz
+- Sondertermine werden im Tages-/Wochenplan priorisiert angezeigt.
+- Klassenliste ist nicht fest im Code verdrahtet, sondern wird aus der aktuell geparsten PDF abgeleitet.
+- Falls PDF-Namen vom Standardschema abweichen, nutzt die Auswahl der neuesten Datei eine robuste Fallback-Erkennung.
