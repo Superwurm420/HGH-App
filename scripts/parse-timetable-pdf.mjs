@@ -1,5 +1,11 @@
 import fs from 'node:fs';
-import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
+
+// pdfjs-dist v5 removed the legacy/ folder; try common paths
+let pdfjsLib;
+try { pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs'); }
+catch { try { pdfjsLib = await import('pdfjs-dist/build/pdf.mjs'); }
+catch { pdfjsLib = await import('pdfjs-dist'); } }
+const { getDocument } = pdfjsLib;
 
 const pdfPath = process.argv[2];
 if (!pdfPath) {
