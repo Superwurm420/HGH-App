@@ -1,4 +1,4 @@
-import './globals.css';
+import '@/styles/globals.css';
 import type { Metadata, Viewport } from 'next';
 import { ThemeScript } from '@/components/ui/ThemeScript';
 import { ServiceWorkerRegister } from '@/components/ui/ServiceWorkerRegister';

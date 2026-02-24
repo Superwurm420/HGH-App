@@ -40,7 +40,7 @@ Wenn eine Klasse `0 Stunden` hat oder `Keine Klassen erkannt` erscheint, stimmt 
 
 ## 2) Pinnwand aktualisieren
 1. Neue `.txt` in `public/content/announcements/` anlegen.
-2. Vorlage aus `templates/announcement-template.txt` verwenden.
+2. Vorlage aus `docs/templates/announcement-template.txt` verwenden.
 3. Formatfelder ausfüllen (`title`, `date`; optional `audience`, `expires`).
 4. Commit + Push.
 

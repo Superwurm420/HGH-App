@@ -23,7 +23,7 @@ Das Prebuild-Script (`scripts/prebuild.mjs`) läuft vor jedem `next build`:
 3. Berechnet Spaltenbreiten dynamisch (Mitte zwischen benachbarten Klassen)
 4. Liest Wochentage (MO–FR), Stundennummern und Zeitangaben
 5. Ordnet Fächer den erkannten Spalten zu
-6. Schreibt Ergebnis nach `src/data/timetable-data.json`
+6. Schreibt Ergebnis nach `src/generated/timetable-data.json`
 
 ### 3. Wann wird neu geparst?
 - **Vercel**: Automatisch bei jedem Git-Push (Vercel baut neu → `prebuild.mjs` läuft)

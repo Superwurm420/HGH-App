@@ -1,7 +1,7 @@
 import { weekdayForToday } from './pdfParser';
 import { compareTimetable } from './selectLatest';
 import { ParsedSchedule, SchoolClass, TimetableMeta } from './types';
-import rawData from '@/data/timetable-data.json';
+import rawData from '@/generated/timetable-data.json';
 
 const data = rawData as unknown as {
   files: TimetableMeta[];
