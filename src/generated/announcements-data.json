@@ -1,19 +1,21 @@
 [
   {
     "file": "hinweis_unvollstaendig.txt",
-    "title": "Hinweis zur Projektwoche",
+    "title": "Hinweis Test",
     "date": "26.02.2026 08:00",
     "audience": "alle",
-    "body": "Projektwoche startet kommende Woche. Details folgen.",
+    "body": "Ein Test für Hinweise",
     "warnings": []
   },
   {
     "file": "sondertermin_ht11.txt",
-    "title": "Block 3+4 entfällt",
-    "date": "25.02.2026 09:45",
-    "audience": "HT11",
-    "expires": "25.02.2026 13:00",
-    "body": "Wegen schulinterner Veranstaltung entfällt der Unterricht in Block 3 und 4.",
-    "warnings": []
+    "title": "Test",
+    "date": "20.04.2025 04:20",
+    "audience": "HT11 HT22 GT01",
+    "expires": "20.04.2026 4:20",
+    "body": "Das ist ein Test",
+    "warnings": [
+      "'expires' hat nicht das Format TT.MM.JJJJ HH:mm."
+    ]
   }
 ]
