@@ -1,5 +1,6 @@
-title: Hinweis zur Projektwoche
+title: Hinweis Test
 date: 26.02.2026 08:00
 audience: alle
 ---
-Projektwoche startet kommende Woche. Details folgen.
+
+Ein Test für Hinweise
