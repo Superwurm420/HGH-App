@@ -1,6 +1,6 @@
 import { Announcement, isActive, toSpecialEvent } from './parser';
 import { SchoolClass, SpecialEvent } from '@/lib/timetable/types';
-import rawAnnouncements from '@/data/announcements-data.json';
+import rawAnnouncements from '@/generated/announcements-data.json';
 
 const allAnnouncements = rawAnnouncements as unknown as Announcement[];
 

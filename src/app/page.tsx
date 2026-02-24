@@ -9,8 +9,8 @@ import { AnnouncementList } from '@/components/announcements/AnnouncementList';
 import { getAnnouncements } from '@/lib/announcements/server';
 import { DailyMessage } from '@/components/ui/DailyMessage';
 import { GoogleCalendar } from '@/components/ui/GoogleCalendar';
-import messagesData from '@/data/messages-data.json';
-import calendarData from '@/data/calendar-data.json';
+import messagesData from '@/generated/messages-data.json';
+import calendarData from '@/generated/calendar-data.json';
 
 export default async function HomePage({ searchParams }: { searchParams: { klasse?: string } }) {
   const plan = await getWeeklyPlanForClass(searchParams.klasse);
