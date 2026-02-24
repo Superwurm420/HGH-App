@@ -18,6 +18,7 @@ export type LessonEntry = {
   time: string;
   subject?: string;
   detail?: string;
+  room?: string;
 };
 
 export type WeekPlan = Record<Weekday, LessonEntry[]>;

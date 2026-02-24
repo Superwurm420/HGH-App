@@ -14,7 +14,7 @@ import calendarData from '@/generated/calendar-data.json';
 
 export default async function HomePage({ searchParams }: { searchParams: { klasse?: string } }) {
   const plan = await getWeeklyPlanForClass(searchParams.klasse);
-  const calendarUrl = (calendarData as { urls: string[] }).urls?.[0] ?? null;
+  const calendarUrls = (calendarData as { urls: string[] }).urls ?? [];
 
   if (!plan) {
     return (
@@ -25,8 +25,8 @@ export default async function HomePage({ searchParams }: { searchParams: { klass
           <p className="text-sm text-muted mt-2">Kein Stundenplan verfügbar.</p>
         </div>
         <DailyMessage messages={messagesData as Record<string, unknown>} />
-        {calendarUrl ? (
-          <GoogleCalendar url={calendarUrl} />
+        {calendarUrls.length > 0 ? (
+          <GoogleCalendar urls={calendarUrls} />
         ) : (
           <div className="mt-3">
             <MiniCalendar />
@@ -65,8 +65,8 @@ export default async function HomePage({ searchParams }: { searchParams: { klass
         schoolClass={plan.schoolClass}
       />
 
-      {calendarUrl ? (
-        <GoogleCalendar url={calendarUrl} />
+      {calendarUrls.length > 0 ? (
+        <GoogleCalendar urls={calendarUrls} />
       ) : (
         <div className="mt-3">
           <MiniCalendar />

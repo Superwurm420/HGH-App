@@ -75,7 +75,14 @@ export function WeekSchedule({
                         <span className="week-period-badge">{periodLabel(lesson)}</span>
                         <span className="week-lesson-time">{timeStart(lesson.time)}</span>
                       </div>
-                      <div className="week-lesson-subject">{lesson.subject ?? '–'}</div>
+                      <div className="week-lesson-subject">
+                        {(lesson.subject ?? '–').split('/').map((part, idx, arr) => (
+                          <span key={idx}>{part}{idx < arr.length - 1 && <br />}</span>
+                        ))}
+                      </div>
+                      {lesson.room && (
+                        <div className="week-lesson-room">R{lesson.room}</div>
+                      )}
                       {lesson.detail && (
                         <div className="week-lesson-detail">{lesson.detail}</div>
                       )}

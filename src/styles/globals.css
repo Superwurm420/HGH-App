@@ -236,7 +236,7 @@ body {
 .tt-header,
 .tt-row {
   display: grid;
-  grid-template-columns: 102px minmax(150px, 1fr) minmax(106px, auto);
+  grid-template-columns: 102px minmax(120px, 1fr) 52px minmax(80px, auto);
 }
 
 .tt-header {
@@ -503,7 +503,7 @@ body {
 @media (max-width: 739px) {
   .tt-header,
   .tt-row {
-    grid-template-columns: 88px minmax(140px, 1fr) minmax(84px, auto);
+    grid-template-columns: 88px minmax(100px, 1fr) 44px minmax(60px, auto);
   }
 
   .tt-cell {
@@ -514,7 +514,7 @@ body {
 @media (max-width: 360px) {
   .tt-header,
   .tt-row {
-    grid-template-columns: 78px 1fr auto;
+    grid-template-columns: 78px 1fr 40px auto;
   }
 }
 
@@ -594,6 +594,8 @@ body {
 .week-col {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .week-col-header {
@@ -638,6 +640,11 @@ body {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  flex: 1;
+}
+
+.week-col-lessons .week-lesson-card {
+  flex: 1;
 }
 
 .week-lesson-card {
@@ -678,6 +685,13 @@ body {
   font-weight: 600;
   line-height: 1.3;
   word-break: break-word;
+}
+
+.week-lesson-room {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-top: 2px;
 }
 
 .week-lesson-detail {

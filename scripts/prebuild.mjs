@@ -348,12 +348,15 @@ function mergePeriodPairs(lessons) {
         ? existingDetail ? `${teacherKuerzel} · ${existingDetail}` : teacherKuerzel
         : existingDetail || undefined;
 
+      const mergedRoom = curr.room || next.room;
+
       result.push({
         period: curr.period,
         periodEnd: next.period,
         time: mergeTimeRange(curr.time, next.time),
         subject: curr.subject,
         detail: mergedDetail || undefined,
+        ...(mergedRoom ? { room: mergedRoom } : {}),
       });
       i += 2;
     } else {
