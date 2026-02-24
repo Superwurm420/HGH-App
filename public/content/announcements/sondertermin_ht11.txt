@@ -1,8 +1,8 @@
-title: Block 3+4 entfällt
+title: Test
 
 
-date: 25.02.2026 09:45
-audience: HT11
-expires: 25.02.2026 13:00
+date: 20.04.2025 04:20
+audience: HT11 HT22 GT01
+expires: 20.04.2026 4:20
 ---
-Wegen schulinterner Veranstaltung entfällt der Unterricht in Block 3 und 4.
+Das ist ein Test 
