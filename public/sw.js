@@ -1,5 +1,5 @@
-const CACHE = 'hgh-pwa-v1';
-const URLS = ['/', '/stundenplan', '/pinnwand', '/manifest.webmanifest'];
+const CACHE = 'hgh-pwa-v2';
+const URLS = ['/', '/stundenplan', '/woche', '/weiteres', '/manifest.webmanifest'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(URLS)));

@@ -1,5 +1,9 @@
 import { SpecialEvent, WeekPlan, WEEKDAYS, Weekday } from '@/lib/timetable/types';
 
+const DAY_LABELS: Record<Weekday, string> = {
+  MO: 'Montag', DI: 'Dienstag', MI: 'Mittwoch', DO: 'Donnerstag', FR: 'Freitag',
+};
+
 function dayFromGermanDate(value: string): Weekday | null {
   const [datePart] = value.split(' ');
   const [day, month, year] = datePart.split('.').map(Number);
@@ -9,41 +13,53 @@ function dayFromGermanDate(value: string): Weekday | null {
   return map[jsDay] ?? null;
 }
 
-export function WeekSchedule({ schoolClass, week, events }: { schoolClass: string; week: WeekPlan; events: SpecialEvent[] }) {
+export function WeekSchedule({
+  week,
+  events,
+  todayKey,
+}: {
+  schoolClass?: string;
+  week: WeekPlan;
+  events: SpecialEvent[];
+  todayKey?: Weekday;
+}) {
   return (
-    <section className="space-y-3">
-      <div className="card">
-        <h2 className="text-lg font-semibold">Wochenübersicht – {schoolClass}</h2>
-      </div>
+    <div className="space-y-2">
       {WEEKDAYS.map((day) => {
         const dayEvents = events.filter((event) => dayFromGermanDate(event.startsAt) === day);
+        const lessons = week[day];
+        const isToday = day === todayKey;
+
         return (
-          <article key={day} className="card">
-            <h3 className="mb-2 font-semibold">{day}</h3>
-            {dayEvents.length > 0 ? (
-              <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm dark:border-amber-700 dark:bg-amber-900/20">
-                <p className="font-semibold">Sondertermine (priorisiert)</p>
-                <ul className="mt-1 space-y-1">
-                  {dayEvents.map((event) => (
-                    <li key={event.id}>{event.title} · {event.startsAt}</li>
-                  ))}
-                </ul>
-              </div>
-            ) : week[day].length === 0 ? (
-              <p className="text-sm">Keine Einträge erkannt.</p>
-            ) : (
-              <ul className="space-y-2">
-                {week[day].map((lesson) => (
-                  <li key={`${day}-${lesson.period}-${lesson.time}`} className="text-sm">
-                    <strong>{lesson.period}. Std ({lesson.time})</strong>: {lesson.subject}
-                    {lesson.detail ? <span className="text-xs text-slate-500"> · {lesson.detail}</span> : null}
-                  </li>
+          <div key={day}>
+            <div className={`week-day-header ${isToday ? 'today' : ''}`}>
+              {DAY_LABELS[day]} {isToday && '(heute)'}
+            </div>
+
+            {dayEvents.length > 0 && (
+              <div className="announcement-card highlight mt-1 mb-1">
+                {dayEvents.map((event) => (
+                  <p key={event.id} className="text-sm">{event.title} · {event.startsAt}</p>
                 ))}
-              </ul>
+              </div>
             )}
-          </article>
+
+            {lessons.length === 0 ? (
+              <p className="text-sm text-muted py-2 px-3">Keine Einträge.</p>
+            ) : (
+              <div className="overflow-hidden rounded-b-xl border border-t-0 border-[var(--line)]">
+                {lessons.map((lesson) => (
+                  <div key={`${day}-${lesson.period}-${lesson.time}`} className="tt-row">
+                    <div className="tt-cell text-sm font-medium">{lesson.period}. {lesson.time}</div>
+                    <div className="tt-cell text-sm">{lesson.subject ?? '-'}</div>
+                    <div className="tt-cell text-xs text-muted">{lesson.detail ?? ''}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         );
       })}
-    </section>
+    </div>
   );
 }

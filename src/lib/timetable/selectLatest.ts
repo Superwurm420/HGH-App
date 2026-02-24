@@ -3,6 +3,12 @@ import { TimetableMeta } from './types';
 const PATTERN = /^Stundenplan_kw_(\d{2})_Hj([12])_(\d{4})_(\d{2})\.pdf$/i;
 const FALLBACK_PATTERN = /(\d{4}).*?(\d{1,2})/;
 
+/**
+ * Parst den Dateinamen einer Stundenplan-PDF.
+ *
+ * Bevorzugtes Schema: Stundenplan_kw_XX_HjY_YYYY_YY.pdf
+ * Fallback: Jede PDF mit einer Jahreszahl wird erkannt.
+ */
 export function parseTimetableFilename(filename: string): TimetableMeta | null {
   const match = filename.match(PATTERN);
   if (match) {
@@ -16,6 +22,7 @@ export function parseTimetableFilename(filename: string): TimetableMeta | null {
     };
   }
 
+  // Fallback: Datei mit Jahreszahl im Namen
   const fallback = filename.match(FALLBACK_PATTERN);
   if (!fallback) return null;
 
