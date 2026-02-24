@@ -17,7 +17,7 @@ import path from 'node:path';
 const ROOT = process.cwd();
 const TIMETABLE_DIR = path.join(ROOT, 'public/content/timetables');
 const ANNOUNCEMENT_DIR = path.join(ROOT, 'public/content/announcements');
-const OUTPUT_DIR = path.join(ROOT, 'src/data');
+const OUTPUT_DIR = path.join(ROOT, 'src/generated');
 
 // ── Timetable filename parsing ──────────────────────────────────────────────
 
