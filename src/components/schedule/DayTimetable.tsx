@@ -61,7 +61,8 @@ export function DayTimetable({
           <div className="tt-header">
             <div className="tt-cell">Zeit</div>
             <div className="tt-cell">Fach</div>
-            <div className="tt-cell">Lehrer / Raum</div>
+            <div className="tt-cell">Raum</div>
+            <div className="tt-cell">Info</div>
           </div>
           {lessons.map((lesson: LessonEntry) => (
             <div key={`${activeDay}-${lesson.period}-${lesson.time}`} className="tt-row">
@@ -70,6 +71,7 @@ export function DayTimetable({
                 {' '}{lesson.time}
               </div>
               <div className="tt-cell text-sm">{lesson.subject ?? '-'}</div>
+              <div className="tt-cell text-sm font-medium">{lesson.room ?? ''}</div>
               <div className="tt-cell text-xs text-muted">{lesson.detail ?? ''}</div>
             </div>
           ))}
