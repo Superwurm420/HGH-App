@@ -15,7 +15,7 @@ if (!pdfPath) {
 
 const WEEKDAYS = ['MO', 'DI', 'MI', 'DO', 'FR'];
 const DAY_SET = new Set(WEEKDAYS);
-const CLASS_PATTERN = /^[A-Z]{1,3}\d{2}$/;
+const CLASS_PATTERN = /^[A-Z]{1,3}\s?\d{2}$/;
 
 const data = new Uint8Array(fs.readFileSync(pdfPath));
 const doc = await getDocument({ data }).promise;
@@ -47,8 +47,8 @@ function detectClassCenters() {
 
   for (const row of headerRows) {
     for (const item of row.items) {
-      const token = item.str.toUpperCase();
-      if (!CLASS_PATTERN.test(token)) continue;
+      const token = item.str.toUpperCase().replace(/\s+/g, '');
+      if (!CLASS_PATTERN.test(item.str.toUpperCase())) continue;
       if (item.x < 80) continue;
       if (!classes.has(token)) classes.set(token, item.x);
     }

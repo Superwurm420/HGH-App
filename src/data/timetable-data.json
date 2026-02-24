@@ -644,6 +644,94 @@
             "detail": "WEN"
           }
         ]
+      },
+      "GT01": {
+        "MO": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "#NV Materialkunde",
+            "detail": "BER/WEZ"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "BER/WEZ"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "BER"
+          }
+        ],
+        "DI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "CAD",
+            "detail": "WEN"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Haustechnik",
+            "detail": "WEZ/PET"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Haustechnik",
+            "detail": "WEZ/PET"
+          }
+        ],
+        "MI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Freihandzeichnen",
+            "detail": "WEN"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "WEN"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "WEN"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "CAD",
+            "detail": "WEN"
+          }
+        ],
+        "DO": [
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Designgeschichte",
+            "detail": "STE"
+          }
+        ],
+        "FR": []
       }
     },
     "Stundenplan_kw_08_Hj2_2025_26.pdf": {
@@ -1208,6 +1296,94 @@
           }
         ],
         "FR": []
+      },
+      "GT01": {
+        "MO": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Materialkunde",
+            "detail": "BER/WEZ"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "BER/WEZ"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "BER"
+          }
+        ],
+        "DI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "CAD",
+            "detail": "WEN"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Haustechnik",
+            "detail": "WEZ/PET"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Haustechnik",
+            "detail": "WEZ/PET"
+          }
+        ],
+        "MI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Freihandzeichnen",
+            "detail": "WEN"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "WEN"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "WEN"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "CAD",
+            "detail": "WEN"
+          }
+        ],
+        "DO": [
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Designgeschichte",
+            "detail": "STE"
+          }
+        ],
+        "FR": []
       }
     },
     "Stundenplan_kw_07_Hj2_2025_26.pdf": {
@@ -1695,7 +1871,7 @@
             "period": 7,
             "periodEnd": 8,
             "time": "14.10 - 15.40",
-            "subject": "Buchführung 5",
+            "subject": "Buchführung",
             "detail": "TAM"
           }
         ],
@@ -1798,6 +1974,99 @@
             "detail": "WEN"
           }
         ]
+      },
+      "GT01": {
+        "MO": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "#NV Materialkunde",
+            "detail": "BER/WEZ"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "BER/WEZ"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "BER"
+          },
+          {
+            "period": 7,
+            "time": "14.10 - 14.55",
+            "subject": "5"
+          }
+        ],
+        "DI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "CAD",
+            "detail": "WEN"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Haustechnik",
+            "detail": "WEZ/PET"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Haustechnik",
+            "detail": "WEZ/PET"
+          }
+        ],
+        "MI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Freihandzeichnen",
+            "detail": "WEN"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "WEN"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "WEN"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "CAD",
+            "detail": "WEN"
+          }
+        ],
+        "DO": [
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Designgeschichte",
+            "detail": "STE"
+          }
+        ],
+        "FR": []
       }
     },
     "Stundenplan_kw_45_Hj1_2025_26.pdf": {
@@ -2410,6 +2679,17 @@
             "detail": "WEZ/BER"
           },
           {
+            "period": 4,
+            "time": "10.35 - 11.20",
+            "subject": "BBS Nienburg"
+          },
+          {
+            "period": 5,
+            "time": "11.40 - 12.25",
+            "subject": "9.50 - 13.10 Uhr",
+            "room": "7"
+          },
+          {
             "period": 7,
             "periodEnd": 8,
             "time": "14.10 - 15.40",
@@ -2523,6 +2803,80 @@
             "detail": "WEN"
           }
         ]
+      },
+      "GT01": {
+        "MO": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Entwurf/Konstruktion WEZ",
+            "detail": "WEZ/BER"
+          }
+        ],
+        "DI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Freihandzeichnen",
+            "detail": "WEN"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Entwurf/Konstruktion WEN",
+            "detail": "WEN"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Entwurf/Konstruktion WEN",
+            "detail": "WEN"
+          }
+        ],
+        "MI": [
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "CAD",
+            "detail": "WEN"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Designgeschichte",
+            "detail": "STE"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Farbe und Form",
+            "detail": "BÜ"
+          }
+        ],
+        "DO": [
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "KüGest",
+            "detail": "WEN"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "CAD",
+            "detail": "WEN"
+          }
+        ],
+        "FR": []
       }
     },
     "Stundenplan_kw_25_Hj2_2024_25.pdf": {
@@ -3167,6 +3521,58 @@
             "time": "11.40 - 13.10",
             "subject": "Fertigungstechnik",
             "detail": "WED"
+          }
+        ],
+        "FR": []
+      },
+      "GT01": {
+        "MO": [
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Entwurf/Konstruktion (Kurs)",
+            "detail": "BER"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Freies Zeichnen (Kurs)",
+            "detail": "BÜ"
+          }
+        ],
+        "DI": [
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Haustechnik (Kurs)",
+            "detail": "PET"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Haustechnik (Kurs)",
+            "detail": "PET"
+          }
+        ],
+        "MI": [],
+        "DO": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "CAD",
+            "detail": "WEN"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "CAD",
+            "detail": "WEN"
           }
         ],
         "FR": []
