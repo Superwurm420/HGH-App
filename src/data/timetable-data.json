@@ -46,16 +46,25 @@
       "HT11": {
         "MO": [
           {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Deutsch",
+            "detail": "MEL"
+          },
+          {
             "period": 3,
             "periodEnd": 4,
             "time": "9.50 - 11.20",
-            "subject": "Modul2/Obfl",
-            "detail": "WED"
+            "subject": "Modul1/KuSti",
+            "detail": "MEL"
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Englisch"
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul7/Excel",
+            "detail": "WED"
           },
           {
             "period": 7,
@@ -67,10 +76,21 @@
         ],
         "DI": [
           {
-            "period": 2,
-            "time": "8.45 - 9.30",
-            "subject": "#NV"
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul2/Obfl",
+            "detail": "WED"
           },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Englisch",
+            "detail": "WEN"
+          }
+        ],
+        "MI": [
           {
             "period": 3,
             "periodEnd": 4,
@@ -80,29 +100,10 @@
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Modul1/CAD"
-          }
-        ],
-        "MI": [
-          {
-            "period": 1,
-            "periodEnd": 2,
-            "time": "8.00 - 9.30",
-            "subject": "Modul2/FT",
-            "detail": "STE"
-          },
-          {
-            "period": 3,
-            "periodEnd": 4,
-            "time": "9.50 - 11.20",
-            "subject": "Politik",
-            "detail": "STI"
-          },
-          {
-            "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Mathematik"
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul1/CAD",
+            "detail": "HOFF"
           },
           {
             "period": 7,
@@ -117,13 +118,22 @@
             "period": 1,
             "periodEnd": 2,
             "time": "8.00 - 9.30",
-            "subject": "Modul2/CNC",
-            "detail": "HOFF"
+            "subject": "Modul2/FT",
+            "detail": "STE"
           },
           {
             "period": 3,
-            "time": "9.50 - 10.35",
-            "subject": "Modul7/ReWe"
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Politik",
+            "detail": "STI"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Mathematik",
+            "detail": "TAM"
           },
           {
             "period": 7,
@@ -135,15 +145,40 @@
         ],
         "FR": [
           {
-            "period": 4,
-            "time": "10.35 - 11.20",
-            "subject": "STI"
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Modul2/CNC",
+            "detail": "HOFF"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul7/ReWe",
+            "detail": "STI"
           }
         ]
       },
       "HT12": {
         "MO": [
           {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul7/Excel",
+            "detail": "WED"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul2/Statik",
+            "detail": "HOFF"
+          }
+        ],
+        "DI": [
+          {
             "period": 1,
             "periodEnd": 2,
             "time": "8.00 - 9.30",
@@ -155,256 +190,47 @@
             "periodEnd": 4,
             "time": "9.50 - 11.20",
             "subject": "Englisch",
-            "detail": "WEN · 6"
+            "detail": "WEN"
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
             "subject": "Modul2/Obfl",
-            "detail": "9"
+            "detail": "WED"
           }
         ],
-        "DI": [
+        "MI": [
           {
             "period": 1,
             "periodEnd": 2,
             "time": "8.00 - 9.30",
             "subject": "Modul7/ReWe",
-            "detail": "STI · #NV"
+            "detail": "STI"
           },
           {
             "period": 3,
             "periodEnd": 4,
             "time": "9.50 - 11.20",
             "subject": "Modul1/CAD",
-            "detail": "HOFF · 5"
+            "detail": "HOFF"
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
             "subject": "Modul1/Wsk",
-            "detail": "4"
-          }
-        ],
-        "MI": [
-          {
-            "period": 1,
-            "periodEnd": 2,
-            "time": "8.00 - 9.30",
-            "subject": "Deutsch",
-            "detail": "MEL · 1"
-          },
-          {
-            "period": 3,
-            "periodEnd": 4,
-            "time": "9.50 - 11.20",
-            "subject": "Mathematik",
-            "detail": "TAM · 8"
-          },
-          {
-            "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Modul1/KuSti",
-            "detail": "5"
+            "detail": "TAM"
           },
           {
             "period": 7,
             "periodEnd": 8,
             "time": "14.10 - 15.40",
             "subject": "Modul6/Mark/DTP",
-            "detail": "STI · 5"
+            "detail": "STI"
           }
         ],
         "DO": [
-          {
-            "period": 3,
-            "time": "9.50 - 10.35",
-            "subject": "Modul2/CNC"
-          }
-        ],
-        "FR": [
-          {
-            "period": 4,
-            "time": "10.35 - 11.20",
-            "subject": "HOFF"
-          },
-          {
-            "period": 5,
-            "periodEnd": 6,
-            "time": "11.40 - 13.10",
-            "subject": "Modul2/FT",
-            "detail": "STE"
-          }
-        ]
-      },
-      "HT21": {
-        "MO": [
-          {
-            "period": 1,
-            "periodEnd": 2,
-            "time": "8.00 - 9.30",
-            "subject": "Modul4/Excel bis 21.3",
-            "detail": "WED · 8"
-          },
-          {
-            "period": 3,
-            "periodEnd": 4,
-            "time": "9.50 - 11.20",
-            "subject": "NAT/Chemie",
-            "detail": "STI · 9"
-          },
-          {
-            "period": 7,
-            "periodEnd": 8,
-            "time": "14.10 - 15.40",
-            "subject": "Buchführung",
-            "detail": "TAM"
-          }
-        ],
-        "DI": [
-          {
-            "period": 2,
-            "time": "8.45 - 9.30",
-            "subject": "#NV"
-          },
-          {
-            "period": 3,
-            "periodEnd": 4,
-            "time": "9.50 - 11.20",
-            "subject": "Modul8/BWL",
-            "detail": "STI · 4"
-          },
-          {
-            "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Modul8/ReWe",
-            "detail": "5"
-          }
-        ],
-        "MI": [
-          {
-            "period": 1,
-            "periodEnd": 2,
-            "time": "8.00 - 9.30",
-            "subject": "NAT/Chemie",
-            "detail": "STI · 5"
-          },
-          {
-            "period": 3,
-            "periodEnd": 4,
-            "time": "9.50 - 11.20",
-            "subject": "Englisch",
-            "detail": "HOFF · 5"
-          },
-          {
-            "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Modul4/Obfl",
-            "detail": "5"
-          },
-          {
-            "period": 7,
-            "periodEnd": 8,
-            "time": "14.10 - 15.40",
-            "subject": "Geschäftskunde",
-            "detail": "STE · 3/8"
-          }
-        ],
-        "DO": [
-          {
-            "period": 1,
-            "periodEnd": 2,
-            "time": "8.00 - 9.30",
-            "subject": "Modul3/MöKo",
-            "detail": "STE"
-          },
-          {
-            "period": 3,
-            "time": "9.50 - 10.35",
-            "subject": "Modul3/MöKo"
-          },
-          {
-            "period": 7,
-            "periodEnd": 8,
-            "time": "14.10 - 15.40",
-            "subject": "Mathematik",
-            "detail": "TAM"
-          }
-        ],
-        "FR": [
-          {
-            "period": 4,
-            "time": "10.35 - 11.20",
-            "subject": "STE"
-          },
-          {
-            "period": 5,
-            "periodEnd": 6,
-            "time": "11.40 - 13.10",
-            "subject": "Modul4/CAD",
-            "detail": "HOFF · 1"
-          }
-        ]
-      },
-      "HT22": {
-        "MO": [],
-        "DI": [
-          {
-            "period": 4,
-            "time": "10.35 - 11.20",
-            "subject": "FERTIGUNG"
-          }
-        ],
-        "MI": [],
-        "DO": [],
-        "FR": []
-      },
-      "G11": {
-        "MO": [
-          {
-            "period": 1,
-            "periodEnd": 2,
-            "time": "8.00 - 9.30",
-            "subject": "Politik",
-            "detail": "STI"
-          },
-          {
-            "period": 3,
-            "periodEnd": 4,
-            "time": "9.50 - 11.20",
-            "subject": "Englisch",
-            "detail": "WEN"
-          },
-          {
-            "period": 7,
-            "periodEnd": 8,
-            "time": "14.10 - 15.40",
-            "subject": "Entwurf/Konstruktion",
-            "detail": "WEZ"
-          }
-        ],
-        "DI": [
-          {
-            "period": 1,
-            "periodEnd": 2,
-            "time": "8.00 - 9.30",
-            "subject": "Rechnungswesen",
-            "detail": "STI"
-          },
-          {
-            "period": 3,
-            "periodEnd": 4,
-            "time": "9.50 - 11.20",
-            "subject": "Entwurf/Konstruktion",
-            "detail": "WEN"
-          },
-          {
-            "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Entwurf/Konstruktion"
-          }
-        ],
-        "MI": [
           {
             "period": 1,
             "periodEnd": 2,
@@ -421,8 +247,246 @@
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "KuSti"
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul1/KuSti",
+            "detail": "MEL"
+          }
+        ],
+        "FR": [
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul2/CNC",
+            "detail": "HOFF"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul2/FT",
+            "detail": "STE"
+          }
+        ]
+      },
+      "HT21": {
+        "MO": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Modul4/FeKo",
+            "detail": "HOG"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul5/AV",
+            "detail": "TAM"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul5/Betriebsplanung",
+            "detail": "HOG"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Buchführung",
+            "detail": "TAM"
+          }
+        ],
+        "DI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Modul4/Excel bis 21.3",
+            "detail": "WED"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "NAT/Chemie",
+            "detail": "STI"
+          }
+        ],
+        "MI": [
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul8/BWL",
+            "detail": "STI"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul8/ReWe",
+            "detail": "STI"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Geschäftskunde",
+            "detail": "STE"
+          }
+        ],
+        "DO": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "NAT/Chemie",
+            "detail": "STI"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Englisch",
+            "detail": "HOFF"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul4/Obfl",
+            "detail": "WED"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Mathematik",
+            "detail": "TAM"
+          }
+        ],
+        "FR": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Modul3/MöKo",
+            "detail": "STE"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul3/MöKo",
+            "detail": "STE"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul4/CAD",
+            "detail": "HOFF"
+          }
+        ]
+      },
+      "HT22": {
+        "MO": [],
+        "DI": [
+          {
+            "period": 6,
+            "time": "12.25- 13.10",
+            "subject": "PROJEKT"
+          }
+        ],
+        "MI": [
+          {
+            "period": 4,
+            "time": "10.35 - 11.20",
+            "subject": "FERTIGUNG"
+          }
+        ],
+        "DO": [
+          {
+            "period": 6,
+            "time": "12.25- 13.10",
+            "subject": "\"LYS\""
+          }
+        ],
+        "FR": []
+      },
+      "G11": {
+        "MO": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Materialkunde",
+            "detail": "BER/WEZ"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Freihandzeichnen-Aufgabe",
+            "detail": "ohne Lehrer"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "WEZ"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "WEZ"
+          }
+        ],
+        "DI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Politik",
+            "detail": "STI"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Englisch",
+            "detail": "WEN"
+          }
+        ],
+        "MI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Rechnungswesen",
+            "detail": "STI"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "WEN"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "WEN"
           },
           {
             "period": 7,
@@ -434,52 +498,51 @@
         ],
         "DO": [
           {
-            "period": 2,
-            "time": "8.45 - 9.30",
-            "subject": "#NV"
-          }
-        ],
-        "FR": [
-          {
-            "period": 4,
-            "time": "10.35 - 11.20",
-            "subject": "#NV"
-          },
-          {
-            "period": 6,
-            "time": "12.25- 13.10",
-            "subject": "#NV"
-          }
-        ]
-      },
-      "G21": {
-        "MO": [
-          {
             "period": 1,
             "periodEnd": 2,
             "time": "8.00 - 9.30",
-            "subject": "CAD",
-            "detail": "WEN · 8 9"
+            "subject": "Deutsch",
+            "detail": "MEL"
           },
           {
             "period": 3,
             "periodEnd": 4,
             "time": "9.50 - 11.20",
-            "subject": "Haustechnik",
-            "detail": "WEZ/PET · 9 5"
+            "subject": "Mathematik",
+            "detail": "TAM"
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Haustechnik",
-            "detail": "#NV 5"
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "KuSti",
+            "detail": "MEL"
+          }
+        ],
+        "FR": []
+      },
+      "G21": {
+        "MO": [
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "BER/WEZ"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "BER"
           },
           {
             "period": 7,
             "periodEnd": 8,
             "time": "14.10 - 15.40",
             "subject": "Buchführung",
-            "detail": "TAM · 4 5"
+            "detail": "TAM"
           }
         ],
         "DI": [
@@ -487,78 +550,98 @@
             "period": 1,
             "periodEnd": 2,
             "time": "8.00 - 9.30",
+            "subject": "CAD",
+            "detail": "WEN"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Haustechnik",
+            "detail": "WEZ/PET"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Haustechnik",
+            "detail": "WEZ/PET"
+          }
+        ],
+        "MI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
             "subject": "Freihandzeichnen",
-            "detail": "WEN · 8 9"
+            "detail": "WEN"
           },
           {
             "period": 3,
             "periodEnd": 4,
             "time": "9.50 - 11.20",
             "subject": "Fertigungstechnik",
-            "detail": "WED · 9 6"
+            "detail": "WED"
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
             "subject": "EDV/Excel",
-            "detail": "9 3"
-          }
-        ],
-        "MI": [
-          {
-            "period": 3,
-            "periodEnd": 4,
-            "time": "9.50 - 11.20",
-            "subject": "Designgeschichte",
-            "detail": "STE · 5 BS"
-          },
-          {
-            "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Englisch",
-            "detail": "5 1"
+            "detail": "WED"
           },
           {
             "period": 7,
             "periodEnd": 8,
             "time": "14.10 - 15.40",
             "subject": "Geschäftskunde",
-            "detail": "STE · 4 1"
+            "detail": "STE"
           }
         ],
         "DO": [
           {
-            "period": 1,
-            "periodEnd": 2,
-            "time": "8.00 - 9.30",
-            "subject": "Entwurf/Konstruktion",
-            "detail": "WEN · #NV 9"
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Designgeschichte",
+            "detail": "STE"
           },
           {
-            "period": 3,
-            "time": "9.50 - 10.35",
-            "subject": "Entwurf/Konstruktion"
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Englisch",
+            "detail": "HOFF"
           },
           {
             "period": 7,
             "periodEnd": 8,
             "time": "14.10 - 15.40",
             "subject": "Meisterstücke Beratung",
-            "detail": "STE · 5"
+            "detail": "STE"
           }
         ],
         "FR": [
           {
-            "period": 4,
-            "time": "10.35 - 11.20",
-            "subject": "WEN"
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "WEN"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "WEN"
           },
           {
             "period": 5,
             "periodEnd": 6,
             "time": "11.40 - 13.10",
             "subject": "Entwurf/Konstruktion",
-            "detail": "WEN · #NV 9"
+            "detail": "WEN"
           }
         ]
       }
@@ -566,6 +649,29 @@
     "Stundenplan_kw_08_Hj2_2025_26.pdf": {
       "HT11": {
         "MO": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Deutsch",
+            "detail": "MEL"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul1/KuSti",
+            "detail": "MEL"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul7/Excel",
+            "detail": "WED"
+          }
+        ],
+        "DI": [
           {
             "period": 3,
             "periodEnd": 4,
@@ -575,21 +681,13 @@
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Englisch"
-          },
-          {
-            "period": 8,
-            "time": "14.55 - 15.40",
-            "subject": "#NV"
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Englisch",
+            "detail": "WEN"
           }
         ],
-        "DI": [
-          {
-            "period": 2,
-            "time": "8.45 - 9.30",
-            "subject": "#NV"
-          },
+        "MI": [
           {
             "period": 3,
             "periodEnd": 4,
@@ -599,29 +697,10 @@
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Modul1/CAD"
-          }
-        ],
-        "MI": [
-          {
-            "period": 1,
-            "periodEnd": 2,
-            "time": "8.00 - 9.30",
-            "subject": "Modul2/FT",
-            "detail": "STE"
-          },
-          {
-            "period": 3,
-            "periodEnd": 4,
-            "time": "9.50 - 11.20",
-            "subject": "Politik",
-            "detail": "STI"
-          },
-          {
-            "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Mathematik"
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul1/CAD",
+            "detail": "HOFF"
           },
           {
             "period": 7,
@@ -636,13 +715,22 @@
             "period": 1,
             "periodEnd": 2,
             "time": "8.00 - 9.30",
-            "subject": "Modul2/CNC",
-            "detail": "HOFF"
+            "subject": "Modul2/FT",
+            "detail": "STE"
           },
           {
             "period": 3,
-            "time": "9.50 - 10.35",
-            "subject": "Modul7/ReWe"
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Politik",
+            "detail": "STI"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Mathematik",
+            "detail": "TAM"
           },
           {
             "period": 7,
@@ -654,14 +742,39 @@
         ],
         "FR": [
           {
-            "period": 4,
-            "time": "10.35 - 11.20",
-            "subject": "STI"
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Modul2/CNC",
+            "detail": "HOFF"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul7/ReWe",
+            "detail": "STI"
           }
         ]
       },
       "HT12": {
         "MO": [
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul7/Excel",
+            "detail": "WED"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul2/Statik",
+            "detail": "HOFF"
+          }
+        ],
+        "DI": [
           {
             "period": 1,
             "periodEnd": 2,
@@ -674,35 +787,14 @@
             "periodEnd": 4,
             "time": "9.50 - 11.20",
             "subject": "Englisch",
-            "detail": "WEN · 6"
+            "detail": "WEN"
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
             "subject": "Modul2/Obfl",
-            "detail": "9"
-          }
-        ],
-        "DI": [
-          {
-            "period": 1,
-            "periodEnd": 2,
-            "time": "8.00 - 9.30",
-            "subject": "Modul7/ReWe",
-            "detail": "STI · #NV"
-          },
-          {
-            "period": 3,
-            "periodEnd": 4,
-            "time": "9.50 - 11.20",
-            "subject": "Modul1/CAD",
-            "detail": "HOFF · 5"
-          },
-          {
-            "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Modul1/Wsk",
-            "detail": "4"
+            "detail": "WED"
           }
         ],
         "MI": [
@@ -710,42 +802,61 @@
             "period": 1,
             "periodEnd": 2,
             "time": "8.00 - 9.30",
-            "subject": "Deutsch",
-            "detail": "MEL · 1"
+            "subject": "Modul7/ReWe",
+            "detail": "STI"
           },
           {
             "period": 3,
             "periodEnd": 4,
             "time": "9.50 - 11.20",
-            "subject": "Mathematik",
-            "detail": "TAM · 8"
+            "subject": "Modul1/CAD",
+            "detail": "HOFF"
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Modul1/KuSti",
-            "detail": "5"
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul1/Wsk",
+            "detail": "TAM"
           },
           {
             "period": 7,
             "periodEnd": 8,
             "time": "14.10 - 15.40",
             "subject": "Modul6/Mark/DTP",
-            "detail": "STI · 2"
+            "detail": "STI"
           }
         ],
         "DO": [
           {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Deutsch",
+            "detail": "MEL"
+          },
+          {
             "period": 3,
-            "time": "9.50 - 10.35",
-            "subject": "Modul2/CNC"
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Mathematik",
+            "detail": "TAM"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul1/KuSti",
+            "detail": "MEL"
           }
         ],
         "FR": [
           {
-            "period": 4,
-            "time": "10.35 - 11.20",
-            "subject": "HOFF"
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul2/CNC",
+            "detail": "HOFF"
           },
           {
             "period": 5,
@@ -759,11 +870,6 @@
       "HT21": {
         "MO": [
           {
-            "period": 4,
-            "time": "10.35 - 11.20",
-            "subject": "USF"
-          },
-          {
             "period": 10,
             "time": "16.30 - 17.15",
             "subject": "FERTIGUNG"
@@ -771,34 +877,46 @@
         ],
         "DI": [
           {
+            "period": 4,
+            "time": "10.35 - 11.20",
+            "subject": "USF"
+          },
+          {
+            "period": 6,
+            "time": "12.25- 13.10",
+            "subject": "HT21"
+          },
+          {
             "period": 7,
             "time": "14.10 - 14.55",
             "subject": "\"LUNIDO\""
           }
         ],
-        "MI": [
+        "MI": [],
+        "DO": [
           {
             "period": 1,
             "periodEnd": 2,
             "time": "8.00 - 9.30",
             "subject": "NAT/Chemie",
-            "detail": "STI · 2"
+            "detail": "STI"
           },
           {
             "period": 3,
             "periodEnd": 4,
             "time": "9.50 - 11.20",
             "subject": "Englisch",
-            "detail": "HOFF · 5"
+            "detail": "HOFF"
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
             "subject": "Modul4/Obfl",
-            "detail": "2"
+            "detail": "WED"
           }
         ],
-        "DO": [
+        "FR": [
           {
             "period": 1,
             "periodEnd": 2,
@@ -808,32 +926,38 @@
           },
           {
             "period": 3,
-            "time": "9.50 - 10.35",
-            "subject": "Modul3/MöKo"
-          },
-          {
-            "period": 8,
-            "time": "14.55 - 15.40",
-            "subject": "#NV"
-          }
-        ],
-        "FR": [
-          {
-            "period": 4,
-            "time": "10.35 - 11.20",
-            "subject": "STE"
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul3/MöKo",
+            "detail": "STE"
           },
           {
             "period": 5,
             "periodEnd": 6,
             "time": "11.40 - 13.10",
             "subject": "Modul4/CAD",
-            "detail": "HOFF · 1"
+            "detail": "HOFF"
           }
         ]
       },
       "HT22": {
         "MO": [
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul5/Betriebsplanung",
+            "detail": "HOG"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul5/AV",
+            "detail": "TAM"
+          }
+        ],
+        "DI": [
           {
             "period": 1,
             "periodEnd": 2,
@@ -849,8 +973,8 @@
             "detail": "STI"
           }
         ],
-        "DI": [],
-        "MI": [
+        "MI": [],
+        "DO": [
           {
             "period": 2,
             "time": "8.45 - 9.30",
@@ -860,20 +984,11 @@
             "period": 4,
             "time": "10.35 - 11.20",
             "subject": "NEHMENS-"
-          }
-        ],
-        "DO": [
-          {
-            "period": 1,
-            "time": "8.00 - 8.45",
-            "subject": "USF",
-            "detail": "1"
           },
           {
             "period": 7,
             "time": "14.10 - 14.55",
-            "subject": "SERIEN-",
-            "detail": "#NV"
+            "subject": "SERIEN-"
           },
           {
             "period": 9,
@@ -881,7 +996,14 @@
             "subject": "FERTIGUNG"
           }
         ],
-        "FR": []
+        "FR": [
+          {
+            "period": 1,
+            "time": "8.00 - 8.45",
+            "subject": "USF",
+            "room": "1"
+          }
+        ]
       },
       "G11": {
         "MO": [
@@ -889,15 +1011,22 @@
             "period": 1,
             "periodEnd": 2,
             "time": "8.00 - 9.30",
-            "subject": "Politik",
-            "detail": "STI · 5"
+            "subject": "Materialkunde",
+            "detail": "BER/WEZ"
           },
           {
             "period": 3,
             "periodEnd": 4,
             "time": "9.50 - 11.20",
-            "subject": "Englisch",
-            "detail": "WEN · 8"
+            "subject": "Freihandzeichnen",
+            "detail": "WEN"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "WEZ"
           },
           {
             "period": 7,
@@ -908,6 +1037,22 @@
           }
         ],
         "DI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Politik",
+            "detail": "STI"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Englisch",
+            "detail": "WEN"
+          }
+        ],
+        "MI": [
           {
             "period": 1,
             "periodEnd": 2,
@@ -924,11 +1069,20 @@
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Entwurf/Konstruktion"
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "WEN"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "CAD",
+            "detail": "WEN"
           }
         ],
-        "MI": [
+        "DO": [
           {
             "period": 1,
             "periodEnd": 2,
@@ -945,36 +1099,13 @@
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "KuSti"
-          },
-          {
-            "period": 7,
-            "periodEnd": 8,
-            "time": "14.10 - 15.40",
-            "subject": "CAD",
-            "detail": "WEN"
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "KuSti",
+            "detail": "MEL"
           }
         ],
-        "DO": [
-          {
-            "period": 2,
-            "time": "8.45 - 9.30",
-            "subject": "#NV"
-          }
-        ],
-        "FR": [
-          {
-            "period": 4,
-            "time": "10.35 - 11.20",
-            "subject": "#NV"
-          },
-          {
-            "period": 6,
-            "time": "12.25- 13.10",
-            "subject": "#NV"
-          }
-        ]
+        "FR": []
       },
       "G21": {
         "MO": [
@@ -982,21 +1113,22 @@
             "period": 1,
             "periodEnd": 2,
             "time": "8.00 - 9.30",
-            "subject": "CAD",
-            "detail": "WEN · 8 9"
+            "subject": "MöKo-Meisterstück",
+            "detail": "STE"
           },
           {
             "period": 3,
             "periodEnd": 4,
             "time": "9.50 - 11.20",
-            "subject": "Haustechnik",
-            "detail": "WEZ/PET · 9 7"
+            "subject": "Entwurf/Konstruktion",
+            "detail": "BER/WEZ"
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Haustechnik",
-            "detail": "#NV 7"
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "BER"
           }
         ],
         "DI": [
@@ -1004,52 +1136,75 @@
             "period": 1,
             "periodEnd": 2,
             "time": "8.00 - 9.30",
+            "subject": "CAD",
+            "detail": "WEN"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Haustechnik",
+            "detail": "WEZ/PET"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Haustechnik",
+            "detail": "WEZ/PET"
+          }
+        ],
+        "MI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
             "subject": "Freihandzeichnen",
-            "detail": "WEN · 8 9"
+            "detail": "WEN"
           },
           {
             "period": 3,
             "periodEnd": 4,
             "time": "9.50 - 11.20",
             "subject": "Fertigungstechnik",
-            "detail": "WED · 9 6"
+            "detail": "WED"
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
             "subject": "EDV/Excel",
-            "detail": "9 3"
-          }
-        ],
-        "MI": [
-          {
-            "period": 3,
-            "periodEnd": 4,
-            "time": "9.50 - 11.20",
-            "subject": "Designgeschichte",
-            "detail": "STE · 5 BS"
-          },
-          {
-            "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Englisch",
-            "detail": "2 1"
+            "detail": "WED"
           },
           {
             "period": 7,
             "periodEnd": 8,
             "time": "14.10 - 15.40",
             "subject": "Geschäftskunde",
-            "detail": "STE · 4 1"
+            "detail": "STE"
           }
         ],
         "DO": [
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Designgeschichte",
+            "detail": "STE"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Englisch",
+            "detail": "HOFF"
+          },
           {
             "period": 7,
             "periodEnd": 8,
             "time": "14.10 - 15.40",
             "subject": "Mathematik",
-            "detail": "TAM · 5"
+            "detail": "TAM"
           }
         ],
         "FR": []
@@ -1059,6 +1214,29 @@
       "HT11": {
         "MO": [
           {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Deutsch",
+            "detail": "MEL"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul1/KuSti",
+            "detail": "MEL"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "USF-Führung",
+            "detail": "WED"
+          }
+        ],
+        "DI": [
+          {
             "period": 3,
             "periodEnd": 4,
             "time": "9.50 - 11.20",
@@ -1067,21 +1245,13 @@
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Englisch"
-          },
-          {
-            "period": 8,
-            "time": "14.55 - 15.40",
-            "subject": "#NV"
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Englisch",
+            "detail": "WEN"
           }
         ],
-        "DI": [
-          {
-            "period": 2,
-            "time": "8.45 - 9.30",
-            "subject": "#NV"
-          },
+        "MI": [
           {
             "period": 3,
             "periodEnd": 4,
@@ -1091,11 +1261,20 @@
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Modul1/CAD"
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul1/CAD",
+            "detail": "HOFF"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Modul2/Statik",
+            "detail": "HOFF"
           }
         ],
-        "MI": [
+        "DO": [
           {
             "period": 1,
             "periodEnd": 2,
@@ -1112,22 +1291,10 @@
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Mathematik"
-          },
-          {
-            "period": 7,
-            "periodEnd": 8,
-            "time": "14.10 - 15.40",
-            "subject": "Modul2/Statik",
-            "detail": "HOFF"
-          }
-        ],
-        "DO": [
-          {
-            "period": 3,
-            "time": "9.50 - 10.35",
-            "subject": "Modul2/CNC"
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Mathematik",
+            "detail": "TAM"
           },
           {
             "period": 7,
@@ -1139,9 +1306,11 @@
         ],
         "FR": [
           {
-            "period": 4,
-            "time": "10.35 - 11.20",
-            "subject": "HOFF"
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul2/CNC",
+            "detail": "HOFF"
           },
           {
             "period": 5,
@@ -1155,6 +1324,22 @@
       "HT12": {
         "MO": [
           {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "USF-Führung",
+            "detail": "WED"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul2/Statik",
+            "detail": "HOFF · HS"
+          }
+        ],
+        "DI": [
+          {
             "period": 1,
             "periodEnd": 2,
             "time": "8.00 - 9.30",
@@ -1166,35 +1351,14 @@
             "periodEnd": 4,
             "time": "9.50 - 11.20",
             "subject": "Englisch",
-            "detail": "WEN · 6"
+            "detail": "WEN"
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
             "subject": "Modul2/Obfl",
-            "detail": "9"
-          }
-        ],
-        "DI": [
-          {
-            "period": 1,
-            "periodEnd": 2,
-            "time": "8.00 - 9.30",
-            "subject": "Modul7/ReWe",
-            "detail": "STI · #NV"
-          },
-          {
-            "period": 3,
-            "periodEnd": 4,
-            "time": "9.50 - 11.20",
-            "subject": "Modul1/CAD",
-            "detail": "HOFF · 5"
-          },
-          {
-            "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Modul1/Wsk",
-            "detail": "4"
+            "detail": "WED"
           }
         ],
         "MI": [
@@ -1202,31 +1366,55 @@
             "period": 1,
             "periodEnd": 2,
             "time": "8.00 - 9.30",
-            "subject": "Deutsch",
-            "detail": "MEL · 1"
+            "subject": "Modul7/ReWe",
+            "detail": "STI"
           },
           {
             "period": 3,
             "periodEnd": 4,
             "time": "9.50 - 11.20",
-            "subject": "Mathematik",
-            "detail": "TAM · 8"
+            "subject": "Modul1/CAD",
+            "detail": "HOFF"
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Modul1/KuSti",
-            "detail": "5"
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul1/Wsk",
+            "detail": "TAM"
           },
           {
             "period": 7,
             "periodEnd": 8,
             "time": "14.10 - 15.40",
             "subject": "Modul6/Mark/DTP",
-            "detail": "STI · 2"
+            "detail": "STI"
           }
         ],
         "DO": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Deutsch",
+            "detail": "MEL"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Mathematik",
+            "detail": "TAM"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul1/KuSti",
+            "detail": "MEL"
+          }
+        ],
+        "FR": [
           {
             "period": 1,
             "periodEnd": 2,
@@ -1236,15 +1424,10 @@
           },
           {
             "period": 3,
-            "time": "9.50 - 10.35",
-            "subject": "Modul2/FT"
-          }
-        ],
-        "FR": [
-          {
-            "period": 4,
-            "time": "10.35 - 11.20",
-            "subject": "STE"
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul2/FT",
+            "detail": "STE"
           }
         ]
       },
@@ -1252,17 +1435,52 @@
         "MO": [],
         "DI": [
           {
+            "period": 6,
+            "time": "12.25- 13.10",
+            "subject": "PROJEKT"
+          }
+        ],
+        "MI": [
+          {
             "period": 4,
             "time": "10.35 - 11.20",
             "subject": "FERTIGUNG"
           }
         ],
-        "MI": [],
-        "DO": [],
+        "DO": [
+          {
+            "period": 6,
+            "time": "12.25- 13.10",
+            "subject": "\"LUNIDO\""
+          }
+        ],
         "FR": []
       },
       "HT22": {
         "MO": [
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul5/Betriebsplanung",
+            "detail": "HOG"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul5/AV",
+            "detail": "TAM"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Buchführung",
+            "detail": "TAM"
+          }
+        ],
+        "DI": [
           {
             "period": 1,
             "periodEnd": 2,
@@ -1276,21 +1494,9 @@
             "time": "9.50 - 11.20",
             "subject": "NAT/Chemie",
             "detail": "STI"
-          },
-          {
-            "period": 7,
-            "periodEnd": 8,
-            "time": "14.10 - 15.40",
-            "subject": "Buchführung",
-            "detail": "TAM"
           }
         ],
-        "DI": [
-          {
-            "period": 2,
-            "time": "8.45 - 9.30",
-            "subject": "#NV"
-          },
+        "MI": [
           {
             "period": 3,
             "periodEnd": 4,
@@ -1300,11 +1506,20 @@
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Modul3/MöKo"
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul3/MöKo",
+            "detail": "STE"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Geschäftskunde",
+            "detail": "STE"
           }
         ],
-        "MI": [
+        "DO": [
           {
             "period": 1,
             "periodEnd": 2,
@@ -1321,29 +1536,10 @@
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Englisch"
-          },
-          {
-            "period": 7,
-            "periodEnd": 8,
-            "time": "14.10 - 15.40",
-            "subject": "Geschäftskunde",
-            "detail": "STE"
-          }
-        ],
-        "DO": [
-          {
-            "period": 1,
-            "periodEnd": 2,
-            "time": "8.00 - 9.30",
-            "subject": "Modul8/BWL",
-            "detail": "STI"
-          },
-          {
-            "period": 3,
-            "time": "9.50 - 10.35",
-            "subject": "Modul8/ReWe"
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Englisch",
+            "detail": "HOFF"
           },
           {
             "period": 7,
@@ -1355,9 +1551,18 @@
         ],
         "FR": [
           {
-            "period": 4,
-            "time": "10.35 - 11.20",
-            "subject": "STI"
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Modul8/BWL",
+            "detail": "STI"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul8/ReWe",
+            "detail": "STI"
           },
           {
             "period": 5,
@@ -1374,15 +1579,22 @@
             "period": 1,
             "periodEnd": 2,
             "time": "8.00 - 9.30",
-            "subject": "Politik",
-            "detail": "STI · 5"
+            "subject": "Materialkunde",
+            "detail": "BER/WEZ"
           },
           {
             "period": 3,
             "periodEnd": 4,
             "time": "9.50 - 11.20",
-            "subject": "Englisch",
-            "detail": "WEN · 8"
+            "subject": "Freihandzeichnen",
+            "detail": "WEN"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "WEZ"
           },
           {
             "period": 7,
@@ -1397,21 +1609,15 @@
             "period": 1,
             "periodEnd": 2,
             "time": "8.00 - 9.30",
-            "subject": "Rechnungswesen",
-            "detail": "STI · #NV"
+            "subject": "Politik",
+            "detail": "STI"
           },
           {
             "period": 3,
             "periodEnd": 4,
             "time": "9.50 - 11.20",
-            "subject": "Entwurf/Konstruktion",
-            "detail": "WEN · 1"
-          },
-          {
-            "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Entwurf/Konstruktion",
-            "detail": "1"
+            "subject": "Englisch",
+            "detail": "WEN"
           }
         ],
         "MI": [
@@ -1419,47 +1625,778 @@
             "period": 1,
             "periodEnd": 2,
             "time": "8.00 - 9.30",
-            "subject": "Deutsch",
-            "detail": "MEL · 4"
+            "subject": "Rechnungswesen",
+            "detail": "STI"
           },
           {
             "period": 3,
             "periodEnd": 4,
             "time": "9.50 - 11.20",
-            "subject": "Mathematik",
-            "detail": "TAM · 6"
+            "subject": "Entwurf/Konstruktion",
+            "detail": "WEN"
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "KuSti",
-            "detail": "1"
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "WEN"
           },
           {
             "period": 7,
             "periodEnd": 8,
             "time": "14.10 - 15.40",
             "subject": "CAD",
-            "detail": "WEN · 1"
+            "detail": "WEN"
           }
         ],
         "DO": [
           {
-            "period": 2,
-            "time": "8.45 - 9.30",
-            "subject": "#NV"
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Deutsch",
+            "detail": "MEL"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Mathematik",
+            "detail": "TAM"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "KuSti",
+            "detail": "MEL"
+          }
+        ],
+        "FR": []
+      },
+      "G21": {
+        "MO": [
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "BER/WEZ"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "BER"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Buchführung 5",
+            "detail": "TAM"
+          }
+        ],
+        "DI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "CAD",
+            "detail": "WEN"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Haustechnik",
+            "detail": "WEZ/PET"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Haustechnik",
+            "detail": "WEZ/PET"
+          }
+        ],
+        "MI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Freihandzeichnen",
+            "detail": "WEN"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Fertigungstechnik",
+            "detail": "WED"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "EDV/Excel",
+            "detail": "WED"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Geschäftskunde",
+            "detail": "STE"
+          }
+        ],
+        "DO": [
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Designgeschichte",
+            "detail": "STE"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Englisch",
+            "detail": "HOFF"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Mathematik",
+            "detail": "TAM"
           }
         ],
         "FR": [
           {
-            "period": 4,
-            "time": "10.35 - 11.20",
-            "subject": "#NV"
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "WEN"
           },
           {
-            "period": 6,
-            "time": "12.25- 13.10",
-            "subject": "#NV"
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "WEN"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "WEN"
+          }
+        ]
+      }
+    },
+    "Stundenplan_kw_45_Hj1_2025_26.pdf": {
+      "HT11": {
+        "MO": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Fertigungstechnik W1/W2",
+            "detail": "GRO"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul7/ReWe",
+            "detail": "STI"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Deutsch",
+            "detail": "MEL"
+          }
+        ],
+        "DI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "M6 PowerP/DTP/Mark",
+            "detail": "STI"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Fertigungstechnik W1/W2",
+            "detail": "GRO"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul2/EDV",
+            "detail": "HOFF"
+          }
+        ],
+        "MI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Modul1/Werkstoffkunde",
+            "detail": "TAM"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul1/Werkstoffkunde",
+            "detail": "TAM"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul2/Freihandzeichnen",
+            "detail": "BÜ"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Politik",
+            "detail": "STI"
+          }
+        ],
+        "DO": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Modul2/Statik",
+            "detail": "HOFF"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul7/KuSti",
+            "detail": "MEL"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul2/CNC",
+            "detail": "HOFF"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Englisch",
+            "detail": "WEN"
+          }
+        ],
+        "FR": [
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul2/Fertigungstechnik",
+            "detail": "STE"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul1/CAD",
+            "detail": "HOFF"
+          }
+        ]
+      },
+      "HT12": {
+        "MO": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Modul7/ReWe",
+            "detail": "STI · T1"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Mathematik",
+            "detail": "WED"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Fertigungstechnik W1/W2",
+            "detail": "GRO"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Deutsch",
+            "detail": "MEL"
+          }
+        ],
+        "DI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Fertigungstechnik W1/W2",
+            "detail": "GRO"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "M6 PowerP/DTP/Mark",
+            "detail": "STI · T1"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul2/Freihandzeichnen",
+            "detail": "BÜ"
+          }
+        ],
+        "MI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Englisch",
+            "detail": "WEN"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul2/EDV",
+            "detail": "HOFF"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul2/Statik",
+            "detail": "HOFF"
+          }
+        ],
+        "DO": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Modul7/KuSti",
+            "detail": "MEL"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul1/Werkstoffkunde",
+            "detail": "TAM"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul1/Werkstoffkunde",
+            "detail": "TAM"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Modul1/CNC",
+            "detail": "HOFF"
+          }
+        ],
+        "FR": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Politik",
+            "detail": "STI/WEZ"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul2/CAD",
+            "detail": "HOFF"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul2/Fertigungstechnik",
+            "detail": "STE"
+          }
+        ]
+      },
+      "HT21": {
+        "MO": [
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul3/Entwurf",
+            "detail": "BÜ"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Buchführung",
+            "detail": "TAM"
+          }
+        ],
+        "DI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Modul4/Vorrichtungsbau",
+            "detail": "HOFF · T1"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Deutsch",
+            "detail": "WED"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Mathe",
+            "detail": "TAM"
+          }
+        ],
+        "MI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Modul3/CNC",
+            "detail": "HOFF"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul4/EDV/Excel",
+            "detail": "WED"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul5/Arbeitsvorbereitung",
+            "detail": "TAM"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Modul5/Arbeitsvorbereitung",
+            "detail": "TAM"
+          }
+        ],
+        "DO": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Modul3/Möbelkonstruktion",
+            "detail": "STE"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul4/Oberflächentechnik",
+            "detail": "WED"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul4/AP",
+            "detail": "WED"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Geschäftskunde",
+            "detail": "STE"
+          }
+        ],
+        "FR": [
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul8/Rechnungswesen",
+            "detail": "STI"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul8/Rechnungswesen",
+            "detail": "STI"
+          }
+        ]
+      },
+      "HT22": {
+        "MO": [
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul5/Arbeitsvorbereitung",
+            "detail": "TAM"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul5/Arbeitsvorbereitung",
+            "detail": "TAM"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Buchführung",
+            "detail": "TAM"
+          }
+        ],
+        "DI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Modul3/Entwurf",
+            "detail": "BÜ"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Mathe",
+            "detail": "TAM"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Deutsch",
+            "detail": "WED"
+          }
+        ],
+        "MI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Modul4/AP",
+            "detail": "BÜ"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul3/Möbelkonstruktion",
+            "detail": "STE"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul4/EDV/Excel",
+            "detail": "WED"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Modul4/Vorrichtungsbau",
+            "detail": "HOFF"
+          }
+        ],
+        "DO": [
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul8/Betriebswirtschaft",
+            "detail": "STI"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul8/Rechnungswesen",
+            "detail": "STI"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Geschäftskunde",
+            "detail": "STE"
+          }
+        ],
+        "FR": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Modul3/CNC",
+            "detail": "HOFF"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul4/Oberflächentechnik",
+            "detail": "WED"
+          }
+        ]
+      },
+      "G11": {
+        "MO": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Rechnungswesen",
+            "detail": "STI"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Mathe",
+            "detail": "WED"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Materialkunde",
+            "detail": "WEZ/BER"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Deutsch",
+            "detail": "MEL"
+          }
+        ],
+        "DI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Fertigungstechnik W2",
+            "detail": "GRO"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Entwurf/Konstruktion WEN",
+            "detail": "WEN"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Entwurf/Konstruktion WEN",
+            "detail": "WEN"
+          }
+        ],
+        "MI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Englisch",
+            "detail": "WEN"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "EDV",
+            "detail": "HOFF"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Freihandzeichnen",
+            "detail": "WEN"
+          }
+        ],
+        "DO": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "KuSti",
+            "detail": "MEL"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "KüGest",
+            "detail": "WEN"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "CAD",
+            "detail": "WEN"
+          }
+        ],
+        "FR": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Politik",
+            "detail": "STI/WEZ"
           }
         ]
       },
@@ -1469,28 +2406,15 @@
             "period": 1,
             "periodEnd": 2,
             "time": "8.00 - 9.30",
-            "subject": "CAD",
-            "detail": "WEN · 8 9"
-          },
-          {
-            "period": 3,
-            "periodEnd": 4,
-            "time": "9.50 - 11.20",
-            "subject": "Haustechnik",
-            "detail": "WEZ/PET · 9 7"
-          },
-          {
-            "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Haustechnik",
-            "detail": "#NV 7"
+            "subject": "Entwurf/Konstruktion WEZ",
+            "detail": "WEZ/BER"
           },
           {
             "period": 7,
             "periodEnd": 8,
             "time": "14.10 - 15.40",
-            "subject": "Buchführung 5",
-            "detail": "TAM · 8"
+            "subject": "Buchführung",
+            "detail": "TAM"
           }
         ],
         "DI": [
@@ -1499,42 +2423,51 @@
             "periodEnd": 2,
             "time": "8.00 - 9.30",
             "subject": "Freihandzeichnen",
-            "detail": "WEN · 8 9"
+            "detail": "WEN · T1"
           },
           {
             "period": 3,
             "periodEnd": 4,
             "time": "9.50 - 11.20",
-            "subject": "Fertigungstechnik",
-            "detail": "WED · 9 6"
+            "subject": "Mathe",
+            "detail": "TAM"
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "EDV/Excel",
-            "detail": "9 3"
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Deutsch",
+            "detail": "WED"
           }
         ],
         "MI": [
           {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Mitarbeiterführung",
+            "detail": "BÜ"
+          },
+          {
             "period": 3,
             "periodEnd": 4,
             "time": "9.50 - 11.20",
-            "subject": "Designgeschichte",
-            "detail": "STE · 5 BS"
+            "subject": "CAD",
+            "detail": "WEN"
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Englisch",
-            "detail": "2 1"
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Designgeschichte",
+            "detail": "STE"
           },
           {
             "period": 7,
             "periodEnd": 8,
             "time": "14.10 - 15.40",
-            "subject": "Geschäftskunde",
-            "detail": "STE · 4 1"
+            "subject": "Farbe und Form",
+            "detail": "BÜ"
           }
         ],
         "DO": [
@@ -1542,85 +2475,82 @@
             "period": 1,
             "periodEnd": 2,
             "time": "8.00 - 9.30",
-            "subject": "Entwurf/Konstruktion",
-            "detail": "WEN · #NV 9"
+            "subject": "Möbelkonstruktion",
+            "detail": "STE/WEN"
           },
           {
             "period": 3,
-            "time": "9.50 - 10.35",
-            "subject": "Entwurf/Konstruktion"
-          },
-          {
-            "period": 7,
-            "periodEnd": 8,
-            "time": "14.10 - 15.40",
-            "subject": "Mathematik",
-            "detail": "TAM · 5"
-          }
-        ],
-        "FR": [
-          {
-            "period": 4,
-            "time": "10.35 - 11.20",
-            "subject": "WEN"
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "BWL/Rechnungswesen",
+            "detail": "STI"
           },
           {
             "period": 5,
             "periodEnd": 6,
             "time": "11.40 - 13.10",
-            "subject": "Entwurf/Konstruktion",
-            "detail": "WEN · #NV 9"
+            "subject": "BWL/Rechnungswesen",
+            "detail": "STI"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Geschäftskunde",
+            "detail": "STE"
+          }
+        ],
+        "FR": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Entwurf/Konstruktion WEN",
+            "detail": "WEN"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Entwurf/Konstruktion WEN",
+            "detail": "WEN"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Entwurf/Konstruktion WEN",
+            "detail": "WEN"
           }
         ]
-      }
-    },
-    "Stundenplan_kw_45_Hj1_2025_26.pdf": {
-      "HT11": {
-        "MO": [],
-        "DI": [],
-        "MI": [],
-        "DO": [],
-        "FR": []
-      },
-      "HT12": {
-        "MO": [],
-        "DI": [],
-        "MI": [],
-        "DO": [],
-        "FR": []
-      },
-      "HT21": {
-        "MO": [],
-        "DI": [],
-        "MI": [],
-        "DO": [],
-        "FR": []
-      },
-      "HT22": {
-        "MO": [],
-        "DI": [],
-        "MI": [],
-        "DO": [],
-        "FR": []
-      },
-      "G11": {
-        "MO": [],
-        "DI": [],
-        "MI": [],
-        "DO": [],
-        "FR": []
-      },
-      "G21": {
-        "MO": [],
-        "DI": [],
-        "MI": [],
-        "DO": [],
-        "FR": []
       }
     },
     "Stundenplan_kw_25_Hj2_2024_25.pdf": {
       "HT11": {
         "MO": [
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul2/FT",
+            "detail": "STE"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul2/Obfl-Klausur",
+            "detail": "WED"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Deutsch",
+            "detail": "MEL"
+          }
+        ],
+        "DI": [
           {
             "period": 1,
             "periodEnd": 2,
@@ -1637,18 +2567,18 @@
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Modul6/Entwurf"
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul6/Entwurf",
+            "detail": "BÜ"
           },
           {
             "period": 7,
-            "periodEnd": 8,
-            "time": "14.10 - 15.40",
-            "subject": "Deutsch",
-            "detail": "MEL"
+            "time": "14.10 - 14.55",
+            "subject": "13.30 Infoveranstaltung Gestaltung im BS"
           }
         ],
-        "DI": [
+        "MI": [
           {
             "period": 1,
             "periodEnd": 2,
@@ -1665,16 +2595,20 @@
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Politik"
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Politik",
+            "detail": "STI"
           },
           {
             "period": 7,
-            "time": "14.10 - 14.55",
-            "subject": "13.30 Infoveranstaltung Gestaltung im BS"
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Mathematik",
+            "detail": "TAM"
           }
         ],
-        "MI": [
+        "DO": [
           {
             "period": 1,
             "periodEnd": 2,
@@ -1691,29 +2625,10 @@
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Deutsch"
-          },
-          {
-            "period": 7,
-            "periodEnd": 8,
-            "time": "14.10 - 15.40",
-            "subject": "Mathematik",
-            "detail": "TAM"
-          }
-        ],
-        "DO": [
-          {
-            "period": 1,
-            "periodEnd": 2,
-            "time": "8.00 - 9.30",
-            "subject": "Englisch",
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Deutsch",
             "detail": "MEL"
-          },
-          {
-            "period": 3,
-            "time": "9.50 - 10.35",
-            "subject": "Modul2/Statik"
           },
           {
             "period": 7,
@@ -1725,9 +2640,18 @@
         ],
         "FR": [
           {
-            "period": 4,
-            "time": "10.35 - 11.20",
-            "subject": "HOFF"
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Englisch",
+            "detail": "MEL"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul2/Statik",
+            "detail": "HOFF"
           },
           {
             "period": 5,
@@ -1744,28 +2668,29 @@
             "period": 1,
             "periodEnd": 2,
             "time": "8.00 - 9.30",
-            "subject": "Modul2/Excel",
-            "detail": "WED · 5"
+            "subject": "Modul2/FT",
+            "detail": "STE"
           },
           {
             "period": 3,
             "periodEnd": 4,
             "time": "9.50 - 11.20",
-            "subject": "Modul1/CAD",
-            "detail": "HOFF · 3"
+            "subject": "Modul2/Obfl-Klausur",
+            "detail": "WED"
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Modul1/CNC-Klausur",
-            "detail": "BS"
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul1/Wsk",
+            "detail": "TAM"
           },
           {
             "period": 7,
             "periodEnd": 8,
             "time": "14.10 - 15.40",
             "subject": "Englisch",
-            "detail": "WEN · 1"
+            "detail": "WEN"
           }
         ],
         "DI": [
@@ -1773,21 +2698,22 @@
             "period": 1,
             "periodEnd": 2,
             "time": "8.00 - 9.30",
-            "subject": "Modul6/Entwurf",
-            "detail": "BÜ · 2"
+            "subject": "Modul2/Excel",
+            "detail": "WED"
           },
           {
             "period": 3,
             "periodEnd": 4,
             "time": "9.50 - 11.20",
-            "subject": "Modul7/ReWe",
-            "detail": "STI · BS"
+            "subject": "Modul1/CAD",
+            "detail": "HOFF"
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Mathematik",
-            "detail": "8"
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul1/CNC-Klausur",
+            "detail": "HOFF"
           },
           {
             "period": 8,
@@ -1800,20 +2726,22 @@
             "period": 1,
             "periodEnd": 2,
             "time": "8.00 - 9.30",
-            "subject": "Modul2/Statik",
-            "detail": "HOFF · 8"
+            "subject": "Modul6/Entwurf",
+            "detail": "BÜ"
           },
           {
             "period": 3,
             "periodEnd": 4,
             "time": "9.50 - 11.20",
-            "subject": "Modul6/Entwurf",
-            "detail": "BÜ · 5"
+            "subject": "Modul7/ReWe",
+            "detail": "STI"
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Modul7/QM-Klausur"
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Mathematik",
+            "detail": "TAM"
           }
         ],
         "DO": [
@@ -1821,61 +2749,56 @@
             "period": 1,
             "periodEnd": 2,
             "time": "8.00 - 9.30",
-            "subject": "Politik",
-            "detail": "STI · 7"
+            "subject": "Modul2/Statik",
+            "detail": "HOFF"
           },
           {
             "period": 3,
-            "time": "9.50 - 10.35",
-            "subject": "Deutsch"
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul6/Entwurf",
+            "detail": "BÜ"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul7/QM-Klausur",
+            "detail": "TAM"
           }
         ],
         "FR": [
           {
-            "period": 4,
-            "time": "10.35 - 11.20",
-            "subject": "MEL"
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Politik",
+            "detail": "STI"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Deutsch",
+            "detail": "MEL"
           },
           {
             "period": 5,
             "periodEnd": 6,
             "time": "11.40 - 13.10",
             "subject": "Modul6/KuSti",
-            "detail": "MEL · 1"
+            "detail": "MEL"
           }
         ]
       },
       "HT21": {
         "MO": [
           {
-            "period": 1,
-            "periodEnd": 2,
-            "time": "8.00 - 9.30",
-            "subject": "Modul3/CNC",
-            "detail": "HOFF · 3"
-          },
-          {
-            "period": 3,
-            "periodEnd": 4,
-            "time": "9.50 - 11.20",
-            "subject": "Modul5/AV",
-            "detail": "TAM · 4"
-          },
-          {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Modul4/FeKo",
-            "detail": "1"
-          },
-          {
-            "period": 8,
-            "time": "14.55 - 15.40",
-            "subject": "#NV"
-          },
-          {
-            "period": 10,
-            "time": "16.30 - 17.15",
-            "subject": "#NV"
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Geschäftskunde",
+            "detail": "STE"
           }
         ],
         "DI": [
@@ -1883,21 +2806,22 @@
             "period": 1,
             "periodEnd": 2,
             "time": "8.00 - 9.30",
-            "subject": "Buchführung",
-            "detail": "TAM · BS"
+            "subject": "Modul3/CNC",
+            "detail": "HOFF"
           },
           {
             "period": 3,
             "periodEnd": 4,
             "time": "9.50 - 11.20",
-            "subject": "Modul4/AP",
-            "detail": "WED · 8"
+            "subject": "Modul5/AV",
+            "detail": "TAM"
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Modul4/Obfl",
-            "detail": "5"
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul4/FeKo",
+            "detail": "TAM"
           }
         ],
         "MI": [
@@ -1906,28 +2830,46 @@
             "periodEnd": 2,
             "time": "8.00 - 9.30",
             "subject": "Buchführung",
-            "detail": "TAM · 2"
+            "detail": "TAM"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul4/AP",
+            "detail": "WED"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul4/Obfl",
+            "detail": "WED"
+          }
+        ],
+        "DO": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Buchführung",
+            "detail": "TAM"
           },
           {
             "period": 3,
             "periodEnd": 4,
             "time": "9.50 - 11.20",
             "subject": "NAT/Chemie",
-            "detail": "STI · BS"
+            "detail": "STI"
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
             "subject": "Englisch",
-            "detail": "5"
-          },
-          {
-            "period": 8,
-            "time": "14.55 - 15.40",
-            "subject": "#NV"
+            "detail": "HOFF"
           }
         ],
-        "DO": [],
         "FR": [
           {
             "period": 6,
@@ -1939,44 +2881,41 @@
       "HT22": {
         "MO": [
           {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Modul4/FeKo",
+            "detail": "TAM"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul5/AV",
+            "detail": "TAM"
+          },
+          {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Modul4/Obfl",
-            "detail": "5"
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Geschäftskunde",
+            "detail": "STE"
           },
           {
             "period": 7,
             "periodEnd": 8,
             "time": "14.10 - 15.40",
             "subject": "NAT/Chemie",
-            "detail": "STI · #NV"
-          },
-          {
-            "period": 10,
-            "time": "16.30 - 17.15",
-            "subject": "#NV"
+            "detail": "STI"
           }
         ],
         "DI": [
           {
-            "period": 1,
-            "periodEnd": 2,
-            "time": "8.00 - 9.30",
-            "subject": "Buchführung",
-            "detail": "TAM · 5"
-          },
-          {
-            "period": 3,
-            "periodEnd": 4,
-            "time": "9.50 - 11.20",
-            "subject": "Englisch",
-            "detail": "HOFF · 6"
-          },
-          {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Modul4/AP",
-            "detail": "6"
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul4/Obfl",
+            "detail": "WED"
           }
         ],
         "MI": [
@@ -1985,21 +2924,37 @@
             "periodEnd": 2,
             "time": "8.00 - 9.30",
             "subject": "Buchführung",
-            "detail": "TAM · 5"
+            "detail": "TAM"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Englisch",
+            "detail": "HOFF"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul4/AP",
+            "detail": "BÜ"
+          }
+        ],
+        "DO": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Buchführung",
+            "detail": "TAM"
           },
           {
             "period": 3,
             "periodEnd": 4,
             "time": "9.50 - 11.20",
             "subject": "Modul3/CNC",
-            "detail": "HOFF · 8"
-          }
-        ],
-        "DO": [
-          {
-            "period": 8,
-            "time": "14.55 - 15.40",
-            "subject": "#NV"
+            "detail": "HOFF"
           }
         ],
         "FR": []
@@ -2010,28 +2965,29 @@
             "period": 1,
             "periodEnd": 2,
             "time": "8.00 - 9.30",
-            "subject": "Entwurf",
-            "detail": "WEN"
+            "subject": "Entwurf (Kurs)",
+            "detail": "BER"
           },
           {
             "period": 3,
             "periodEnd": 4,
             "time": "9.50 - 11.20",
-            "subject": "Entwurf",
-            "detail": "WEN"
+            "subject": "Konstruktion (Kurs)",
+            "detail": "BER"
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Konstruktion",
-            "detail": "6"
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Freies Zeichnen",
+            "detail": "WEN"
           },
           {
             "period": 7,
             "periodEnd": 8,
             "time": "14.10 - 15.40",
             "subject": "Englisch",
-            "detail": "WEN · 8"
+            "detail": "WEN"
           }
         ],
         "DI": [
@@ -2040,20 +2996,21 @@
             "periodEnd": 2,
             "time": "8.00 - 9.30",
             "subject": "Entwurf",
-            "detail": "BÜ · 5"
+            "detail": "WEN"
           },
           {
             "period": 3,
             "periodEnd": 4,
             "time": "9.50 - 11.20",
-            "subject": "Rechnungswesen",
-            "detail": "STI · 2"
+            "subject": "Entwurf",
+            "detail": "WEN"
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Mathematik",
-            "detail": "BS"
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Konstruktion",
+            "detail": "WEN"
           }
         ],
         "MI": [
@@ -2061,23 +3018,41 @@
             "period": 1,
             "periodEnd": 2,
             "time": "8.00 - 9.30",
+            "subject": "Entwurf",
+            "detail": "BÜ"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Rechnungswesen",
+            "detail": "STI"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Mathematik",
+            "detail": "TAM"
+          }
+        ],
+        "DO": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
             "subject": "CAD",
-            "detail": "WEN · 5"
+            "detail": "WEN"
           },
           {
             "period": 3,
             "periodEnd": 4,
             "time": "9.50 - 11.20",
             "subject": "Entwurf",
-            "detail": "BÜ · 2/4"
-          },
-          {
-            "period": 8,
-            "time": "14.55 - 15.40",
-            "subject": "#NV"
+            "detail": "BÜ"
           }
         ],
-        "DO": [
+        "FR": [
           {
             "period": 1,
             "periodEnd": 2,
@@ -2087,15 +3062,10 @@
           },
           {
             "period": 3,
-            "time": "9.50 - 10.35",
-            "subject": "Deutsch"
-          }
-        ],
-        "FR": [
-          {
-            "period": 4,
-            "time": "10.35 - 11.20",
-            "subject": "MEL"
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Deutsch",
+            "detail": "MEL"
           },
           {
             "period": 5,
@@ -2109,51 +3079,48 @@
       "G21": {
         "MO": [
           {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Entwurf (Kurs)",
+            "detail": "BER"
+          },
+          {
             "period": 3,
             "periodEnd": 4,
             "time": "9.50 - 11.20",
-            "subject": "Haustechnik (Kurs)",
-            "detail": "PET · 9 7"
+            "subject": "Konstruktion (Kurs)",
+            "detail": "BER"
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Haustechnik (Kurs)",
-            "detail": "9 7"
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Geschäftskunde",
+            "detail": "STE"
           },
           {
             "period": 7,
             "periodEnd": 8,
             "time": "14.10 - 15.40",
             "subject": "Freies Zeichnen",
-            "detail": "BÜ · 9 BS"
-          },
-          {
-            "period": 10,
-            "time": "16.30 - 17.15",
-            "subject": "#NV"
+            "detail": "BÜ"
           }
         ],
         "DI": [
           {
-            "period": 1,
-            "periodEnd": 2,
-            "time": "8.00 - 9.30",
-            "subject": "Buchführung",
-            "detail": "TAM · BS 5"
-          },
-          {
             "period": 3,
             "periodEnd": 4,
             "time": "9.50 - 11.20",
-            "subject": "Englisch",
-            "detail": "HOFF · 8 2"
+            "subject": "Haustechnik (Kurs)",
+            "detail": "PET"
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
-            "subject": "Mitarbeiterführung",
-            "detail": "5 BS"
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Haustechnik (Kurs)",
+            "detail": "PET"
           }
         ],
         "MI": [
@@ -2162,30 +3129,47 @@
             "periodEnd": 2,
             "time": "8.00 - 9.30",
             "subject": "Buchführung",
-            "detail": "TAM · 4 5"
+            "detail": "TAM"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Englisch",
+            "detail": "HOFF"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Mitarbeiterführung",
+            "detail": "BÜ"
+          }
+        ],
+        "DO": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Buchführung",
+            "detail": "TAM"
           },
           {
             "period": 3,
             "periodEnd": 4,
             "time": "9.50 - 11.20",
             "subject": "CAD",
-            "detail": "WEN · BS 9"
+            "detail": "WEN"
           },
           {
             "period": 5,
-            "time": "11.40 - 12.25",
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
             "subject": "Fertigungstechnik",
-            "detail": "6"
+            "detail": "WED"
           }
         ],
-        "DO": [],
-        "FR": [
-          {
-            "period": 6,
-            "time": "12.25- 13.10",
-            "subject": "#NV"
-          }
-        ]
+        "FR": []
       }
     }
   }

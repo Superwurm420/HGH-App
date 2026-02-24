@@ -119,36 +119,29 @@ function detectClassCenters(rows) {
 
 /**
  * Erkennt die X-Position, links derer Wochentage und Zeitangaben stehen.
- * Adaptiv: sucht nach dem ersten Wochentag-Token und nutzt dessen X als Referenz.
+ * Nutzt 65 % der ersten Klassen-X-Position als robust skalierende Grenze,
+ * sodass sowohl schmale als auch breite PDF-Layouts korrekt erkannt werden.
  */
-function detectTimeColumnBoundary(rows) {
-  for (const row of rows) {
-    for (const item of row.items) {
-      if (DAY_SET.has(item.str)) {
-        // Wochentag gefunden – alles bis zum doppelten seiner X-Position
-        // gehört zur Zeit-Spalte
-        return Math.max(item.x + 60, 90);
-      }
-    }
-  }
-  return 105; // Fallback
+function detectTimeColumnBoundary(classX) {
+  const firstClassX = Object.values(classX)[0];
+  return Math.max(Math.round(firstClassX * 0.65), 85);
 }
 
 /**
  * Berechnet die Spaltenbreite pro Klasse dynamisch anhand der Abstände
  * zwischen den erkannten Klassen-Positionen.
+ * Die erste Klassen-Spalte beginnt an der timeColBoundary (statt einem
+ * festen Offset), damit auch breite PDF-Layouts korrekt erkannt werden.
  */
-function computeColumnBounds(classX) {
+function computeColumnBounds(classX, timeColBoundary) {
   const entries = Object.entries(classX).sort((a, b) => a[1] - b[1]);
   const bounds = {};
 
   for (let i = 0; i < entries.length; i++) {
     const [cls, x] = entries[i];
-    const prevX = i > 0 ? entries[i - 1][1] : x - 80;
     const nextX = i < entries.length - 1 ? entries[i + 1][1] : x + 120;
 
-    // Spaltengrenzen: Mitte zum Vorgänger bis Mitte zum Nachfolger
-    const left = Math.round((prevX + x) / 2);
+    const left = i === 0 ? timeColBoundary : Math.round((entries[i - 1][1] + x) / 2);
     const right = Math.round((x + nextX) / 2);
     bounds[cls] = { left, right, center: x };
   }
@@ -188,8 +181,8 @@ async function parsePdf(filePath, getDocument) {
   }
 
   const classes = Object.keys(classX);
-  const columnBounds = computeColumnBounds(classX);
-  const timeColBoundary = detectTimeColumnBoundary(rows);
+  const timeColBoundary = detectTimeColumnBoundary(classX);
+  const columnBounds = computeColumnBounds(classX, timeColBoundary);
 
   const out = Object.fromEntries(
     classes.map((cls) => [cls, { MO: [], DI: [], MI: [], DO: [], FR: [] }]),
@@ -206,28 +199,74 @@ async function parsePdf(filePath, getDocument) {
       .trim();
   };
 
-  let day = null;
+  // ── Pre-scan: detect day boundaries ──────────────────────────────
+  // Day labels (MO, DI, …) appear at period 6, NOT at period 1.
+  // Find each "period 1" row and the day marker within that section.
+  const period1Ys = [];
+  for (const row of rows) {
+    const leftItems = row.items.filter((i) => i.x < timeColBoundary);
+    const hasPeriod1 = leftItems.some((i) => i.str === '1.');
+    const hasEightOClock = leftItems.some((i) => /8[.:]00/.test(i.str));
+    if (hasPeriod1 && hasEightOClock) period1Ys.push(row.y);
+  }
+  period1Ys.sort((a, b) => b.y - a.y);
+
+  const daySections = period1Ys.map((startY, i) => {
+    const endY = i < period1Ys.length - 1
+      ? period1Ys[i + 1] + 3
+      : -Infinity;
+    return { startY, endY, day: null };
+  });
+
+  for (const row of rows) {
+    const dayToken = row.items.find((i) => i.x < timeColBoundary && DAY_SET.has(i.str))?.str;
+    if (!dayToken) continue;
+    for (const sec of daySections) {
+      if (row.y <= sec.startY + 5 && row.y > sec.endY) {
+        if (!sec.day) sec.day = dayToken;
+        break;
+      }
+    }
+  }
+  for (let i = 0; i < daySections.length; i++) {
+    if (!daySections[i].day) daySections[i].day = WEEKDAYS[i];
+  }
+
+  function getDayForY(y) {
+    for (const sec of daySections) {
+      if (y <= sec.startY + 5 && y > sec.endY) return sec.day;
+    }
+    return null;
+  }
+
+  // Helper: is a string an Excel error / empty marker?
+  function isNoValue(s) {
+    return !s || s === '#NV' || s === '#N/A' || s === '#WERT!' || s === '#REF!';
+  }
+
+  // Helper: is a cell value a room number?
+  const ROOM_RE = /^(\d{1,2}|#NV|#N\/A|BS)(\s*\/?\s*(\d{1,2}|#NV|BS))*$/i;
+  function isRoomValue(s) { return ROOM_RE.test(s); }
+
   const lastByClass = {};
 
   for (const row of rows) {
-    // Tage-Erkennung: adaptiv über timeColBoundary
-    const dayToken = row.items.find(
-      (i) => i.x < timeColBoundary && DAY_SET.has(i.str),
-    )?.str;
-    if (dayToken) {
-      day = dayToken;
-      for (const cls of classes) delete lastByClass[cls];
-    }
+    const day = getDayForY(row.y);
     if (!day) continue;
 
-    // Zeitangaben: alles links der Klassen-Spalten
-    const left = row.items
+    if (row.items.some((i) => i.x < timeColBoundary && i.str.includes('Mittagspause'))) continue;
+
+    // Strip day label from left-column text so period-6 rows match the regex
+    let left = row.items
       .filter((i) => i.x < timeColBoundary)
       .map((i) => i.str)
       .join(' ')
       .replace(/\s+/g, ' ')
       .trim();
-    const lessonMatch = left.match(/^(\d+)\.\s*(\d{1,2}[.:]\d{2}\s*-\s*\d{1,2}[.:]\d{2})/);
+    for (const wd of WEEKDAYS) {
+      if (left.startsWith(wd + ' ')) { left = left.slice(wd.length).trim(); break; }
+    }
+    const lessonMatch = left.match(/^(\d{1,2})\.\s*(\d{1,2}[.:]\d{2}\s*-\s*\d{1,2}[.:]\d{2})/);
 
     if (lessonMatch) {
       const period = Number(lessonMatch[1]);
@@ -236,26 +275,43 @@ async function parsePdf(filePath, getDocument) {
         const subject = cellText(row, cls);
         const entry = { period, time, subject: subject || undefined };
         out[cls][day].push(entry);
-        lastByClass[cls] = entry;
+        lastByClass[`${cls}:${day}`] = entry;
       }
       continue;
     }
 
-    if (row.items.some((i) => i.x < timeColBoundary && i.str.includes('Mittagspause'))) continue;
-
+    // Non-period row: classify each cell individually
     for (const cls of classes) {
-      const detail = cellText(row, cls);
-      if (!detail || !lastByClass[cls]) continue;
-      lastByClass[cls].detail = lastByClass[cls].detail
-        ? `${lastByClass[cls].detail} · ${detail}`
-        : detail;
+      const val = cellText(row, cls);
+      const key = `${cls}:${day}`;
+      if (!val || isNoValue(val) || !lastByClass[key]) continue;
+
+      if (isRoomValue(val)) {
+        lastByClass[key].room = val;
+      } else {
+        lastByClass[key].detail = lastByClass[key].detail
+          ? `${lastByClass[key].detail} · ${val}`
+          : val;
+      }
     }
   }
 
-  // Filter empty / placeholder entries, then merge Doppelstunden
+  // ── Post-process ─────────────────────────────────────────────────
   for (const cls of classes) {
     for (const d of WEEKDAYS) {
-      const filtered = out[cls][d].filter((l) => l.subject && l.subject !== 'R');
+      // Remove entries with no subject, 'R' headers, or #NV-only subjects
+      let filtered = out[cls][d].filter((l) => l.subject && l.subject !== 'R' && !isNoValue(l.subject));
+      // Clean #NV from room fields
+      for (const l of filtered) {
+        if (l.detail && isNoValue(l.detail)) delete l.detail;
+        if (l.room) {
+          const cleaned = l.room.replace(/#(NV|N\/A|WERT!|REF!)/gi, '').replace(/\s+/g, ' ').trim();
+          if (cleaned) l.room = cleaned;
+          else delete l.room;
+        }
+      }
+      // Sort by period, then merge Doppelstunden
+      filtered.sort((a, b) => a.period - b.period);
       out[cls][d] = mergePeriodPairs(filtered);
     }
   }
