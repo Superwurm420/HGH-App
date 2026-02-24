@@ -2,24 +2,24 @@ import { Announcement } from '@/lib/announcements/parser';
 
 export function AnnouncementList({ items }: { items: Announcement[] }) {
   if (items.length === 0) {
-    return <div className="card text-sm">Keine aktiven Pinnwand-Beiträge vorhanden.</div>;
+    return <p className="text-sm text-muted">Keine aktiven Beiträge vorhanden.</p>;
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {items.map((item) => (
-        <article key={item.file} className="card">
-          <h3 className="text-lg font-semibold">{item.title ?? 'Ohne Titel'}</h3>
-          <p className="text-xs text-slate-500">Datei: {item.file}</p>
-          <p className="text-sm">Datum: {item.date ?? 'nicht angegeben'}</p>
-          {item.audience ? <p className="text-sm">Zielgruppe: {item.audience}</p> : null}
-          {item.expires ? <p className="text-sm">Gültig bis: {item.expires}</p> : null}
-          <p className="mt-2 whitespace-pre-wrap text-sm">{item.body || 'Kein Text hinterlegt.'}</p>
-          {item.warnings.length > 0 ? (
-            <div className="mt-2 rounded-md border border-amber-300 bg-amber-50 p-2 text-xs dark:border-amber-700 dark:bg-amber-900/20">
-              Warnung: {item.warnings.join(' ')}
+        <article key={item.file} className="announcement-card">
+          <div className="flex items-start justify-between gap-2 mb-1">
+            <h3 className="text-sm font-bold">{item.title ?? 'Ohne Titel'}</h3>
+            {item.date && <span className="text-xs text-muted whitespace-nowrap">{item.date}</span>}
+          </div>
+          {item.audience && <p className="text-xs text-muted mb-1">Zielgruppe: {item.audience}</p>}
+          <p className="text-sm whitespace-pre-wrap">{item.body || 'Kein Text hinterlegt.'}</p>
+          {item.warnings.length > 0 && (
+            <div className="announcement-card highlight mt-2 text-xs">
+              {item.warnings.join(' ')}
             </div>
-          ) : null}
+          )}
         </article>
       ))}
     </div>

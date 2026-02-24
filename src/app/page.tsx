@@ -1,38 +1,47 @@
-import { AppHeader } from '@/components/ui/AppHeader';
 import { ClassSelector } from '@/components/schedule/ClassSelector';
-import { Clock } from '@/components/ui/Clock';
 import { getWeeklyPlanForClass } from '@/lib/timetable/server';
 import { getSpecialEventsByClass } from '@/lib/announcements/server';
 import { TodaySchedule } from '@/components/schedule/TodaySchedule';
 import { ClassFromStorage } from '@/components/schedule/ClassFromStorage';
+import { Countdown } from '@/components/ui/Countdown';
+import { MiniCalendar } from '@/components/ui/MiniCalendar';
+import { AnnouncementList } from '@/components/announcements/AnnouncementList';
+import { getAnnouncements } from '@/lib/announcements/server';
 
 export default async function HomePage({ searchParams }: { searchParams: { klasse?: string } }) {
   const plan = await getWeeklyPlanForClass(searchParams.klasse);
 
   if (!plan) {
     return (
-      <main>
-        <AppHeader />
-        <p className="mt-4 text-sm text-rose-600">Keine gültige Stundenplan-PDF gefunden.</p>
-      </main>
+      <>
+        <div className="card surface">
+          <h2 className="text-lg font-bold">Heute</h2>
+          <Countdown />
+          <p className="text-sm text-muted mt-2">Kein Stundenplan verfügbar.</p>
+        </div>
+        <div className="mt-3">
+          <MiniCalendar />
+        </div>
+      </>
     );
   }
 
   const events = await getSpecialEventsByClass(plan.schoolClass);
+  const announcements = await getAnnouncements();
 
   return (
-    <main>
+    <>
       <ClassFromStorage classes={plan.availableClasses} />
-      <AppHeader />
-      <section className="card mb-4 space-y-3">
-        <h1 className="text-2xl font-bold">HGH – Heute</h1>
-        <Clock />
-        <p className="text-sm text-slate-600 dark:text-slate-300">
-          Klasse wählen und direkt den heutigen Unterricht sehen.
-        </p>
-      </section>
-      <ClassSelector classes={plan.availableClasses} />
-      <div className="mt-4">
+
+      <div className="card surface">
+        <h2 className="text-lg font-bold">Heute</h2>
+        <Countdown />
+
+        <div className="flex flex-wrap items-end gap-3 mt-2 mb-3">
+          <ClassSelector classes={plan.availableClasses} />
+          <p className="text-xs text-muted">KW {plan.latest.kw} · {plan.latest.filename.replace('.pdf', '')}</p>
+        </div>
+
         <TodaySchedule
           schoolClass={plan.schoolClass}
           day={plan.todayKey}
@@ -40,6 +49,17 @@ export default async function HomePage({ searchParams }: { searchParams: { klass
           events={events}
         />
       </div>
-    </main>
+
+      <div className="mt-3">
+        <MiniCalendar />
+      </div>
+
+      {announcements.length > 0 && (
+        <div className="card surface mt-3">
+          <h2 className="text-lg font-bold mb-3">Ankündigungen</h2>
+          <AnnouncementList items={announcements} />
+        </div>
+      )}
+    </>
   );
 }

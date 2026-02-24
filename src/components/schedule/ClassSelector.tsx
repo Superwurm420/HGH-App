@@ -2,54 +2,47 @@
 
 import { useEffect, useState } from 'react';
 import { loadSelectedClass, saveSelectedClass } from '@/lib/storage/preferences';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 
-export function ClassSelector({
-  classes,
-  redirectToSchedule = false,
-}: {
-  classes: string[];
-  redirectToSchedule?: boolean;
-}) {
+export function ClassSelector({ classes }: { classes: string[] }) {
   const [selected, setSelected] = useState<string>('');
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     const stored = loadSelectedClass();
-    if (stored && classes.includes(stored)) {
+    const fromUrl = searchParams.get('klasse');
+    if (fromUrl && classes.includes(fromUrl)) {
+      setSelected(fromUrl);
+    } else if (stored && classes.includes(stored)) {
       setSelected(stored);
-      return;
-    }
-
-    if (!stored && classes.length > 0) {
+    } else if (classes.length > 0) {
       setSelected(classes[0]);
     }
-  }, [classes]);
+  }, [classes, searchParams]);
 
-  const onSave = () => {
-    if (!selected) return;
-    saveSelectedClass(selected);
-    if (redirectToSchedule) router.push(`/stundenplan?klasse=${encodeURIComponent(selected)}`);
+  const onChange = (value: string) => {
+    setSelected(value);
+    saveSelectedClass(value);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('klasse', value);
+    router.replace(`${pathname}?${params.toString()}`);
   };
 
   return (
-    <div className="card space-y-3">
-      <h2 className="text-lg font-semibold">Klasse auswählen</h2>
+    <label className="flex items-center gap-2">
+      <span className="text-xs font-semibold text-muted">Klasse</span>
       <select
-        className="w-full rounded-lg border border-slate-300 bg-transparent p-2 dark:border-slate-600"
+        className="select"
+        style={{ width: 'auto', paddingRight: '36px' }}
         value={selected}
-        onChange={(e) => setSelected(e.target.value)}
+        onChange={(e) => onChange(e.target.value)}
       >
-        <option value="">Bitte wählen…</option>
         {classes.map((c) => (
-          <option key={c} value={c}>
-            {c}
-          </option>
+          <option key={c} value={c}>{c}</option>
         ))}
       </select>
-      <button className="btn-primary" type="button" onClick={onSave} disabled={!selected}>
-        Speichern
-      </button>
-    </div>
+    </label>
   );
 }

@@ -3,12 +3,6 @@
 import { useEffect, useState } from 'react';
 import { loadTheme, saveTheme, ThemeMode } from '@/lib/storage/preferences';
 
-const LABELS: Record<ThemeMode, string> = {
-  light: 'Hell',
-  dark: 'Dunkel',
-  system: 'System',
-};
-
 export function ThemeToggle() {
   const [mode, setMode] = useState<ThemeMode>('system');
 
@@ -18,23 +12,27 @@ export function ThemeToggle() {
 
   useEffect(() => {
     const isDark = mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    document.documentElement.classList.toggle('dark', isDark);
+    document.documentElement.classList.toggle('light', !isDark);
     saveTheme(mode);
   }, [mode]);
 
+  const next = (): ThemeMode => {
+    if (mode === 'system') return 'light';
+    if (mode === 'light') return 'dark';
+    return 'system';
+  };
+
+  const icon = mode === 'light' ? '\u2600' : mode === 'dark' ? '\u263E' : '\u25D0';
+
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-sm text-slate-500 dark:text-slate-400">Design:</span>
-      {(Object.keys(LABELS) as ThemeMode[]).map((key) => (
-        <button
-          key={key}
-          className={`btn-secondary ${mode === key ? 'ring-2 ring-primary' : ''}`}
-          onClick={() => setMode(key)}
-          type="button"
-        >
-          {LABELS[key]}
-        </button>
-      ))}
-    </div>
+    <button
+      className="icon-btn"
+      onClick={() => setMode(next())}
+      type="button"
+      aria-label="Farbschema umschalten"
+      title={`Aktuell: ${mode === 'light' ? 'Hell' : mode === 'dark' ? 'Dunkel' : 'System'}`}
+    >
+      <span className="text-lg" aria-hidden="true">{icon}</span>
+    </button>
   );
 }
