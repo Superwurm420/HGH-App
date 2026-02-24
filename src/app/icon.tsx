@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element -- next/og ImageResponse requires plain <img>, not Next.js <Image /> */
 import { ImageResponse } from 'next/og';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -11,7 +12,7 @@ export default function Icon() {
 
   return new ImageResponse(
     (
-      <img src={dataUrl} width={32} height={32} />
+      <img src={dataUrl} width={32} height={32} alt="" />
     ),
     { ...size },
   );

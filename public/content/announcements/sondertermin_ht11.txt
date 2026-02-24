@@ -3,6 +3,6 @@ title: Test
 
 date: 20.04.2025 04:20
 audience: HT11 HT22 GT01
-expires: 20.04.2026 4:20
+expires: 20.04.2026 04:20
 ---
 Das ist ein Test. 

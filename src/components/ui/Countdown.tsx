@@ -78,8 +78,13 @@ export function Countdown() {
   const berlinM = Number(berlinParts.find(p => p.type === 'minute')?.value ?? 0);
   const nowMins = timeToMinutes(berlinH, berlinM);
 
-  const dayOfWeek = now.getDay();
-  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+  // Use Berlin timezone for the weekend check (consistent with Berlin hours above)
+  const berlinDayParts = new Intl.DateTimeFormat('de-DE', {
+    timeZone: 'Europe/Berlin',
+    weekday: 'short',
+  }).formatToParts(now);
+  const berlinDayStr = berlinDayParts.find((p) => p.type === 'weekday')?.value ?? '';
+  const isWeekend = berlinDayStr.startsWith('Sa') || berlinDayStr.startsWith('So');
 
   let countdownText = '';
   let funMsg = '';
