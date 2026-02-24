@@ -9,6 +9,11 @@ export const metadata: Metadata = {
   title: 'HGH Stundenplan',
   description: 'Stundenplan-PWA – Holztechnik und Gestaltung Hildesheim',
   manifest: '/manifest.webmanifest',
+  icons: {
+    icon: '/icon',
+    shortcut: '/icon',
+    apple: '/apple-icon',
+  },
 };
 
 export const viewport: Viewport = {
