@@ -3,16 +3,34 @@ import path from 'node:path';
 
 const TIMETABLE_DIR = path.join(process.cwd(), 'public/content/timetables');
 const PATTERN = /^Stundenplan_kw_(\d{2})_Hj([12])_(\d{4})_(\d{2})\.pdf$/i;
+const FALLBACK_PATTERN = /(\d{4}).*?(\d{1,2})/;
 
 function parseMeta(filename) {
   const match = filename.match(PATTERN);
-  if (!match) return null;
+  if (match) {
+    return {
+      filename,
+      kw: Number(match[1]),
+      halfYear: Number(match[2]),
+      yearStart: Number(match[3]),
+      yearEndShort: Number(match[4]),
+    };
+  }
+
+  // Fallback: Datei mit Jahreszahl im Namen
+  const fallback = filename.match(FALLBACK_PATTERN);
+  if (!fallback) return null;
+
+  const yearStart = Number(fallback[1]);
+  const kw = Math.min(53, Math.max(1, Number(fallback[2])));
+
   return {
     filename,
-    kw: Number(match[1]),
-    halfYear: Number(match[2]),
-    yearStart: Number(match[3]),
-    yearEndShort: Number(match[4]),
+    kw,
+    halfYear: 2,
+    yearStart,
+    yearEndShort: (yearStart + 1) % 100,
+    fallbackName: true,
   };
 }
 
@@ -36,4 +54,7 @@ if (parsed.length === 0) {
 }
 
 const latest = parsed[0];
+if (latest.fallbackName) {
+  console.warn(`HINWEIS: "${latest.filename}" nutzt nicht das Standard-Namensschema.`);
+}
 console.log(JSON.stringify(latest, null, 2));
