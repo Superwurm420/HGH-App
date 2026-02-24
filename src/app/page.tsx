@@ -7,9 +7,14 @@ import { Countdown } from '@/components/ui/Countdown';
 import { MiniCalendar } from '@/components/ui/MiniCalendar';
 import { AnnouncementList } from '@/components/announcements/AnnouncementList';
 import { getAnnouncements } from '@/lib/announcements/server';
+import { DailyMessage } from '@/components/ui/DailyMessage';
+import { GoogleCalendar } from '@/components/ui/GoogleCalendar';
+import messagesData from '@/data/messages-data.json';
+import calendarData from '@/data/calendar-data.json';
 
 export default async function HomePage({ searchParams }: { searchParams: { klasse?: string } }) {
   const plan = await getWeeklyPlanForClass(searchParams.klasse);
+  const calendarUrl = (calendarData as { urls: string[] }).urls?.[0] ?? null;
 
   if (!plan) {
     return (
@@ -19,9 +24,14 @@ export default async function HomePage({ searchParams }: { searchParams: { klass
           <Countdown />
           <p className="text-sm text-muted mt-2">Kein Stundenplan verfügbar.</p>
         </div>
-        <div className="mt-3">
-          <MiniCalendar />
-        </div>
+        <DailyMessage messages={messagesData as Record<string, unknown>} />
+        {calendarUrl ? (
+          <GoogleCalendar url={calendarUrl} />
+        ) : (
+          <div className="mt-3">
+            <MiniCalendar />
+          </div>
+        )}
       </>
     );
   }
@@ -50,9 +60,18 @@ export default async function HomePage({ searchParams }: { searchParams: { klass
         />
       </div>
 
-      <div className="mt-3">
-        <MiniCalendar />
-      </div>
+      <DailyMessage
+        messages={messagesData as Record<string, unknown>}
+        schoolClass={plan.schoolClass}
+      />
+
+      {calendarUrl ? (
+        <GoogleCalendar url={calendarUrl} />
+      ) : (
+        <div className="mt-3">
+          <MiniCalendar />
+        </div>
+      )}
 
       {announcements.length > 0 && (
         <div className="card surface mt-3">

@@ -1,0 +1,79 @@
+{
+  "_hinweis": "Tägliche Meldungen – einfach bearbeitbar. Kategorien: morgen, mittag, nachmittag, schulschluss, wochenende. Unter 'klassen' können klassenspezifische Sprüche eingetragen werden.",
+  "morgen": [
+    "Guten Morgen! Heute wird ein guter Tag.",
+    "Frisch in den Tag – alles ist möglich.",
+    "Neuer Tag, neue Chancen. Macht was draus!",
+    "Der frühe Vogel... ihr wisst schon. Gut, dass ihr da seid!",
+    "Guten Morgen! Der erste Kaffee wirkt – gleich.",
+    "Heute wird gelernt, was morgen nützlich ist.",
+    "Ein starker Start in den Tag. Ihr habt das drauf!",
+    "Morgens frisch, mittags fit, abends stolz – so geht das!"
+  ],
+  "mittag": [
+    "Schon Halbzeit – weiter so!",
+    "Mittagstief? Kurz durchatmen und dann wieder Gas geben.",
+    "Fast über dem Berg – den Nachmittag kriegt ihr auch noch.",
+    "Halbzeit! Die zweite Hälfte gehört euch.",
+    "Nach der Pause läuft alles wieder runder.",
+    "Mittagspause verdient – gut gemacht bis hierher!",
+    "Noch ein paar Stunden und der Tag gehört euch.",
+    "Der Nachmittag ist die letzte Etappe – Zieleinlauf naht!"
+  ],
+  "nachmittag": [
+    "Nur noch ein bisschen – gleich ist Feierabend!",
+    "Die Ziellinie ist in Sicht. Nicht aufhören!",
+    "Fast geschafft – Kopf hoch und durch!",
+    "Nachmittag heißt: es wird bald besser.",
+    "Noch ein letzter Schub – dann ist der Tag im Kasten.",
+    "Ihr seid auf der Zielgeraden. Durchhalten!",
+    "Der Feierabend wartet – noch ein bisschen."
+  ],
+  "schulschluss": [
+    "Feierabend! Gut gemacht heute.",
+    "Der Tag ist rum – Kopf freilassen.",
+    "Geschafft! Genießt den Abend.",
+    "Ein weiterer erfolgreicher Schultag. Respekt!",
+    "Jetzt verdient ihr eure Pause. Bis morgen!"
+  ],
+  "wochenende": [
+    "Wochenende! Erholt euch gut.",
+    "Zwei Tage Freiheit – genießt sie!",
+    "Akkus aufladen für die nächste Woche.",
+    "Verdiente Auszeit – genießt das Wochenende!",
+    "Kein Unterricht – dafür umso mehr Leben.",
+    "Wochenende: die Zeit, die euch wirklich gehört."
+  ],
+  "klassen": {
+    "HT11": [
+      "HT11 – erstes Jahr, volle Energie!",
+      "Holztechnik 11: Hier wächst die nächste Generation.",
+      "HT11 – der Grundstein wird heute gelegt!"
+    ],
+    "HT12": [
+      "HT12 – schon im zweiten Jahr, schon viel gelernt.",
+      "Holztechnik 12: Erfahrung trifft Präzision.",
+      "HT12 – ihr wisst was ihr tut!"
+    ],
+    "HT21": [
+      "HT21 – auf dem Weg zum Abschluss!",
+      "Holztechnik 21: Noch ein Jahr und ihr seid dabei.",
+      "HT21 – Durchhalten lohnt sich!"
+    ],
+    "HT22": [
+      "HT22 – fast am Ziel. Nicht nachlassen!",
+      "Holztechnik 22: Der Abschluss ist zum Greifen nah.",
+      "HT22 – macht das Beste aus dem letzten Jahr!"
+    ],
+    "G11": [
+      "G11 – kreativ sein ist kein Privileg, es ist euer Handwerk.",
+      "Gestaltung 11: Ideen brauchen Zeit – nehmt sie euch.",
+      "G11 – die Welt wird ein bisschen schöner durch euch!"
+    ],
+    "G21": [
+      "G21 – Gestaltung auf höchstem Niveau.",
+      "Zweites Jahr Gestaltung: Ihr seht die Dinge mit anderen Augen.",
+      "G21 – eure Arbeit hinterlässt Eindruck!"
+    ]
+  }
+}

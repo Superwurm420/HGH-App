@@ -252,14 +252,70 @@ async function parsePdf(filePath, getDocument) {
     }
   }
 
-  // Filter empty / placeholder entries
+  // Filter empty / placeholder entries, then merge Doppelstunden
   for (const cls of classes) {
     for (const d of WEEKDAYS) {
-      out[cls][d] = out[cls][d].filter((l) => l.subject && l.subject !== 'R');
+      const filtered = out[cls][d].filter((l) => l.subject && l.subject !== 'R');
+      out[cls][d] = mergePeriodPairs(filtered);
     }
   }
 
   return out;
+}
+
+/**
+ * Zusammenführen von Doppelstunden:
+ * Im PDF wechseln sich Unterrichtsstunden und Lehrerkürzel ab (1=Fach, 2=Kürzel, 3=Fach, 4=Kürzel …).
+ * Diese Funktion mergt aufeinanderfolgende Paare (1+2, 3+4, …) so dass
+ * das Lehrerkürzel als Detail der ersten Stunde erscheint.
+ */
+function mergePeriodPairs(lessons) {
+  if (lessons.length === 0) return [];
+
+  const sorted = [...lessons].sort((a, b) => a.period - b.period);
+  const result = [];
+  let i = 0;
+
+  while (i < sorted.length) {
+    const curr = sorted[i];
+    const next = sorted[i + 1];
+
+    // Merge wenn: curr ist ungerade Stunde UND next ist curr+1
+    const isOdd = curr.period % 2 === 1;
+    const isConsecutive = next && next.period === curr.period + 1;
+
+    if (isOdd && isConsecutive) {
+      const teacherKuerzel = (next.subject ?? '').trim();
+      const existingDetail = (curr.detail ?? '').trim();
+      const mergedDetail = teacherKuerzel
+        ? existingDetail ? `${teacherKuerzel} · ${existingDetail}` : teacherKuerzel
+        : existingDetail || undefined;
+
+      result.push({
+        period: curr.period,
+        periodEnd: next.period,
+        time: mergeTimeRange(curr.time, next.time),
+        subject: curr.subject,
+        detail: mergedDetail || undefined,
+      });
+      i += 2;
+    } else {
+      result.push(curr);
+      i++;
+    }
+  }
+
+  return result;
+}
+
+/** Verbindet den Start von time1 mit dem Ende von time2: "8.30 - 9.15" + "9.15 - 10.00" → "8.30 - 10.00" */
+function mergeTimeRange(time1, time2) {
+  const startMatch = time1.match(/^(\d{1,2}[.:]\d{2})/);
+  const endMatch = time2.match(/(\d{1,2}[.:]\d{2})\s*$/);
+  if (startMatch && endMatch) {
+    return `${startMatch[1]} - ${endMatch[1]}`;
+  }
+  return time1;
 }
 
 /**
@@ -423,6 +479,41 @@ async function main() {
     JSON.stringify(announcements, null, 2),
   );
   console.log(`  → announcements-data.json geschrieben (${announcements.length} Dateien)`);
+
+  // ── Kalender-URLs ──
+  console.log('\n═══ Kalender ═══');
+  let calendarUrls = [];
+  try {
+    const calendarTxt = await fs.readFile(path.join(ROOT, 'public/content/kalender.txt'), 'utf8');
+    calendarUrls = calendarTxt
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter((l) => l.startsWith('http'));
+    console.log(`  ${calendarUrls.length} Kalender-URL(s) gefunden.`);
+  } catch {
+    console.log('  Keine kalender.txt gefunden – überspringe.');
+  }
+  await fs.writeFile(
+    path.join(OUTPUT_DIR, 'calendar-data.json'),
+    JSON.stringify({ urls: calendarUrls }, null, 2),
+  );
+  console.log('  → calendar-data.json geschrieben.');
+
+  // ── Tägliche Meldungen ──
+  console.log('\n═══ Tägliche Meldungen ═══');
+  let messages = {};
+  try {
+    const messagesRaw = await fs.readFile(path.join(ROOT, 'public/content/messages.json'), 'utf8');
+    messages = JSON.parse(messagesRaw);
+    console.log('  messages.json geladen.');
+  } catch {
+    console.log('  Keine messages.json gefunden – überspringe.');
+  }
+  await fs.writeFile(
+    path.join(OUTPUT_DIR, 'messages-data.json'),
+    JSON.stringify(messages, null, 2),
+  );
+  console.log('  → messages-data.json geschrieben.');
 
   // ── Zusammenfassung ──
   console.log('\n═══ Zusammenfassung ═══');

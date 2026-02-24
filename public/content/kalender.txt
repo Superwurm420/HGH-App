@@ -1,0 +1,20 @@
+# Google Kalender – Einbettungs-URLs
+# ─────────────────────────────────────────────────────────────────────
+# Trage hier deine Google Kalender Einbettungs-URL(en) ein.
+# Jede URL auf einer eigenen Zeile. Zeilen mit # werden ignoriert.
+#
+# So findest du die URL:
+#   1. Öffne calendar.google.com
+#   2. Klicke neben deinem Kalender auf die drei Punkte → Einstellungen
+#   3. Scrolle zu "Kalender einbetten"
+#   4. Kopiere die URL aus dem src="..." des iFrame-Codes
+#
+# Beispiel (ersetzen durch deine echte URL):
+# https://calendar.google.com/calendar/embed?src=deine-kalender-id%40gmail.com&ctz=Europe%2FBerlin
+#
+# Mehrere Kalender werden durch &src=... in einer URL kombiniert oder
+# als separate Zeilen eingetragen (es wird der erste aktive verwendet).
+#
+# ─────────────────────────────────────────────────────────────────────
+# URL hier eintragen (# am Anfang entfernen):
+# https://calendar.google.com/calendar/embed?src=KALENDER_ID%40gmail.com&ctz=Europe%2FBerlin&mode=AGENDA&showTitle=0&showNav=1&showPrint=0&showTabs=0&showCalendars=0

@@ -35,7 +35,9 @@ export default async function WochePage({ searchParams }: { searchParams: { klas
           </div>
         </div>
       </div>
-      <WeekSchedule schoolClass={plan.schoolClass} week={plan.week} events={events} todayKey={plan.todayKey} />
+      <div className="card surface">
+        <WeekSchedule schoolClass={plan.schoolClass} week={plan.week} events={events} todayKey={plan.todayKey} />
+      </div>
     </>
   );
 }
