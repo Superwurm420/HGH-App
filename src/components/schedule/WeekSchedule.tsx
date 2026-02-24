@@ -1,6 +1,10 @@
-import { SpecialEvent, WeekPlan, WEEKDAYS, Weekday } from '@/lib/timetable/types';
+import { LessonEntry, SpecialEvent, WeekPlan, WEEKDAYS, Weekday } from '@/lib/timetable/types';
 
 const DAY_LABELS: Record<Weekday, string> = {
+  MO: 'Mo', DI: 'Di', MI: 'Mi', DO: 'Do', FR: 'Fr',
+};
+
+const DAY_FULL: Record<Weekday, string> = {
   MO: 'Montag', DI: 'Dienstag', MI: 'Mittwoch', DO: 'Donnerstag', FR: 'Freitag',
 };
 
@@ -11,6 +15,15 @@ function dayFromGermanDate(value: string): Weekday | null {
   const jsDay = new Date(year, month - 1, day).getDay();
   const map: Record<number, Weekday | null> = { 0: null, 1: 'MO', 2: 'DI', 3: 'MI', 4: 'DO', 5: 'FR', 6: null };
   return map[jsDay] ?? null;
+}
+
+function periodLabel(lesson: LessonEntry): string {
+  if (lesson.periodEnd) return `${lesson.period}-${lesson.periodEnd}`;
+  return `${lesson.period}`;
+}
+
+function timeStart(time: string): string {
+  return time.split('-')[0].trim().replace('.', ':');
 }
 
 export function WeekSchedule({
@@ -24,42 +37,56 @@ export function WeekSchedule({
   todayKey?: Weekday;
 }) {
   return (
-    <div className="space-y-2">
-      {WEEKDAYS.map((day) => {
-        const dayEvents = events.filter((event) => dayFromGermanDate(event.startsAt) === day);
-        const lessons = week[day];
-        const isToday = day === todayKey;
+    <div className="overflow-x-auto">
+      <div className="week-cols-wrapper">
+        {WEEKDAYS.map((day) => {
+          const dayEvents = events.filter((event) => dayFromGermanDate(event.startsAt) === day);
+          const lessons = week[day];
+          const isToday = day === todayKey;
 
-        return (
-          <div key={day}>
-            <div className={`week-day-header ${isToday ? 'today' : ''}`}>
-              {DAY_LABELS[day]} {isToday && '(heute)'}
+          return (
+            <div key={day} className="week-col">
+              <div
+                className={`week-col-header ${isToday ? 'today' : ''}`}
+                title={DAY_FULL[day]}
+              >
+                <span>{DAY_LABELS[day]}</span>
+                {isToday && <span className="week-col-today-dot" aria-label="heute" />}
+              </div>
+
+              {dayEvents.length > 0 && (
+                <div className="week-col-event">
+                  {dayEvents.map((event) => (
+                    <p key={event.id} className="text-xs leading-tight">{event.title}</p>
+                  ))}
+                </div>
+              )}
+
+              {lessons.length === 0 ? (
+                <p className="text-xs text-muted text-center py-3">–</p>
+              ) : (
+                <div className="week-col-lessons">
+                  {lessons.map((lesson) => (
+                    <div
+                      key={`${day}-${lesson.period}-${lesson.time}`}
+                      className="week-lesson-card"
+                    >
+                      <div className="week-lesson-meta">
+                        <span className="week-period-badge">{periodLabel(lesson)}</span>
+                        <span className="week-lesson-time">{timeStart(lesson.time)}</span>
+                      </div>
+                      <div className="week-lesson-subject">{lesson.subject ?? '–'}</div>
+                      {lesson.detail && (
+                        <div className="week-lesson-detail">{lesson.detail}</div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-
-            {dayEvents.length > 0 && (
-              <div className="announcement-card highlight mt-1 mb-1">
-                {dayEvents.map((event) => (
-                  <p key={event.id} className="text-sm">{event.title} · {event.startsAt}</p>
-                ))}
-              </div>
-            )}
-
-            {lessons.length === 0 ? (
-              <p className="text-sm text-muted py-2 px-3">Keine Einträge.</p>
-            ) : (
-              <div className="overflow-hidden rounded-b-xl border border-t-0 border-[var(--line)]">
-                {lessons.map((lesson) => (
-                  <div key={`${day}-${lesson.period}-${lesson.time}`} className="tt-row">
-                    <div className="tt-cell text-sm font-medium">{lesson.period}. {lesson.time}</div>
-                    <div className="tt-cell text-sm">{lesson.subject ?? '-'}</div>
-                    <div className="tt-cell text-xs text-muted">{lesson.detail ?? ''}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }

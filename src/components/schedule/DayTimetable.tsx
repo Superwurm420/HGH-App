@@ -65,7 +65,10 @@ export function DayTimetable({
           </div>
           {lessons.map((lesson: LessonEntry) => (
             <div key={`${activeDay}-${lesson.period}-${lesson.time}`} className="tt-row">
-              <div className="tt-cell text-sm font-medium">{lesson.period}. {lesson.time}</div>
+              <div className="tt-cell text-sm font-medium">
+                {lesson.periodEnd ? `${lesson.period}+${lesson.periodEnd}.` : `${lesson.period}.`}
+                {' '}{lesson.time}
+              </div>
               <div className="tt-cell text-sm">{lesson.subject ?? '-'}</div>
               <div className="tt-cell text-xs text-muted">{lesson.detail ?? ''}</div>
             </div>

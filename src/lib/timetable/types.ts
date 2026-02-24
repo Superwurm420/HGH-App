@@ -14,6 +14,7 @@ export type TimetableMeta = {
 
 export type LessonEntry = {
   period: number;
+  periodEnd?: number; // Für Doppelstunden (z.B. 1+2 → periodEnd=2)
   time: string;
   subject?: string;
   detail?: string;
