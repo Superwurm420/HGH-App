@@ -60,7 +60,7 @@ export default function WeiteresPage() {
               <div className="text-sm font-semibold">{link.title}</div>
               <div className="text-xs text-muted">{link.subtitle}</div>
             </div>
-            <span className="link-arrow" aria-hidden="true">&nearr;</span>
+            <span className="link-arrow" aria-hidden="true">{'\u2197'}</span>
           </a>
         ))}
       </nav>
@@ -79,7 +79,7 @@ export default function WeiteresPage() {
               <div className="text-sm font-semibold">{ig.title}</div>
               <div className="text-xs text-muted">{ig.handle}</div>
             </div>
-            <span className="link-arrow" aria-hidden="true">&nearr;</span>
+            <span className="link-arrow" aria-hidden="true">{'\u2197'}</span>
           </a>
         ))}
       </nav>
