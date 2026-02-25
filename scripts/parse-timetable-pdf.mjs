@@ -71,20 +71,78 @@ const classes = Object.keys(classX);
 const firstClassX = Object.values(classX)[0];
 const timeColBoundary = Math.max(Math.round(firstClassX * 0.65), 85);
 
+// Raum-Spalten ("R") im Header erkennen
+function detectRoomColumns() {
+  if (rows.length === 0) return null;
+  const top = rows[0].y;
+  const pageHeight = top - (rows[rows.length - 1]?.y ?? 0);
+  const headerThreshold = Math.max(120, pageHeight * 0.15);
+  const headerRows = rows.filter((row) => row.y > top - headerThreshold);
+
+  const rPositions = [];
+  for (const row of headerRows) {
+    for (const item of row.items) {
+      if (item.str === 'R' && item.x >= timeColBoundary) {
+        rPositions.push(item.x);
+      }
+    }
+  }
+  if (rPositions.length === 0) return null;
+  rPositions.sort((a, b) => a - b);
+
+  const classEntries = Object.entries(classX).sort((a, b) => a[1] - b[1]);
+  const roomCols = {};
+  for (const rx of rPositions) {
+    let best = null;
+    for (const [cls, cx] of classEntries) {
+      if (cx <= rx) best = cls;
+    }
+    if (best && !roomCols[best]) roomCols[best] = rx;
+  }
+  return Object.keys(roomCols).length > 0 ? roomCols : null;
+}
+
 // Dynamische Spaltenbreiten (erste Klasse beginnt am timeColBoundary)
-function computeColumnBounds(classX) {
+function computeColumnBounds(classX, roomColumns) {
   const entries = Object.entries(classX).sort((a, b) => a[1] - b[1]);
   const bounds = {};
+  const ROOM_COL_MARGIN = 5;
   for (let i = 0; i < entries.length; i++) {
     const [cls, x] = entries[i];
-    const nextX = i < entries.length - 1 ? entries[i + 1][1] : x + 120;
-    const left = i === 0 ? timeColBoundary : Math.round((entries[i - 1][1] + x) / 2);
-    bounds[cls] = { left, right: Math.round((x + nextX) / 2) };
+    const nextX = i < entries.length - 1 ? entries[i + 1][1] : null;
+    const prevEntry = i > 0 ? entries[i - 1] : null;
+
+    let left;
+    if (i === 0) {
+      left = timeColBoundary;
+    } else {
+      const prevRoomX = roomColumns?.[prevEntry[0]];
+      if (prevRoomX != null) {
+        left = Math.round(prevRoomX) + ROOM_COL_MARGIN;
+      } else {
+        left = Math.round((prevEntry[1] + x) / 2);
+      }
+    }
+
+    let right;
+    const roomX = roomColumns?.[cls];
+    if (roomX != null && nextX != null) {
+      right = Math.round(roomX) + ROOM_COL_MARGIN;
+    } else if (roomX != null) {
+      right = Math.round(roomX) + 30;
+    } else if (nextX != null) {
+      right = Math.round((x + nextX) / 2);
+    } else {
+      right = Math.round(x + 120);
+    }
+
+    bounds[cls] = { left, right };
   }
   return bounds;
 }
 
-const columnBounds = computeColumnBounds(classX);
+const roomColumns = detectRoomColumns();
+const columnBounds = computeColumnBounds(classX, roomColumns);
 const out = Object.fromEntries(classes.map((c) => [c, { MO: [], DI: [], MI: [], DO: [], FR: [] }]));
 
 // ── Pre-scan: detect day boundaries ──────────────────────────────
