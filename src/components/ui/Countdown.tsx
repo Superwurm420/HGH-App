@@ -115,14 +115,12 @@ export function Countdown() {
 
   return (
     <div className="countdown">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <NetworkDot />
-            <span className="text-xs text-muted">{dateStr}</span>
-          </div>
-          <div className="now-time" aria-live="polite">{timeStr}</div>
-        </div>
+      <div className="flex items-center gap-2 mb-2">
+        <NetworkDot />
+        <span className="text-xs text-muted">{dateStr}</span>
+      </div>
+      <div className="countdown-main">
+        <div className="now-time" aria-live="polite">{timeStr}</div>
         {countdownText && (
           <div className="countdown-badge">{countdownText}</div>
         )}

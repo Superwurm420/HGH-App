@@ -190,6 +190,24 @@ body {
   background: rgba(255, 255, 255, 0.4);
 }
 
+/* Mobile-first: Zeit oben, Badge darunter */
+.countdown-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+/* Ab ~480px: nebeneinander */
+@media (min-width: 480px) {
+  .countdown-main {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+}
+
 .now-time {
   font-weight: 900;
   font-size: 40px;
@@ -200,6 +218,7 @@ body {
 
 .countdown-badge {
   display: inline-flex;
+  align-self: flex-start;
   padding: 7px 14px;
   border-radius: 20px;
   background: linear-gradient(135deg, var(--accent), var(--accent2));
@@ -207,6 +226,7 @@ body {
   font-weight: 700;
   font-size: 13px;
   box-shadow: 0 4px 14px rgba(0, 122, 255, 0.35);
+  white-space: nowrap;
 }
 
 /* ── Network Indicator ─────────────────────────────────────────── */
