@@ -48,9 +48,16 @@ export function parseBerlinDate(value?: string): Date | null {
   const [d, t] = value.split(' ');
   const [day, month, year] = d.split('.').map(Number);
   const [hour, minute] = t.split(':').map(Number);
-  return new Date(`${year.toString().padStart(4, '0')}-${month.toString().padStart(2, '0')}-${day
-    .toString()
-    .padStart(2, '0')}T${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:00+01:00`);
+  // Determine Berlin UTC offset (CET = +1, CEST = +2) using Intl
+  const noonUtc = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+  const berlinNoonHour = parseInt(
+    new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Berlin', hour: '2-digit', hour12: false })
+      .formatToParts(noonUtc)
+      .find((p) => p.type === 'hour')?.value ?? '13',
+    10,
+  );
+  const offsetHours = berlinNoonHour - 12; // +1 (CET) or +2 (CEST)
+  return new Date(Date.UTC(year, month - 1, day, hour - offsetHours, minute));
 }
 
 export function isActive(item: Announcement, now: Date = new Date()): boolean {
