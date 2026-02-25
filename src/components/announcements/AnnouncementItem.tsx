@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { ExpiryCountdown } from './ExpiryCountdown';
+import { parseBerlinDate } from '@/lib/announcements/parser';
 
 type AnnouncementItemProps = {
   file: string;
@@ -13,22 +14,12 @@ type AnnouncementItemProps = {
   warnings: string[];
 };
 
-const DE_DATE = /^(\d{2})\.(\d{2})\.(\d{4}) (\d{2}):(\d{2})$/;
-
-function parseBerlinDateClient(value: string): Date | null {
-  const m = value.match(DE_DATE);
-  if (!m) return null;
-  const [, dd, mm, yyyy, hh, min] = m;
-  const approxOffset = new Date().getTimezoneOffset() === -120 ? '+02:00' : '+01:00';
-  return new Date(`${yyyy}-${mm}-${dd}T${hh}:${min}:00${approxOffset}`);
-}
-
 export function AnnouncementItem({ file, title, date, audience, expires, body, warnings }: AnnouncementItemProps) {
   const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
     if (!expires) return;
-    const target = parseBerlinDateClient(expires);
+    const target = parseBerlinDate(expires);
     if (!target) return;
     const remaining = target.getTime() - Date.now();
     if (remaining <= 0) {

@@ -1,18 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-
-const DE_DATE = /^(\d{2})\.(\d{2})\.(\d{4}) (\d{2}):(\d{2})$/;
-
-function parseBerlinDate(value: string): Date | null {
-  const m = value.match(DE_DATE);
-  if (!m) return null;
-  const [, dd, mm, yyyy, hh, min] = m;
-  // Approximation: Berliner Zeit (ohne automatische Sommer-/Winterzeit-Erkennung)
-  // Für korrekte Zeitzone wird der Offset laut aktueller Jahreszeit gesetzt
-  const approxOffset = new Date().getTimezoneOffset() === -120 ? '+02:00' : '+01:00';
-  return new Date(`${yyyy}-${mm}-${dd}T${hh}:${min}:00${approxOffset}`);
-}
+import { parseBerlinDate } from '@/lib/announcements/parser';
 
 function formatRemaining(seconds: number): string {
   if (seconds <= 0) return 'abgelaufen';
