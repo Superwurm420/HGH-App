@@ -27,9 +27,8 @@ export default async function StundenplanPage({ searchParams }: { searchParams: 
           <div className="flex flex-wrap items-center gap-3">
             <ClassSelector classes={plan.availableClasses} />
             <a className="btn secondary text-sm" href={plan.latest.href} target="_blank" rel="noreferrer">
-              PDF-Stundenplan
+              PDF
             </a>
-            <span className="day-badge">Heute: {plan.todayKey}</span>
           </div>
         </div>
 

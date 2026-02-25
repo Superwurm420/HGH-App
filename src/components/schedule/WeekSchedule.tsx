@@ -1,4 +1,4 @@
-import { LessonEntry, SpecialEvent, WeekPlan, WEEKDAYS, Weekday } from '@/lib/timetable/types';
+import { LessonEntry, SpecialEvent, WeekPlan, WEEKDAYS, Weekday, dayFromGermanDate } from '@/lib/timetable/types';
 
 const DAY_LABELS: Record<Weekday, string> = {
   MO: 'Mo', DI: 'Di', MI: 'Mi', DO: 'Do', FR: 'Fr',
@@ -7,15 +7,6 @@ const DAY_LABELS: Record<Weekday, string> = {
 const DAY_FULL: Record<Weekday, string> = {
   MO: 'Montag', DI: 'Dienstag', MI: 'Mittwoch', DO: 'Donnerstag', FR: 'Freitag',
 };
-
-function dayFromGermanDate(value: string): Weekday | null {
-  const [datePart] = value.split(' ');
-  const [day, month, year] = datePart.split('.').map(Number);
-  if (!day || !month || !year) return null;
-  const jsDay = new Date(year, month - 1, day).getDay();
-  const map: Record<number, Weekday | null> = { 0: null, 1: 'MO', 2: 'DI', 3: 'MI', 4: 'DO', 5: 'FR', 6: null };
-  return map[jsDay] ?? null;
-}
 
 function periodLabel(lesson: LessonEntry): string {
   if (lesson.periodEnd) return `${lesson.period}-${lesson.periodEnd}`;

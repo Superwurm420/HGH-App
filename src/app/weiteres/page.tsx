@@ -42,49 +42,51 @@ function InstagramIcon() {
 export default function WeiteresPage() {
   return (
     <>
-      <div className="card surface mb-3">
-        <h2 className="text-lg font-bold">Links</h2>
+      <div className="card surface">
+        <h2 className="text-lg font-bold mb-3">Links</h2>
+        <nav className="space-y-2" aria-label="Wichtige Links">
+          {LINKS.map((link) => (
+            <a
+              key={link.url}
+              className="link-card"
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <span className="link-icon" aria-hidden="true">{link.icon}</span>
+              <div>
+                <div className="text-sm font-semibold">{link.title}</div>
+                <div className="text-xs text-muted">{link.subtitle}</div>
+              </div>
+              <span className="link-arrow" aria-hidden="true">{'\u2197'}</span>
+            </a>
+          ))}
+        </nav>
       </div>
 
-      <nav className="space-y-2 mb-4" aria-label="Wichtige Links">
-        {LINKS.map((link) => (
-          <a
-            key={link.url}
-            className="link-card"
-            href={link.url}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <span className="link-icon" aria-hidden="true">{link.icon}</span>
-            <div>
-              <div className="text-sm font-semibold">{link.title}</div>
-              <div className="text-xs text-muted">{link.subtitle}</div>
-            </div>
-            <span className="link-arrow" aria-hidden="true">{'\u2197'}</span>
-          </a>
-        ))}
-      </nav>
+      <div className="card surface mt-3">
+        <h2 className="text-lg font-bold mb-3">Instagram</h2>
+        <nav className="space-y-2" aria-label="Instagram">
+          {INSTAGRAM.map((ig) => (
+            <a
+              key={ig.url}
+              className="link-card"
+              href={ig.url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <span className="link-icon" aria-hidden="true"><InstagramIcon /></span>
+              <div>
+                <div className="text-sm font-semibold">{ig.title}</div>
+                <div className="text-xs text-muted">{ig.handle}</div>
+              </div>
+              <span className="link-arrow" aria-hidden="true">{'\u2197'}</span>
+            </a>
+          ))}
+        </nav>
+      </div>
 
-      <nav className="space-y-2 mb-4" aria-label="Instagram">
-        {INSTAGRAM.map((ig) => (
-          <a
-            key={ig.url}
-            className="link-card"
-            href={ig.url}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <span className="link-icon" aria-hidden="true"><InstagramIcon /></span>
-            <div>
-              <div className="text-sm font-semibold">{ig.title}</div>
-              <div className="text-xs text-muted">{ig.handle}</div>
-            </div>
-            <span className="link-arrow" aria-hidden="true">{'\u2197'}</span>
-          </a>
-        ))}
-      </nav>
-
-      <div className="card surface">
+      <div className="card surface mt-3">
         <h2 className="text-lg font-bold mb-3">Informationen</h2>
         <div className="space-y-4 text-sm">
           <div>

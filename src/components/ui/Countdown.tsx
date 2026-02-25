@@ -33,14 +33,6 @@ function formatDuration(mins: number) {
   return m > 0 ? `${h} Std ${m} Min` : `${h} Std`;
 }
 
-const FUN_MESSAGES = [
-  'Kopf hoch, bald ist Pause!',
-  'Durchhalten lohnt sich.',
-  'Bildung ist eine Investition.',
-  'Nur noch ein paar Stunden...',
-  'Du schaffst das!',
-];
-
 export function Countdown() {
   const [now, setNow] = useState(new Date());
 
@@ -87,18 +79,14 @@ export function Countdown() {
   const isWeekend = berlinDayStr.startsWith('Sa') || berlinDayStr.startsWith('So');
 
   let countdownText = '';
-  let funMsg = '';
 
   if (isWeekend) {
     countdownText = 'Wochenende!';
-    funMsg = 'Genieß die freie Zeit.';
   } else if (nowMins < parseTime(SCHEDULE[0].start)) {
     const diff = parseTime(SCHEDULE[0].start) - nowMins;
     countdownText = `Schulbeginn in ${formatDuration(diff)}`;
-    funMsg = 'Guten Morgen!';
   } else if (nowMins >= parseTime(SCHEDULE[SCHEDULE.length - 1].end)) {
     countdownText = 'Schulschluss!';
-    funMsg = 'Feierabend, gut gemacht!';
   } else {
     // Find current or next period
     let found = false;
@@ -108,7 +96,6 @@ export function Countdown() {
       if (nowMins >= start && nowMins < end) {
         const remaining = end - nowMins;
         countdownText = `${slot.period}. Stunde endet in ${formatDuration(remaining)}`;
-        funMsg = FUN_MESSAGES[slot.period % FUN_MESSAGES.length];
         found = true;
         break;
       }
@@ -120,7 +107,6 @@ export function Countdown() {
         if (start > nowMins) {
           const diff = start - nowMins;
           countdownText = `${slot.period}. Stunde beginnt in ${formatDuration(diff)}`;
-          funMsg = 'Pausenzeit!';
           break;
         }
       }
@@ -141,9 +127,6 @@ export function Countdown() {
           <div className="countdown-badge">{countdownText}</div>
         )}
       </div>
-      {funMsg && (
-        <div className="fun-message" aria-live="polite">{funMsg}</div>
-      )}
     </div>
   );
 }

@@ -35,6 +35,16 @@ const NAV_ITEMS = [
     ),
   },
   {
+    href: '/pinnwand',
+    label: 'Pinnwand',
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 2L4 7v13a1 1 0 001 1h14a1 1 0 001-1V7l-8-5z" />
+        <path d="M9 12h6M9 16h6" />
+      </svg>
+    ),
+  },
+  {
     href: '/weiteres',
     label: 'Weiteres',
     icon: (

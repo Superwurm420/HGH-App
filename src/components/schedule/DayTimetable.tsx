@@ -1,20 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { LessonEntry, SpecialEvent, WeekPlan, WEEKDAYS, Weekday } from '@/lib/timetable/types';
+import { LessonEntry, SpecialEvent, WeekPlan, WEEKDAYS, Weekday, dayFromGermanDate } from '@/lib/timetable/types';
 
 const DAY_SHORT: Record<Weekday, string> = {
   MO: 'Mo', DI: 'Di', MI: 'Mi', DO: 'Do', FR: 'Fr',
 };
-
-function dayFromGermanDate(value: string): Weekday | null {
-  const [datePart] = value.split(' ');
-  const [day, month, year] = datePart.split('.').map(Number);
-  if (!day || !month || !year) return null;
-  const jsDay = new Date(year, month - 1, day).getDay();
-  const map: Record<number, Weekday | null> = { 0: null, 1: 'MO', 2: 'DI', 3: 'MI', 4: 'DO', 5: 'FR', 6: null };
-  return map[jsDay] ?? null;
-}
 
 export function DayTimetable({
   week,
@@ -36,7 +27,7 @@ export function DayTimetable({
           <button
             key={day}
             type="button"
-            className="day-btn"
+            className={`day-btn ${day === todayKey && activeDay !== day ? 'today-hint' : ''}`}
             data-active={activeDay === day ? 'true' : 'false'}
             onClick={() => setActiveDay(day)}
           >
