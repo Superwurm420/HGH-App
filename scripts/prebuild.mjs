@@ -370,10 +370,20 @@ async function parsePdf(filePath, getDocument) {
   }
 
   // ── Post-process ─────────────────────────────────────────────────
+  const classSet = new Set(classes.map((c) => c.toUpperCase()));
+  // Matches standalone time ranges like "9.50 - 13.10 Uhr" that were misidentified as subjects
+  const TIME_RANGE_SUBJECT = /^\d{1,2}[.:]\d{2}\s*-\s*\d{1,2}[.:]\d{2}/;
+
   for (const cls of classes) {
     for (const d of WEEKDAYS) {
-      // Remove entries with no subject, 'R' headers, or #NV-only subjects
-      let filtered = out[cls][d].filter((l) => l.subject && l.subject !== 'R' && !isNoValue(l.subject));
+      // Remove entries with no subject, 'R' headers, #NV-only subjects,
+      // class names as subjects, or time ranges as subjects
+      let filtered = out[cls][d].filter((l) => {
+        if (!l.subject || l.subject === 'R' || isNoValue(l.subject)) return false;
+        if (classSet.has(l.subject.toUpperCase().replace(/\s+/g, ''))) return false;
+        if (TIME_RANGE_SUBJECT.test(l.subject)) return false;
+        return true;
+      });
       // Clean #NV from room fields
       for (const l of filtered) {
         if (l.detail && isNoValue(l.detail)) delete l.detail;
