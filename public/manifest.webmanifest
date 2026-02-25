@@ -7,9 +7,9 @@
   "background_color": "#06090f",
   "theme_color": "#007AFF",
   "icons": [
-    { "src": "/apple-icon", "sizes": "180x180", "type": "image/png", "purpose": "any" },
-    { "src": "/pwa-icon-192", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/pwa-icon-512", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/content/branding/apple-touch-icon.png", "sizes": "180x180", "type": "image/png", "purpose": "any" },
+    { "src": "/content/branding/web-app-manifest-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/content/branding/web-app-manifest-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "/content/branding/school-logo.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
   ]
 }

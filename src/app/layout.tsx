@@ -10,9 +10,12 @@ export const metadata: Metadata = {
   description: 'Stundenplan-PWA – Holztechnik und Gestaltung Hildesheim',
   manifest: '/manifest.webmanifest',
   icons: {
-    icon: '/icon',
-    shortcut: '/icon',
-    apple: '/apple-icon',
+    icon: [
+      { url: '/content/branding/favicon.ico', sizes: '48x48', type: 'image/x-icon' },
+      { url: '/content/branding/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
+      { url: '/content/branding/school-logo.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/content/branding/apple-touch-icon.png',
   },
 };
 
