@@ -65,18 +65,18 @@ export default async function HomePage({ searchParams }: { searchParams: { klass
         schoolClass={plan.schoolClass}
       />
 
+      {announcements.length > 0 && (
+        <div className="card surface mt-3">
+          <h2 className="text-lg font-bold mb-3">Ankündigungen</h2>
+          <AnnouncementList items={announcements} />
+        </div>
+      )}
+
       {calendarUrls.length > 0 ? (
         <GoogleCalendar urls={calendarUrls} />
       ) : (
         <div className="mt-3">
           <MiniCalendar />
-        </div>
-      )}
-
-      {announcements.length > 0 && (
-        <div className="card surface mt-3">
-          <h2 className="text-lg font-bold mb-3">Ankündigungen</h2>
-          <AnnouncementList items={announcements} />
         </div>
       )}
     </>
