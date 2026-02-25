@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { ClassSelector } from '@/components/schedule/ClassSelector';
 import { getWeeklyPlanForClass } from '@/lib/timetable/server';
 import { getSpecialEventsByClass } from '@/lib/announcements/server';
@@ -11,6 +12,8 @@ import { DailyMessage } from '@/components/ui/DailyMessage';
 import { GoogleCalendar } from '@/components/ui/GoogleCalendar';
 import messagesData from '@/generated/messages-data.json';
 import calendarData from '@/generated/calendar-data.json';
+
+const MAX_HOME_ANNOUNCEMENTS = 2;
 
 export default async function HomePage({ searchParams }: { searchParams: { klasse?: string } }) {
   const plan = await getWeeklyPlanForClass(searchParams.klasse);
@@ -38,22 +41,22 @@ export default async function HomePage({ searchParams }: { searchParams: { klass
 
   const events = await getSpecialEventsByClass(plan.schoolClass);
   const announcements = await getAnnouncements();
+  const previewAnnouncements = announcements.slice(0, MAX_HOME_ANNOUNCEMENTS);
+  const hasMore = announcements.length > MAX_HOME_ANNOUNCEMENTS;
 
   return (
     <>
       <ClassFromStorage classes={plan.availableClasses} />
 
       <div className="card surface">
-        <h2 className="text-lg font-bold">Heute</h2>
-        <Countdown />
-
-        <div className="flex flex-wrap items-end gap-3 mt-2 mb-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-1">
+          <h2 className="text-lg font-bold">Heute</h2>
           <ClassSelector classes={plan.availableClasses} />
-          <p className="text-xs text-muted">KW {plan.latest.kw} · {plan.latest.filename.replace('.pdf', '')}</p>
         </div>
 
+        <Countdown />
+
         <TodaySchedule
-          schoolClass={plan.schoolClass}
           day={plan.todayKey}
           lessons={plan.week[plan.todayKey]}
           events={events}
@@ -65,10 +68,17 @@ export default async function HomePage({ searchParams }: { searchParams: { klass
         schoolClass={plan.schoolClass}
       />
 
-      {announcements.length > 0 && (
+      {previewAnnouncements.length > 0 && (
         <div className="card surface mt-3">
-          <h2 className="text-lg font-bold mb-3">Ankündigungen</h2>
-          <AnnouncementList items={announcements} />
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-bold">Ankündigungen</h2>
+            {hasMore && (
+              <Link href="/pinnwand" className="text-sm font-semibold" style={{ color: 'var(--accent)' }}>
+                Alle anzeigen
+              </Link>
+            )}
+          </div>
+          <AnnouncementList items={previewAnnouncements} />
         </div>
       )}
 

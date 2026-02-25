@@ -21,21 +21,17 @@ export default async function WochePage({ searchParams }: { searchParams: { klas
   return (
     <>
       <ClassFromStorage classes={plan.availableClasses} />
-      <div className="card surface mb-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-bold">
-            Wochenübersicht
-            <span className="day-badge ml-2">KW {plan.latest.kw}</span>
-          </h2>
+      <div className="card surface">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <h2 className="text-lg font-bold">Wochenübersicht</h2>
           <div className="flex flex-wrap items-center gap-3">
             <ClassSelector classes={plan.availableClasses} />
             <a className="btn secondary text-sm" href={plan.latest.href} target="_blank" rel="noreferrer">
-              PDF-Stundenplan
+              PDF
             </a>
           </div>
         </div>
-      </div>
-      <div className="card surface">
+
         <WeekSchedule schoolClass={plan.schoolClass} week={plan.week} events={events} todayKey={plan.todayKey} />
       </div>
     </>

@@ -1,4 +1,4 @@
-import { LessonEntry, SpecialEvent, Weekday } from '@/lib/timetable/types';
+import { LessonEntry, SpecialEvent, Weekday, dayFromGermanDate } from '@/lib/timetable/types';
 
 const DAY_LABELS: Record<Weekday, string> = {
   MO: 'Montag',
@@ -8,22 +8,11 @@ const DAY_LABELS: Record<Weekday, string> = {
   FR: 'Freitag',
 };
 
-function dayFromGermanDate(value: string): Weekday | null {
-  const [datePart] = value.split(' ');
-  const [day, month, year] = datePart.split('.').map(Number);
-  if (!day || !month || !year) return null;
-  const jsDay = new Date(year, month - 1, day).getDay();
-  const map: Record<number, Weekday | null> = { 0: null, 1: 'MO', 2: 'DI', 3: 'MI', 4: 'DO', 5: 'FR', 6: null };
-  return map[jsDay] ?? null;
-}
-
 export function TodaySchedule({
-  schoolClass,
   day,
   lessons,
   events,
 }: {
-  schoolClass: string;
   day: Weekday;
   lessons: LessonEntry[];
   events: SpecialEvent[];
@@ -32,9 +21,8 @@ export function TodaySchedule({
 
   return (
     <div>
-      <div className="flex items-center gap-2 mb-3">
+      <div className="mb-3">
         <span className="day-badge">{DAY_LABELS[day]}</span>
-        <span className="text-sm font-semibold">{schoolClass}</span>
       </div>
 
       {todaysEvents.length > 0 && (
