@@ -1,6 +1,5 @@
 import { getWeeklyPlanForClass } from '@/lib/timetable/server';
 import { ClassFromStorage } from '@/components/schedule/ClassFromStorage';
-import { getSpecialEventsByClass } from '@/lib/announcements/server';
 import { ClassSelector } from '@/components/schedule/ClassSelector';
 import { WeekSchedule } from '@/components/schedule/WeekSchedule';
 
@@ -16,8 +15,6 @@ export default async function WochePage({ searchParams }: { searchParams: { klas
     );
   }
 
-  const events = await getSpecialEventsByClass(plan.schoolClass);
-
   return (
     <>
       <ClassFromStorage classes={plan.availableClasses} />
@@ -32,7 +29,7 @@ export default async function WochePage({ searchParams }: { searchParams: { klas
           </div>
         </div>
 
-        <WeekSchedule schoolClass={plan.schoolClass} week={plan.week} events={events} todayKey={plan.todayKey} />
+        <WeekSchedule schoolClass={plan.schoolClass} week={plan.week} todayKey={plan.todayKey} />
       </div>
     </>
   );

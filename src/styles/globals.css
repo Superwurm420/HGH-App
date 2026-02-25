@@ -577,121 +577,153 @@ body {
   font-weight: 600;
 }
 
-/* ── Week horizontal layout ────────────────────────────────────── */
+/* ── Week Timetable Grid ──────────────────────────────────────── */
 
-.week-cols-wrapper {
-  display: flex;
-  gap: 6px;
-  min-width: 700px;
+.wk-grid {
+  width: 100%;
+  min-width: 600px;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
 }
 
-.week-col {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.week-col-header {
-  padding: 8px 6px;
+.wk-day-head {
+  padding: 10px 8px;
   font-weight: 700;
   font-size: 13px;
-  border-radius: 10px;
-  background: rgba(0, 122, 255, 0.12);
-  color: var(--accent);
-  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
+  background: rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--line);
 }
 
-.week-col-header.today {
+.light .wk-day-head {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.wk-day-head.today {
   background: linear-gradient(135deg, var(--accent), var(--accent2));
   color: white;
-  box-shadow: 0 4px 14px rgba(0, 122, 255, 0.35);
 }
 
-.week-col-today-dot {
-  width: 6px;
-  height: 6px;
+.wk-today-dot {
+  display: block;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.85);
-  flex-shrink: 0;
+  margin: 3px auto 0;
 }
 
-.week-col-event {
-  padding: 5px 7px;
-  border-radius: 7px;
-  border-left: 3px solid #f5a623;
-  background: rgba(245, 166, 35, 0.10);
-  margin-bottom: 5px;
-  font-size: 11px;
-}
-
-.week-col-lessons {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1;
-}
-
-.week-col-lessons .week-lesson-card {
-  flex: 1;
-}
-
-.week-lesson-card {
-  padding: 7px 8px;
-  border-radius: 9px;
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.light .week-lesson-card {
-  background: rgba(255, 255, 255, 0.55);
-}
-
-.week-lesson-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 3px;
-}
-
-.week-period-badge {
-  display: inline-flex;
-  padding: 1px 5px;
-  border-radius: 5px;
-  background: rgba(0, 122, 255, 0.18);
-  color: var(--accent);
-  font-size: 10px;
+.wk-corner {
+  padding: 10px 8px;
   font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  text-align: center;
 }
 
-.week-lesson-time {
+.light .wk-corner {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.wk-period-cell {
+  padding: 8px 6px;
+  text-align: center;
+  border-bottom: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  background: var(--bg1);
+  min-width: 54px;
+}
+
+.light .wk-period-cell {
+  background: var(--surface);
+}
+
+.wk-period-num {
+  display: block;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.wk-period-time {
+  display: block;
   font-size: 10px;
   color: var(--muted);
+  margin-top: 1px;
 }
 
-.week-lesson-subject {
+.wk-cell {
+  padding: 8px 7px;
+  border-bottom: 1px solid var(--line);
+  text-align: center;
+  vertical-align: middle;
+}
+
+.wk-cell-today {
+  background: rgba(0, 122, 255, 0.06);
+}
+
+.wk-row:nth-child(even) .wk-cell:not(.wk-cell-today) {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.light .wk-row:nth-child(even) .wk-cell:not(.wk-cell-today) {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.wk-row:last-child .wk-cell,
+.wk-row:last-child .wk-period-cell {
+  border-bottom: none;
+}
+
+.wk-subject {
+  display: block;
   font-size: 12px;
   font-weight: 600;
   line-height: 1.3;
   word-break: break-word;
 }
 
-.week-lesson-room {
+.wk-room {
+  display: block;
   font-size: 10px;
   font-weight: 700;
   color: var(--accent);
   margin-top: 2px;
 }
 
-.week-lesson-detail {
+.wk-detail {
+  display: block;
   font-size: 10px;
   color: var(--muted);
-  margin-top: 2px;
+  margin-top: 1px;
+}
+
+.wk-empty {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+@media (max-width: 739px) {
+  .wk-grid {
+    min-width: 520px;
+  }
+  .wk-period-cell {
+    min-width: 46px;
+    padding: 6px 4px;
+  }
+  .wk-cell {
+    padding: 6px 5px;
+  }
 }
 
 /* ── Daily message ─────────────────────────────────────────────── */
