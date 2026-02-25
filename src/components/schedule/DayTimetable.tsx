@@ -7,6 +7,14 @@ const DAY_SHORT: Record<Weekday, string> = {
   MO: 'Mo', DI: 'Di', MI: 'Mi', DO: 'Do', FR: 'Fr',
 };
 
+function formatSubject(subject: string) {
+  return subject.split('/').map((part, i, arr) => (
+    <span key={i}>
+      {part}{i < arr.length - 1 && <>{'/\u200B'}</>}
+    </span>
+  ));
+}
+
 export function DayTimetable({
   week,
   todayKey,
@@ -50,20 +58,25 @@ export function DayTimetable({
       ) : (
         <div className="overflow-hidden rounded-xl border border-[var(--line)]">
           <div className="tt-header">
-            <div className="tt-cell">Zeit</div>
+            <div className="tt-cell">Stunde</div>
             <div className="tt-cell">Fach</div>
-            <div className="tt-cell">Raum</div>
-            <div className="tt-cell">Info</div>
+            <div className="tt-cell tt-cell-end">Raum</div>
           </div>
           {lessons.map((lesson: LessonEntry) => (
             <div key={`${activeDay}-${lesson.period}-${lesson.time}`} className="tt-row">
-              <div className="tt-cell text-sm font-medium">
-                {lesson.periodEnd ? `${lesson.period}+${lesson.periodEnd}.` : `${lesson.period}.`}
-                {' '}{lesson.time}
+              <div className="tt-cell tt-period-cell">
+                <span className="tt-period-num">
+                  {lesson.periodEnd ? `${lesson.period}+${lesson.periodEnd}.` : `${lesson.period}.`}
+                </span>
+                <span className="tt-period-time">{lesson.time}</span>
               </div>
-              <div className="tt-cell text-sm">{lesson.subject ?? '-'}</div>
-              <div className="tt-cell text-sm font-medium">{lesson.room ?? ''}</div>
-              <div className="tt-cell text-xs text-muted">{lesson.detail ?? ''}</div>
+              <div className="tt-cell tt-subject-cell">
+                {lesson.subject ? formatSubject(lesson.subject) : '-'}
+              </div>
+              <div className="tt-cell tt-info-cell">
+                {lesson.room && <span className="tt-room">{lesson.room}</span>}
+                {lesson.detail && <span className="tt-detail">{lesson.detail}</span>}
+              </div>
             </div>
           ))}
         </div>
