@@ -1,13 +1,5 @@
 import { LessonEntry, SpecialEvent, Weekday, dayFromGermanDate } from '@/lib/timetable/types';
 
-const DAY_LABELS: Record<Weekday, string> = {
-  MO: 'Montag',
-  DI: 'Dienstag',
-  MI: 'Mittwoch',
-  DO: 'Donnerstag',
-  FR: 'Freitag',
-};
-
 export function TodaySchedule({
   day,
   lessons,
