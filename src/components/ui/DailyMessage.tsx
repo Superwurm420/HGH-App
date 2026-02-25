@@ -70,7 +70,6 @@ export function DailyMessage({
 
   return (
     <div className="daily-message">
-      <span className="daily-message-label">Heute</span>
       <p className="daily-message-text">{text}</p>
     </div>
   );

@@ -21,10 +21,6 @@ export function TodaySchedule({
 
   return (
     <div>
-      <div className="mb-3">
-        <span className="day-badge">{DAY_LABELS[day]}</span>
-      </div>
-
       {todaysEvents.length > 0 && (
         <div className="announcement-card highlight mb-3">
           <p className="text-sm font-bold mb-1">Sondertermine</p>
