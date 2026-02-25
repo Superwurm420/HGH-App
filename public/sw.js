@@ -1,6 +1,6 @@
 // Automatisch generiert von scripts/prebuild.mjs – NICHT manuell bearbeiten!
 // BUILD_VERSION wird bei jedem Build neu gesetzt, damit der Browser Updates erkennt.
-const BUILD_VERSION = '2026-02-25T05-47-54-238Z';
+const BUILD_VERSION = '2026-02-25T11-20-14-729Z';
 const CACHE = 'hgh-pwa-v3-' + BUILD_VERSION;
 
 // HTML-Routen: network-first (immer frische Inhalte wenn online)
@@ -16,16 +16,22 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// ── Activate: Alte Caches aufräumen, sofort Kontrolle übernehmen ────────────
+// ── Activate: Alte Caches aufräumen, Navigation Preload, sofort Kontrolle ────
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys
-          .filter((key) => key !== CACHE)
-          .map((key) => caches.delete(key))
-      )
-    )
+    Promise.all([
+      caches.keys().then((keys) =>
+        Promise.all(
+          keys
+            .filter((key) => key !== CACHE)
+            .map((key) => caches.delete(key))
+        )
+      ),
+      // Navigation Preload: HTML-Request startet parallel zum SW-Boot
+      self.registration.navigationPreload
+        ? self.registration.navigationPreload.enable()
+        : Promise.resolve(),
+    ])
   );
   // Alle offenen Tabs sofort übernehmen (kein erneutes Laden nötig)
   self.clients.claim();
@@ -41,15 +47,21 @@ self.addEventListener('fetch', (event) => {
   const isHtml = HTML_SET.has(url.pathname);
 
   if (isHtml) {
-    // Network-first für HTML: immer frische Inhalte, Cache als Fallback offline
+    // Network-first für HTML: immer frische Inhalte, Cache als Fallback offline.
+    // Navigation Preload wird genutzt falls verfügbar (parallel zum SW-Boot).
     event.respondWith(
-      fetch(event.request)
-        .then((response) => {
+      (async () => {
+        try {
+          const preloaded = await event.preloadResponse;
+          const response = preloaded || await fetch(event.request);
           const clone = response.clone();
           caches.open(CACHE).then((cache) => cache.put(event.request, clone));
           return response;
-        })
-        .catch(() => caches.match(event.request).then((cached) => cached || caches.match('/')))
+        } catch {
+          const cached = await caches.match(event.request);
+          return cached || caches.match('/');
+        }
+      })()
     );
   } else {
     // Cache-first für statische Assets (JS/CSS mit Hash-URL, Bilder etc.)
