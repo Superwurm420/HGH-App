@@ -23,11 +23,10 @@ export default async function HomePage({ searchParams }: { searchParams: { klass
     return (
       <>
         <div className="card surface">
-          <h2 className="text-lg font-bold">Heute</h2>
           <Countdown />
+          <DailyMessage messages={messagesData as Record<string, unknown>} />
           <p className="text-sm text-muted mt-2">Kein Stundenplan verfügbar.</p>
         </div>
-        <DailyMessage messages={messagesData as Record<string, unknown>} />
         {calendarUrls.length > 0 ? (
           <GoogleCalendar urls={calendarUrls} />
         ) : (
@@ -49,12 +48,16 @@ export default async function HomePage({ searchParams }: { searchParams: { klass
       <ClassFromStorage classes={plan.availableClasses} />
 
       <div className="card surface">
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-1">
-          <h2 className="text-lg font-bold">Heute</h2>
+        <div className="mb-1">
           <ClassSelector classes={plan.availableClasses} />
         </div>
 
         <Countdown />
+
+        <DailyMessage
+          messages={messagesData as Record<string, unknown>}
+          schoolClass={plan.schoolClass}
+        />
 
         <TodaySchedule
           day={plan.todayKey}
@@ -62,11 +65,6 @@ export default async function HomePage({ searchParams }: { searchParams: { klass
           events={events}
         />
       </div>
-
-      <DailyMessage
-        messages={messagesData as Record<string, unknown>}
-        schoolClass={plan.schoolClass}
-      />
 
       {previewAnnouncements.length > 0 && (
         <div className="card surface mt-3">
