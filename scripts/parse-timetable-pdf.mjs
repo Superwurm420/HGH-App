@@ -18,7 +18,8 @@ const DAY_SET = new Set(WEEKDAYS);
 const CLASS_PATTERN = /^[A-Z]{1,3}\s?\d{2}$/;
 
 const data = new Uint8Array(fs.readFileSync(pdfPath));
-const doc = await getDocument({ data }).promise;
+const verbosity = pdfjsLib?.VerbosityLevel?.ERRORS ?? 0;
+const doc = await getDocument({ data, verbosity }).promise;
 const page = await doc.getPage(1);
 const content = await page.getTextContent();
 
