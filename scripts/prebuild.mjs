@@ -223,7 +223,8 @@ function computeColumnBounds(classX, timeColBoundary, roomColumns) {
 
 async function parsePdf(filePath, getDocument) {
   const data = new Uint8Array(await fs.readFile(filePath));
-  const doc = await getDocument({ data }).promise;
+  const verbosity = pdfjsLib?.VerbosityLevel?.ERRORS ?? 0;
+  const doc = await getDocument({ data, verbosity }).promise;
   const page = await doc.getPage(1);
   const content = await page.getTextContent();
 
