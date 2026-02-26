@@ -486,6 +486,19 @@ function diagnoseParsedSchedule(filename, schedule) {
 // ── Announcement parsing ────────────────────────────────────────────────────
 
 const DE_DATE = /^\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}$/;
+const COMMENT_PREFIXES = ['#', '//', ';'];
+
+function isCommentLine(line) {
+  return COMMENT_PREFIXES.some((prefix) => line.startsWith(prefix));
+}
+
+function parseBooleanFlag(value) {
+  if (!value) return false;
+  const normalized = value.trim().toLowerCase();
+  if (['true', '1', 'ja', 'yes', 'y'].includes(normalized)) return true;
+  if (['false', '0', 'nein', 'no', 'n'].includes(normalized)) return false;
+  return null;
+}
 
 function parseAnnouncement(raw, file) {
   const [headerRaw, ...bodyParts] = raw.split('\n---\n');
@@ -495,10 +508,12 @@ function parseAnnouncement(raw, file) {
 
   for (const line of headerRaw.split(/\r?\n/)) {
     const trimmed = line.trim();
-    if (!trimmed || !trimmed.includes(':')) continue;
+    if (!trimmed || isCommentLine(trimmed) || !trimmed.includes(':')) continue;
     const idx = trimmed.indexOf(':');
     headers[trimmed.slice(0, idx).trim().toLowerCase()] = trimmed.slice(idx + 1).trim();
   }
+
+  const highlight = parseBooleanFlag(headers.highlight);
 
   if (!headers.title) warnings.push("Pflichtfeld 'title' fehlt.");
   if (!headers.date) warnings.push("Pflichtfeld 'date' fehlt.");
@@ -506,6 +521,8 @@ function parseAnnouncement(raw, file) {
     warnings.push("'date' hat nicht das Format TT.MM.JJJJ HH:mm.");
   if (headers.expires && !DE_DATE.test(headers.expires))
     warnings.push("'expires' hat nicht das Format TT.MM.JJJJ HH:mm.");
+  if (highlight === null)
+    warnings.push("'highlight' muss true/false, ja/nein oder 1/0 sein.");
   if (!body) warnings.push('Kein Text nach der Trennlinie gefunden.');
 
   return {
@@ -513,7 +530,9 @@ function parseAnnouncement(raw, file) {
     title: headers.title,
     date: headers.date,
     audience: headers.audience,
+    classes: headers.classes,
     expires: headers.expires,
+    highlight: highlight ?? false,
     body,
     warnings,
   };

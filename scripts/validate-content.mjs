@@ -8,6 +8,8 @@ const announcementDir = path.join(root, 'public/content/announcements');
 const timetablePattern = /^Stundenplan_kw_(\d{2})_Hj([12])_(\d{4})_(\d{2})\.pdf$/i;
 const fallbackPattern = /(\d{4}).*?(\d{1,2})/;
 const deDateTimePattern = /^\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}$/;
+const commentPrefixes = ['#', '//', ';'];
+const classTokenPattern = /\b[A-Z]{1,3}\d{2}\b/g;
 
 let hasError = false;
 let hasWarning = false;
@@ -70,14 +72,24 @@ function validateTimetables() {
   console.log(`  Standard-Schema: ${standardCount}, Fallback: ${fallbackCount}`);
 }
 
+function isCommentLine(line) {
+  return commentPrefixes.some((prefix) => line.startsWith(prefix));
+}
+
+function isValidBooleanFlag(value) {
+  if (!value) return true;
+  return ['true', '1', 'ja', 'yes', 'y', 'false', '0', 'nein', 'no', 'n']
+    .includes(value.trim().toLowerCase());
+}
+
 function parseAnnouncement(raw) {
   const [headerRaw, ...bodyParts] = raw.split('\n---\n');
   const body = bodyParts.join('\n---\n').trim();
   const headers = {};
 
-  for (const line of headerRaw.split('\n')) {
+  for (const line of headerRaw.split(/\r?\n/)) {
     const trimmed = line.trim();
-    if (!trimmed || !trimmed.includes(':')) continue;
+    if (!trimmed || isCommentLine(trimmed) || !trimmed.includes(':')) continue;
     const idx = trimmed.indexOf(':');
     const key = trimmed.slice(0, idx).trim().toLowerCase();
     const value = trimmed.slice(idx + 1).trim();
@@ -107,6 +119,16 @@ function validateAnnouncements() {
     }
     if (headers.expires && !deDateTimePattern.test(headers.expires)) {
       fail(`${file}: 'expires' muss Format TT.MM.JJJJ HH:mm haben.`);
+    }
+    if (!isValidBooleanFlag(headers.highlight)) {
+      fail(`${file}: 'highlight' muss true/false, ja/nein oder 1/0 sein.`);
+    }
+    if (headers.classes) {
+      const normalized = headers.classes.trim().toLowerCase();
+      const classes = headers.classes.toUpperCase().match(classTokenPattern) ?? [];
+      if (normalized !== 'alle' && classes.length === 0) {
+        fail(`${file}: 'classes' muss 'alle' oder Klassenkürzel wie HT11, G21 enthalten.`);
+      }
     }
     if (!body) warn(`${file}: kein Text nach '---' gefunden.`);
 

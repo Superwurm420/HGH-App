@@ -7,7 +7,7 @@ import { ClassFromStorage } from '@/components/schedule/ClassFromStorage';
 import { Countdown } from '@/components/ui/Countdown';
 import { MiniCalendar } from '@/components/ui/MiniCalendar';
 import { AnnouncementList } from '@/components/announcements/AnnouncementList';
-import { getAnnouncements } from '@/lib/announcements/server';
+import { getAnnouncementsByClass } from '@/lib/announcements/server';
 import { DailyMessage } from '@/components/ui/DailyMessage';
 import { GoogleCalendar } from '@/components/ui/GoogleCalendar';
 import messagesData from '@/generated/messages-data.json';
@@ -39,7 +39,7 @@ export default async function HomePage({ searchParams }: { searchParams: { klass
   }
 
   const events = await getSpecialEventsByClass(plan.schoolClass);
-  const announcements = await getAnnouncements();
+  const announcements = await getAnnouncementsByClass(plan.schoolClass);
   const previewAnnouncements = announcements.slice(0, MAX_HOME_ANNOUNCEMENTS);
   const hasMore = announcements.length > MAX_HOME_ANNOUNCEMENTS;
 
