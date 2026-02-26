@@ -1,6 +1,6 @@
 // Automatisch generiert von scripts/prebuild.mjs – NICHT manuell bearbeiten!
 // BUILD_VERSION wird bei jedem Build neu gesetzt, damit der Browser Updates erkennt.
-const BUILD_VERSION = '2026-02-26T20-14-56-194Z';
+const BUILD_VERSION = '2026-02-26T20-56-07-424Z';
 const CACHE = 'hgh-pwa-v3-' + BUILD_VERSION;
 
 // HTML-Routen: network-first (immer frische Inhalte wenn online)
@@ -45,6 +45,12 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
 
   const isHtml = HTML_SET.has(url.pathname);
+  const isApi = url.pathname.startsWith('/api/');
+
+  if (isApi) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
 
   if (isHtml) {
     // Network-first für HTML: immer frische Inhalte, Cache als Fallback offline.
