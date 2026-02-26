@@ -1,6 +1,6 @@
 import { weekdayForToday } from './pdfParser';
 import { compareTimetable } from './selectLatest';
-import { ParsedSchedule, SchoolClass, TimetableMeta } from './types';
+import { ParsedSchedule, SchoolClass, TimetableMeta, WEEKDAYS } from './types';
 import rawData from '@/generated/timetable-data.json';
 import { stat } from 'node:fs/promises';
 import path from 'node:path';
@@ -26,16 +26,33 @@ function isTimetableMeta(value: unknown): value is TimetableMeta {
   );
 }
 
-function isWeekdayEntries(value: unknown): value is ParsedSchedule[string] {
+function isLessonEntry(value: unknown): boolean {
   if (!isObject(value)) return false;
-  return ['MO', 'DI', 'MI', 'DO', 'FR'].every((day) => Array.isArray(value[day]));
+  return (
+    typeof value.period === 'number'
+    && (value.periodEnd === undefined || typeof value.periodEnd === 'number')
+    && typeof value.time === 'string'
+    && (value.subject === undefined || typeof value.subject === 'string')
+    && (value.detail === undefined || typeof value.detail === 'string')
+    && (value.room === undefined || typeof value.room === 'string')
+  );
+}
+
+function isWeekPlan(value: unknown): boolean {
+  if (!isObject(value)) return false;
+  return WEEKDAYS.every((day) => Array.isArray(value[day]) && value[day].every(isLessonEntry));
+}
+
+function isParsedSchedule(value: unknown): value is ParsedSchedule {
+  if (!isObject(value)) return false;
+  return Object.values(value).every(isWeekPlan);
 }
 
 function isTimetableGeneratedData(value: unknown): value is TimetableGeneratedData {
   if (!isObject(value)) return false;
   if (!Array.isArray(value.files) || !value.files.every(isTimetableMeta)) return false;
   if (!isObject(value.schedules)) return false;
-  return Object.values(value.schedules).every(isWeekdayEntries);
+  return Object.values(value.schedules).every(isParsedSchedule);
 }
 
 const data: TimetableGeneratedData = isTimetableGeneratedData(rawData)
