@@ -706,10 +706,16 @@ body {
   text-align: center;
   background: rgba(255, 255, 255, 0.08);
   border-bottom: 1px solid var(--line);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .light .wk-day-head {
   background: rgba(0, 0, 0, 0.04);
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.wk-day-head:first-of-type {
+  border-left: none;
 }
 
 .wk-day-head.today {
@@ -787,8 +793,18 @@ body {
 .wk-cell {
   padding: 6px;
   border-bottom: 1px solid var(--line);
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
   text-align: center;
   vertical-align: middle;
+}
+
+.light .wk-cell {
+  border-left: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+.wk-row-after-break .wk-cell,
+.wk-row-after-break .wk-period-cell {
+  border-top: 6px solid transparent;
 }
 
 .wk-cell-today {
@@ -840,8 +856,8 @@ body {
 .wk-room {
   display: block;
   font-size: 10px;
-  font-weight: 700;
-  color: var(--accent);
+  font-weight: 600;
+  color: var(--muted);
   text-align: left;
 }
 
