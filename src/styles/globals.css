@@ -706,12 +706,12 @@ body {
   text-align: center;
   background: rgba(255, 255, 255, 0.08);
   border-bottom: 1px solid var(--line);
-  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 1px solid rgba(255, 255, 255, 0.14);
 }
 
 .light .wk-day-head {
   background: rgba(0, 0, 0, 0.04);
-  border-left: 1px solid rgba(0, 0, 0, 0.08);
+  border-left: 1px solid rgba(0, 0, 0, 0.12);
 }
 
 .wk-day-head:first-of-type {
@@ -793,13 +793,13 @@ body {
 .wk-cell {
   padding: 6px;
   border-bottom: 1px solid var(--line);
-  border-left: 1px solid rgba(255, 255, 255, 0.06);
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
   text-align: center;
   vertical-align: middle;
 }
 
 .light .wk-cell {
-  border-left: 1px solid rgba(0, 0, 0, 0.07);
+  border-left: 1px solid rgba(0, 0, 0, 0.12);
 }
 
 .wk-row-after-break .wk-cell,
