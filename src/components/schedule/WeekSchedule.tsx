@@ -53,6 +53,25 @@ function hasBreakBeforePeriod(period: number): boolean {
   return period === 3 || period === 5 || period === 7;
 }
 
+function isMergedBlockStart(lesson: LessonEntry, period: number): boolean {
+  if (period === lesson.period) {
+    return true;
+  }
+
+  return hasBreakBeforePeriod(period);
+}
+
+function mergedRowSpanForPeriod(lesson: LessonEntry, period: number): number {
+  const periodEnd = lesson.periodEnd ?? lesson.period;
+
+  let spanEnd = period;
+  while (spanEnd < periodEnd && !hasBreakBeforePeriod(spanEnd + 1)) {
+    spanEnd += 1;
+  }
+
+  return spanEnd - period + 1;
+}
+
 export function WeekSchedule({
   week,
   todayKey,
@@ -100,12 +119,23 @@ export function WeekSchedule({
                 const lessons = week[day];
                 const lesson = findLessonForPeriod(lessons, slot.period);
 
-                return (
-                  <td
-                    key={day}
-                    className={`wk-cell ${isToday ? 'wk-cell-today' : ''}`}
-                  >
-                    {lesson ? (
+                if (lesson) {
+                  const periodEnd = lesson.periodEnd ?? lesson.period;
+                  const shouldMerge = periodEnd > lesson.period;
+                  const isBlockStart = isMergedBlockStart(lesson, slot.period);
+
+                  if (shouldMerge && !isBlockStart) {
+                    return null;
+                  }
+
+                  const rowSpan = shouldMerge ? mergedRowSpanForPeriod(lesson, slot.period) : 1;
+
+                  return (
+                    <td
+                      key={day}
+                      rowSpan={rowSpan}
+                      className={`wk-cell ${isToday ? 'wk-cell-today' : ''}`}
+                    >
                       <div className="wk-cell-content">
                         <span className="wk-subject">
                           {formatSubject(lesson.subject ?? '–')}
@@ -117,9 +147,16 @@ export function WeekSchedule({
                           </span>
                         )}
                       </div>
-                    ) : (
-                      <span className="wk-empty">–</span>
-                    )}
+                    </td>
+                  );
+                }
+
+                return (
+                  <td
+                    key={day}
+                    className={`wk-cell ${isToday ? 'wk-cell-today' : ''}`}
+                  >
+                    <span className="wk-empty">–</span>
                   </td>
                 );
               })}
