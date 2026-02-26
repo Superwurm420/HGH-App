@@ -11,9 +11,6 @@ export function AppHeader() {
         <Link className="btn-secondary" href="/stundenplan">
           Wochenplan
         </Link>
-        <Link className="btn-secondary" href="/pinnwand">
-          Pinnwand
-        </Link>
         <Link className="btn-secondary" href="/einstellungen">
           Einstellungen
         </Link>
