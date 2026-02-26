@@ -30,6 +30,12 @@ export default async function WochePage({ searchParams }: { searchParams: { klas
         </div>
 
         <WeekSchedule schoolClass={plan.schoolClass} week={plan.week} todayKey={plan.todayKey} />
+
+        {plan.updatedAt && (
+          <p className="mt-3 text-xs text-muted">
+            Aktualisiert am: {plan.updatedAt}
+          </p>
+        )}
       </div>
     </>
   );

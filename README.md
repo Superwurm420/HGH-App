@@ -4,7 +4,7 @@ Die App liest automatisch die neueste Stundenplan-PDF ein, erkennt verfügbare K
 
 ## Seiten
 - **Heute (`/`)**: Uhrzeit, Klassenauswahl, heutiger Unterricht, Sondertermine
-- **Wochenplan (`/stundenplan`)**: komplette Wochenansicht der Klasse + Button „PDF-Stundenplan"
+- **Wochenplan (`/woche`)**: komplette Wochenansicht als scrollbare Tabelle (ca. 3 Tage sichtbar) + Hervorhebung des aktuellen Tages + Datum der letzten Kalender-Aktualisierung
 - **Pinnwand (`/pinnwand`)**: TXT-basierte Meldungen inkl. Warnungen bei Teilfehlern
 - **Einstellungen (`/einstellungen`)**: Klasse ändern
 
