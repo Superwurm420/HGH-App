@@ -2,6 +2,7 @@ import '@/styles/globals.css';
 import type { Metadata, Viewport } from 'next';
 import { ThemeScript } from '@/components/ui/ThemeScript';
 import { ServiceWorkerRegister } from '@/components/ui/ServiceWorkerRegister';
+import { TimetableAutoRefresh } from '@/components/ui/TimetableAutoRefresh';
 import { Topbar } from '@/components/ui/Topbar';
 import { BottomNav } from '@/components/ui/BottomNav';
 
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <ThemeScript />
         <ServiceWorkerRegister />
+        <TimetableAutoRefresh />
         <div className="mx-auto max-w-3xl px-4">
           <Topbar />
           <main className="main-content">

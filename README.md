@@ -59,6 +59,8 @@ public/content/
 ## Fachlogik kurz
 - **PDF-Erkennung**: Klassen und Spalten werden dynamisch aus dem PDF erkannt (nicht hardcodiert).
 - **Fallback**: Auch PDFs mit abweichenden Namen werden erkannt, wenn eine Jahreszahl im Namen steht.
+- **Neuester Plan robust**: Reihenfolge ist deterministisch über Jahr → Halbjahr → KW, danach `lastModified` und Dateiname als Tie-Breaker.
+- **Auto-Update ohne Handarbeit**: Client prüft regelmäßig per ETag auf neue Stundenplan-Version und aktualisiert die UI per `router.refresh()` ohne harten Full-Reload.
 - **Sondertermine**: Kommen aus denselben TXT-Dateien wie Pinnwand-Beiträge und werden über `highlight: true` priorisiert angezeigt.
 - **Sichtbarkeit je Klasse**: Beiträge können über `classes` gezielt auf Klassen begrenzt werden.
 - **Diagnose**: Das Build-Log zeigt genau, welche Klassen erkannt wurden und wie viele Stunden geparst wurden.

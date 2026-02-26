@@ -4,6 +4,7 @@ import { ParsedSchedule, SchoolClass, TimetableMeta, WEEKDAYS } from './types';
 import rawData from '@/generated/timetable-data.json';
 import { stat } from 'node:fs/promises';
 import path from 'node:path';
+import crypto from 'node:crypto';
 
 type TimetableGeneratedData = {
   files: TimetableMeta[];
@@ -23,6 +24,8 @@ function isTimetableMeta(value: unknown): value is TimetableMeta {
     && typeof value.yearStart === 'number'
     && typeof value.yearEndShort === 'number'
     && typeof value.href === 'string'
+    && (value.lastModifiedMs === undefined || typeof value.lastModifiedMs === 'number')
+    && (value.source === undefined || value.source === 'name-pattern' || value.source === 'name-fallback' || value.source === 'file-mtime')
   );
 }
 
@@ -63,6 +66,12 @@ export function getLatestTimetable(): TimetableMeta | null {
   if (data.files.length === 0) return null;
   const sorted = [...data.files].sort(compareTimetable);
   return sorted[0];
+}
+
+export function getTimetableVersion(latest: TimetableMeta | null): string {
+  if (!latest) return 'no-timetable';
+  const signature = [latest.filename, latest.kw, latest.halfYear, latest.yearStart, latest.lastModifiedMs ?? 0].join('|');
+  return crypto.createHash('sha1').update(signature).digest('hex').slice(0, 12);
 }
 
 async function getLatestTimetableUpdatedDate(latest: TimetableMeta): Promise<string | null> {

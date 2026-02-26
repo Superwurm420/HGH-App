@@ -22,12 +22,12 @@ const OUTPUT_DIR = path.join(ROOT, 'src/generated');
 // ── Timetable filename parsing ──────────────────────────────────────────────
 
 const FILENAME_PATTERN = /^Stundenplan_kw_(\d{2})_Hj([12])_(\d{4})_(\d{2})\.pdf$/i;
-const FALLBACK_PATTERN = /(\d{4}).*?(\d{1,2})/;
+const FALLBACK_PATTERN = /(\d{4})(?:\D{0,4}(\d{1,2}))?/;
 const CLASS_PATTERN = /^[A-Z]{1,3}\s?\d{2}$/;
 const WEEKDAYS = ['MO', 'DI', 'MI', 'DO', 'FR'];
 const DAY_SET = new Set(WEEKDAYS);
 
-function parseTimetableFilename(filename) {
+function parseTimetableFilename(filename, stat) {
   const match = filename.match(FILENAME_PATTERN);
   if (match) {
     return {
@@ -37,15 +37,25 @@ function parseTimetableFilename(filename) {
       yearStart: Number(match[3]),
       yearEndShort: Number(match[4]),
       href: `/content/timetables/${filename}`,
+      source: 'name-pattern',
+      lastModifiedMs: stat?.mtimeMs,
     };
   }
 
   // Fallback: Jede PDF mit Jahreszahl wird akzeptiert (z.B. "Plan_2025_KW10.pdf")
   const fallback = filename.match(FALLBACK_PATTERN);
-  if (!fallback) return null;
+  if (!fallback && !stat) return null;
 
-  const yearStart = Number(fallback[1]);
-  const kw = Math.min(53, Math.max(1, Number(fallback[2])));
+  const fallbackYear = fallback ? Number(fallback[1]) : null;
+  const fallbackKw = fallback?.[2] ? Number(fallback[2]) : Number.NaN;
+  const hasMtime = typeof stat?.mtimeMs === 'number';
+  const mtimeYear = hasMtime ? new Date(stat.mtimeMs).getUTCFullYear() : null;
+  const yearStart = fallbackYear ?? mtimeYear;
+  if (!yearStart) return null;
+
+  const kw = Number.isFinite(fallbackKw)
+    ? Math.min(53, Math.max(1, fallbackKw))
+    : 53;
 
   console.warn(`  WARNUNG: "${filename}" nutzt nicht das Standard-Namensschema. Fallback-Erkennung aktiv.`);
 
@@ -56,15 +66,19 @@ function parseTimetableFilename(filename) {
     yearStart,
     yearEndShort: (yearStart + 1) % 100,
     href: `/content/timetables/${filename}`,
-    fallbackName: true,
+    source: fallback ? 'name-fallback' : 'file-mtime',
+    lastModifiedMs: stat?.mtimeMs,
   };
 }
 
 function compareTimetable(a, b) {
-  // Bei Fallback-Dateien: zusätzlich nach Dateiänderungsdatum sortieren
+  const aMtime = a.lastModifiedMs ?? 0;
+  const bMtime = b.lastModifiedMs ?? 0;
   if (b.yearStart !== a.yearStart) return b.yearStart - a.yearStart;
   if (b.halfYear !== a.halfYear) return b.halfYear - a.halfYear;
-  return b.kw - a.kw;
+  if (b.kw !== a.kw) return b.kw - a.kw;
+  if (bMtime !== aMtime) return bMtime - aMtime;
+  return a.filename.localeCompare(b.filename, 'de');
 }
 
 // ── PDF parsing ─────────────────────────────────────────────────────────────
@@ -561,8 +575,18 @@ async function main() {
     console.log(`  ${timetableFiles.length} PDF(s) gefunden: ${timetableFiles.join(', ')}`);
   }
 
-  const metas = timetableFiles.map(parseTimetableFilename).filter(Boolean);
-  const unrecognized = timetableFiles.filter(
+  const fileStats = await Promise.all(
+    timetableFiles.map(async (filename) => {
+      const fullPath = path.join(TIMETABLE_DIR, filename);
+      const stat = await fs.stat(fullPath);
+      return { filename, stat };
+    }),
+  );
+
+  const metas = fileStats
+    .map(({ filename, stat }) => parseTimetableFilename(filename, stat))
+    .filter(Boolean);
+  const unrecognized = fileStats.map((entry) => entry.filename).filter(
     (f) => !metas.some((m) => m.filename === f),
   );
   if (unrecognized.length > 0) {
@@ -600,10 +624,10 @@ async function main() {
           if (count === 0) console.warn(`    WARNUNG: ${cls} hat 0 Stunden – PDF-Struktur prüfen!`);
         }
         if (diag.totalLessons === 0) {
-          console.error(`    FEHLER: Keine einzige Stunde erkannt in ${meta.filename}!`);
+          console.error(`    [TT_PARSE_EMPTY] Keine einzige Stunde erkannt in ${meta.filename}.`);
         }
       } catch (err) {
-        console.error(`  FEHLER beim Parsen von ${meta.filename}: ${err.message}`);
+        console.error(`  [TT_PARSE_FAILED] ${meta.filename}: ${err.message}`);
       }
     }
   }
@@ -727,6 +751,12 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
 
   const isHtml = HTML_SET.has(url.pathname);
+  const isApi = url.pathname.startsWith('/api/');
+
+  if (isApi) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
 
   if (isHtml) {
     // Network-first für HTML: immer frische Inhalte, Cache als Fallback offline.

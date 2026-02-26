@@ -6,7 +6,9 @@
       "halfYear": 2,
       "yearStart": 2025,
       "yearEndShort": 26,
-      "href": "/content/timetables/Stundenplan_kw_09_Hj2_2025_26.pdf"
+      "href": "/content/timetables/Stundenplan_kw_09_Hj2_2025_26.pdf",
+      "source": "name-pattern",
+      "lastModifiedMs": 1772129186476.5237
     },
     {
       "filename": "Stundenplan_kw_08_Hj2_2025_26.pdf",
@@ -14,7 +16,9 @@
       "halfYear": 2,
       "yearStart": 2025,
       "yearEndShort": 26,
-      "href": "/content/timetables/Stundenplan_kw_08_Hj2_2025_26.pdf"
+      "href": "/content/timetables/Stundenplan_kw_08_Hj2_2025_26.pdf",
+      "source": "name-pattern",
+      "lastModifiedMs": 1772129186472.5237
     },
     {
       "filename": "Stundenplan_kw_07_Hj2_2025_26.pdf",
@@ -22,7 +26,9 @@
       "halfYear": 2,
       "yearStart": 2025,
       "yearEndShort": 26,
-      "href": "/content/timetables/Stundenplan_kw_07_Hj2_2025_26.pdf"
+      "href": "/content/timetables/Stundenplan_kw_07_Hj2_2025_26.pdf",
+      "source": "name-pattern",
+      "lastModifiedMs": 1772129186464.5237
     },
     {
       "filename": "Stundenplan_kw_45_Hj1_2025_26.pdf",
@@ -30,7 +36,9 @@
       "halfYear": 1,
       "yearStart": 2025,
       "yearEndShort": 26,
-      "href": "/content/timetables/Stundenplan_kw_45_Hj1_2025_26.pdf"
+      "href": "/content/timetables/Stundenplan_kw_45_Hj1_2025_26.pdf",
+      "source": "name-pattern",
+      "lastModifiedMs": 1772129186484.5237
     },
     {
       "filename": "Stundenplan_kw_25_Hj2_2024_25.pdf",
@@ -38,7 +46,9 @@
       "halfYear": 2,
       "yearStart": 2024,
       "yearEndShort": 25,
-      "href": "/content/timetables/Stundenplan_kw_25_Hj2_2024_25.pdf"
+      "href": "/content/timetables/Stundenplan_kw_25_Hj2_2024_25.pdf",
+      "source": "name-pattern",
+      "lastModifiedMs": 1772129186480.5237
     }
   ],
   "schedules": {

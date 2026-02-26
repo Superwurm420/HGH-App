@@ -10,6 +10,8 @@ export type TimetableMeta = {
   yearStart: number;
   yearEndShort: number;
   href: string;
+  lastModifiedMs?: number;
+  source?: 'name-pattern' | 'name-fallback' | 'file-mtime';
 };
 
 export type LessonEntry = {
