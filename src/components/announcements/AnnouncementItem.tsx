@@ -8,13 +8,12 @@ type AnnouncementItemProps = {
   file: string;
   title?: string;
   date?: string;
-  audience?: string;
   expires?: string;
   body: string;
   warnings: string[];
 };
 
-export function AnnouncementItem({ file, title, date, audience, expires, body, warnings }: AnnouncementItemProps) {
+export function AnnouncementItem({ file, title, date, expires, body, warnings }: AnnouncementItemProps) {
   const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
@@ -38,10 +37,6 @@ export function AnnouncementItem({ file, title, date, audience, expires, body, w
         <h3 className="text-sm font-bold">{title ?? 'Ohne Titel'}</h3>
         {date && <span className="text-xs text-muted whitespace-nowrap">{date}</span>}
       </div>
-
-      {audience && (
-        <p className="text-xs text-muted mb-1">Zielgruppe: {audience}</p>
-      )}
 
       <p className="text-sm whitespace-pre-wrap">{body || 'Kein Text hinterlegt.'}</p>
 

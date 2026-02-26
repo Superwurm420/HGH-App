@@ -28,7 +28,6 @@ export function ScheduleView({ schoolClass, latest, events }: { schoolClass: str
                 <p className="font-medium">{event.title}</p>
                 <p className="text-sm">Start: {event.startsAt}</p>
                 {event.endsAt ? <p className="text-sm">Ende: {event.endsAt}</p> : null}
-                {event.audience ? <p className="text-sm">Betroffen: {event.audience}</p> : null}
                 {event.details ? <p className="mt-1 text-sm">{event.details}</p> : null}
               </li>
             ))}
