@@ -15,7 +15,7 @@ function timeStart(time: string): string {
 
 function formatSubject(subject: string) {
   return subject.split('/').map((part, i, arr) => (
-    <span key={i}>
+    <span key={i} className="wk-subject-part">
       {part}{i < arr.length - 1 && <>{'/\u200B'}</>}
     </span>
   ));
@@ -99,17 +99,17 @@ export function WeekSchedule({
                     className={`wk-cell ${isToday ? 'wk-cell-today' : ''}`}
                   >
                     {lesson ? (
-                      <>
+                      <div className="wk-cell-content">
                         <span className="wk-subject">
                           {formatSubject(lesson.subject ?? '–')}
                         </span>
-                        {lesson.room && (
-                          <span className="wk-room">{lesson.room}</span>
+                        {(lesson.room || lesson.detail) && (
+                          <span className="wk-meta">
+                            {lesson.room && <span className="wk-room">★ {lesson.room}</span>}
+                            {lesson.detail && <span className="wk-detail">{lesson.detail}</span>}
+                          </span>
                         )}
-                        {lesson.detail && (
-                          <span className="wk-detail">{lesson.detail}</span>
-                        )}
-                      </>
+                      </div>
                     ) : (
                       <span className="wk-empty">–</span>
                     )}
