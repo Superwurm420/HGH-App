@@ -49,6 +49,10 @@ function findLessonForPeriod(lessons: LessonEntry[], period: number): LessonEntr
   }) ?? null;
 }
 
+function hasBreakBeforePeriod(period: number): boolean {
+  return period === 3 || period === 5 || period === 7;
+}
+
 export function WeekSchedule({
   week,
   todayKey,
@@ -83,7 +87,10 @@ export function WeekSchedule({
         </thead>
         <tbody>
           {slots.map((slot) => (
-            <tr key={slot.period} className="wk-row">
+            <tr
+              key={slot.period}
+              className={`wk-row ${hasBreakBeforePeriod(slot.period) ? 'wk-row-after-break' : ''}`}
+            >
               <td className="wk-period-cell">
                 <span className="wk-period-num">{slot.period}</span>
                 <span className="wk-period-time">{timeStart(slot.time)}</span>
@@ -105,7 +112,7 @@ export function WeekSchedule({
                         </span>
                         {(lesson.room || lesson.detail) && (
                           <span className="wk-meta">
-                            {lesson.room && <span className="wk-room">★ {lesson.room}</span>}
+                            {lesson.room && <span className="wk-room">{lesson.room}</span>}
                             {lesson.detail && <span className="wk-detail">{lesson.detail}</span>}
                           </span>
                         )}
