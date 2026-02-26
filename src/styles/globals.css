@@ -677,152 +677,334 @@ body {
   font-weight: 600;
 }
 
-/* ── Week Timetable Grid ──────────────────────────────────────── */
+/* ── Week Plan: Mobile Card Layout ────────────────────────────── */
 
-.wk-grid {
-  width: 100%;
-  min-width: 600px;
-  border-collapse: separate;
-  border-spacing: 0;
+.wk-container {
+  /* Cards visible by default (mobile), table hidden */
+}
+
+.wk-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wk-table-wrap {
+  display: none;
+}
+
+.wk-day-card {
+  border-radius: var(--radius2);
   border: 1px solid var(--line);
-  border-radius: 12px;
   overflow: hidden;
 }
 
-.wk-day-head {
-  padding: 10px 8px;
-  font-weight: 700;
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  text-align: center;
-  background: rgba(255, 255, 255, 0.08);
-  border-bottom: 1px solid var(--line);
+.wk-day-card.wk-day-today {
+  border-color: rgba(0, 122, 255, 0.35);
+  box-shadow: 0 0 0 1px rgba(0, 122, 255, 0.15);
 }
 
-.light .wk-day-head {
-  background: rgba(0, 0, 0, 0.04);
+.wk-day-toggle {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 12px 14px;
+  border: none;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  gap: 8px;
+  text-align: left;
+  transition: background 120ms ease;
 }
 
-.wk-day-head.today {
+.light .wk-day-toggle {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.wk-day-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.light .wk-day-toggle:hover {
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.wk-day-toggle.today {
   background: linear-gradient(135deg, var(--accent), var(--accent2));
   color: white;
 }
 
-.wk-today-dot {
-  display: block;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.85);
-  margin: 3px auto 0;
+.wk-day-toggle.today:hover {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  filter: brightness(1.1);
 }
 
-.wk-corner {
-  padding: 10px 8px;
-  font-weight: 700;
+.wk-day-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.wk-badge-today {
   font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  background: rgba(255, 255, 255, 0.08);
-  border-bottom: 1px solid var(--line);
-  border-right: 1px solid var(--line);
-  text-align: center;
-}
-
-.light .wk-corner {
-  background: rgba(0, 0, 0, 0.04);
-}
-
-.wk-period-cell {
-  padding: 8px 6px;
-  text-align: center;
-  border-bottom: 1px solid var(--line);
-  border-right: 1px solid var(--line);
-  background: var(--bg1);
-  min-width: 54px;
-}
-
-.light .wk-period-cell {
-  background: var(--surface);
-}
-
-.wk-period-num {
-  display: block;
   font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.22);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.wk-day-count {
   font-size: 13px;
-  color: var(--text);
+  font-weight: 500;
+  opacity: 0.7;
+  white-space: nowrap;
 }
 
-.wk-period-time {
-  display: block;
-  font-size: 10px;
+.wk-chevron {
+  font-size: 20px;
+  font-weight: 300;
+  opacity: 0.5;
+  transition: transform 200ms ease;
+  transform: rotate(90deg);
+  line-height: 1;
+}
+
+.wk-chevron.open {
+  transform: rotate(270deg);
+}
+
+.wk-day-lessons {
+  border-top: 1px solid var(--line);
+}
+
+.wk-free-text {
+  padding: 14px;
+  font-size: 13px;
   color: var(--muted);
-  margin-top: 1px;
+  font-style: italic;
 }
 
-.wk-cell {
-  padding: 8px 7px;
+.wk-lesson-row {
+  display: flex;
+  gap: 12px;
+  padding: 10px 14px;
   border-bottom: 1px solid var(--line);
-  text-align: center;
-  vertical-align: middle;
+  align-items: flex-start;
 }
 
-.wk-cell-today {
-  background: rgba(0, 122, 255, 0.06);
-}
-
-.wk-row:nth-child(even) .wk-cell:not(.wk-cell-today) {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.light .wk-row:nth-child(even) .wk-cell:not(.wk-cell-today) {
-  background: rgba(0, 0, 0, 0.02);
-}
-
-.wk-row:last-child .wk-cell,
-.wk-row:last-child .wk-period-cell {
+.wk-lesson-row:last-child {
   border-bottom: none;
 }
 
-.wk-subject {
-  display: block;
-  font-size: 12px;
-  font-weight: 600;
+.wk-day-today .wk-lesson-row:nth-child(even) {
+  background: rgba(0, 122, 255, 0.04);
+}
+
+.wk-lesson-period {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 56px;
+  flex-shrink: 0;
+  padding-top: 1px;
+}
+
+.wk-lesson-pnum {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1.2;
+}
+
+.wk-lesson-time {
+  font-size: 11px;
+  color: var(--muted);
   line-height: 1.3;
+  white-space: nowrap;
+}
+
+.wk-lesson-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.wk-lesson-subject {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
   word-break: break-word;
 }
 
-.wk-room {
-  display: block;
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--accent);
-  margin-top: 2px;
+.wk-lesson-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-.wk-detail {
-  display: block;
-  font-size: 10px;
-  color: var(--muted);
-  margin-top: 1px;
-}
-
-.wk-empty {
-  color: var(--muted);
+.wk-lesson-room {
   font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
 }
 
-@media (max-width: 739px) {
+.wk-lesson-detail {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ── Week Plan: Desktop Table ────────────────────────────────── */
+
+@media (min-width: 860px) {
+  .wk-cards {
+    display: none;
+  }
+
+  .wk-table-wrap {
+    display: block;
+    overflow-x: auto;
+  }
+
   .wk-grid {
-    min-width: 520px;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
   }
+
+  .wk-day-head {
+    padding: 12px 10px;
+    font-weight: 700;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .light .wk-day-head {
+    background: rgba(0, 0, 0, 0.04);
+  }
+
+  .wk-day-head.today {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white;
+  }
+
+  .wk-today-dot {
+    display: block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.85);
+    margin: 3px auto 0;
+  }
+
+  .wk-corner {
+    padding: 12px 10px;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    background: rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+    text-align: center;
+  }
+
+  .light .wk-corner {
+    background: rgba(0, 0, 0, 0.04);
+  }
+
   .wk-period-cell {
-    min-width: 46px;
-    padding: 6px 4px;
+    padding: 10px 8px;
+    text-align: center;
+    border-bottom: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+    background: var(--bg1);
+    min-width: 70px;
   }
+
+  .light .wk-period-cell {
+    background: var(--surface);
+  }
+
+  .wk-period-num {
+    display: block;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text);
+  }
+
+  .wk-period-time {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
   .wk-cell {
-    padding: 6px 5px;
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--line);
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  .wk-cell-today {
+    background: rgba(0, 122, 255, 0.06);
+  }
+
+  .wk-row:nth-child(even) .wk-cell:not(.wk-cell-today) {
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .light .wk-row:nth-child(even) .wk-cell:not(.wk-cell-today) {
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  .wk-row:last-child .wk-cell,
+  .wk-row:last-child .wk-period-cell {
+    border-bottom: none;
+  }
+
+  .wk-subject {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.35;
+    word-break: break-word;
+  }
+
+  .wk-room {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-top: 3px;
+  }
+
+  .wk-detail {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
+  .wk-empty {
+    color: var(--muted);
+    font-size: 13px;
   }
 }
 
