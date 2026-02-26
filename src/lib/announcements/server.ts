@@ -1,4 +1,4 @@
-import { Announcement, isActive, toSpecialEvent } from './parser';
+import { Announcement, isActive, isVisibleForClass, toSpecialEvent } from './parser';
 import { SchoolClass, SpecialEvent } from '@/lib/timetable/types';
 import rawAnnouncements from '@/generated/announcements-data.json';
 
@@ -13,6 +13,7 @@ function isAnnouncement(value: unknown): value is Announcement {
     && (value.title === undefined || typeof value.title === 'string')
     && (value.date === undefined || typeof value.date === 'string')
     && (value.audience === undefined || typeof value.audience === 'string')
+    && (value.classes === undefined || typeof value.classes === 'string')
     && (value.expires === undefined || typeof value.expires === 'string')
     && typeof value.highlight === 'boolean'
     && typeof value.body === 'string'
@@ -28,10 +29,14 @@ export async function getAnnouncements(): Promise<Announcement[]> {
   return allAnnouncements.filter((x) => isActive(x));
 }
 
-export async function getSpecialEventsByClass(schoolClass: SchoolClass): Promise<SpecialEvent[]> {
+export async function getAnnouncementsByClass(schoolClass: SchoolClass): Promise<Announcement[]> {
   const announcements = await getAnnouncements();
+  return announcements.filter((x) => isVisibleForClass(x, schoolClass));
+}
+
+export async function getSpecialEventsByClass(schoolClass: SchoolClass): Promise<SpecialEvent[]> {
+  const announcements = await getAnnouncementsByClass(schoolClass);
   return announcements
     .map(toSpecialEvent)
-    .filter((x): x is SpecialEvent => x !== null)
-    .filter((event) => event.classes === 'alle' || event.classes.includes(schoolClass));
+    .filter((x): x is SpecialEvent => x !== null);
 }

@@ -530,6 +530,7 @@ function parseAnnouncement(raw, file) {
     title: headers.title,
     date: headers.date,
     audience: headers.audience,
+    classes: headers.classes,
     expires: headers.expires,
     highlight: highlight ?? false,
     body,

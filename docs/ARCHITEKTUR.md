@@ -68,6 +68,7 @@ src/
 
 ## Prioritäten
 1. Highlight-Termine aus Ankündigungen (`highlight: true`)
+   - Sichtbarkeit kann je Klasse über `classes` eingeschränkt werden
 2. Regulärer Unterricht aus PDF
 
 ## Offline / PWA

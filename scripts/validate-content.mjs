@@ -9,6 +9,7 @@ const timetablePattern = /^Stundenplan_kw_(\d{2})_Hj([12])_(\d{4})_(\d{2})\.pdf$
 const fallbackPattern = /(\d{4}).*?(\d{1,2})/;
 const deDateTimePattern = /^\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}$/;
 const commentPrefixes = ['#', '//', ';'];
+const classTokenPattern = /\b[A-Z]{1,3}\d{2}\b/g;
 
 let hasError = false;
 let hasWarning = false;
@@ -121,6 +122,13 @@ function validateAnnouncements() {
     }
     if (!isValidBooleanFlag(headers.highlight)) {
       fail(`${file}: 'highlight' muss true/false, ja/nein oder 1/0 sein.`);
+    }
+    if (headers.classes) {
+      const normalized = headers.classes.trim().toLowerCase();
+      const classes = headers.classes.toUpperCase().match(classTokenPattern) ?? [];
+      if (normalized !== 'alle' && classes.length === 0) {
+        fail(`${file}: 'classes' muss 'alle' oder Klassenkürzel wie HT11, G21 enthalten.`);
+      }
     }
     if (!body) warn(`${file}: kein Text nach '---' gefunden.`);
 

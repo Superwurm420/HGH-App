@@ -1,13 +1,18 @@
 # Vorlage für Pinnwand + optional hervorgehobene Sondertermine
 # Pflichtfelder: title, date
-# Optional: audience, expires, highlight
+# Optional: audience, classes, expires, highlight
 # Datumsformat immer: TT.MM.JJJJ HH:mm (Zeitzone Europe/Berlin)
-# highlight: true/ja/1 => wird zusätzlich als Sondertermin vor dem Stundenplan gezeigt
-# highlight: false/nein/0 (oder weglassen) => nur normale Pinnwand-Anzeige
+# classes steuert die Sichtbarkeit:
+#   - classes: alle
+#   - classes: HT11, HT22, G21
+# audience ist optionaler Hinweistext für Menschen
+# highlight: true/ja/1 => zusätzlich als Sondertermin vor dem Stundenplan
+# highlight: false/nein/0 (oder weglassen) => nur Pinnwand
 
 title: Beispieltitel
 date: 24.06.2026 08:30
-audience: alle
+audience: Für HT11 und HT22
+classes: HT11, HT22
 expires: 30.06.2026 16:00
 highlight: false
 ---

@@ -5,6 +5,7 @@ export type Announcement = {
   title?: string;
   date?: string;
   audience?: string;
+  classes?: string;
   expires?: string;
   highlight: boolean;
   body: string;
@@ -54,6 +55,7 @@ export function parseAnnouncement(raw: string, file: string): Announcement {
     title: headers.title,
     date: headers.date,
     audience: headers.audience,
+    classes: headers.classes,
     expires: headers.expires,
     highlight: highlight ?? false,
     body,
@@ -66,7 +68,6 @@ export function parseBerlinDate(value?: string): Date | null {
   const [d, t] = value.split(' ');
   const [day, month, year] = d.split('.').map(Number);
   const [hour, minute] = t.split(':').map(Number);
-  // Determine Berlin UTC offset (CET = +1, CEST = +2) using Intl
   const noonUtc = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
   const berlinNoonHour = parseInt(
     new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Berlin', hour: '2-digit', hour12: false })
@@ -74,7 +75,7 @@ export function parseBerlinDate(value?: string): Date | null {
       .find((p) => p.type === 'hour')?.value ?? '13',
     10,
   );
-  const offsetHours = berlinNoonHour - 12; // +1 (CET) or +2 (CEST)
+  const offsetHours = berlinNoonHour - 12;
   return new Date(Date.UTC(year, month - 1, day, hour - offsetHours, minute));
 }
 
@@ -84,10 +85,26 @@ export function isActive(item: Announcement, now: Date = new Date()): boolean {
   return expires.getTime() >= now.getTime();
 }
 
+export function announcementClasses(item: Announcement): SchoolClass[] | 'alle' {
+  if (item.classes) {
+    const matches = item.classes.toUpperCase().match(CLASS_TOKEN) ?? [];
+    const classes = [...new Set(matches)];
+    return classes.length > 0 ? classes : 'alle';
+  }
+  if (!item.audience || item.audience.toLowerCase() === 'alle') return 'alle';
+  const fallbackMatches = item.audience.toUpperCase().match(CLASS_TOKEN) ?? [];
+  const fallbackClasses = [...new Set(fallbackMatches)];
+  return fallbackClasses.length > 0 ? fallbackClasses : 'alle';
+}
+
+export function isVisibleForClass(item: Announcement, schoolClass: SchoolClass): boolean {
+  const classes = announcementClasses(item);
+  return classes === 'alle' || classes.includes(schoolClass);
+}
+
 export function toSpecialEvent(item: Announcement): SpecialEvent | null {
   if (!item.highlight || !item.title || !item.date) return null;
 
-  const classes = extractClasses(item.audience);
   return {
     id: item.file,
     title: item.title,
@@ -95,13 +112,6 @@ export function toSpecialEvent(item: Announcement): SpecialEvent | null {
     startsAt: item.date,
     endsAt: item.expires,
     details: item.body,
-    classes,
+    classes: announcementClasses(item),
   };
-}
-
-function extractClasses(audience?: string): SchoolClass[] | 'alle' {
-  if (!audience || audience.toLowerCase() === 'alle') return 'alle';
-  const matches = audience.toUpperCase().match(CLASS_TOKEN) ?? [];
-  const classes = [...new Set(matches)];
-  return classes.length > 0 ? classes : 'alle';
 }
