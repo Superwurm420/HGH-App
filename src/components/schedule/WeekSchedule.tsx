@@ -21,38 +21,32 @@ function formatSubject(subject: string) {
   ));
 }
 
-type PeriodSlot = { period: number; periodEnd?: number; time: string };
+type PeriodSlot = { period: number; time: string };
 
 function collectPeriodSlots(week: WeekPlan): PeriodSlot[] {
-  const seen = new Map<number, PeriodSlot>();
+  const seen = new Map<number, string>();
+
   for (const day of WEEKDAYS) {
     for (const lesson of week[day]) {
-      if (!seen.has(lesson.period)) {
-        seen.set(lesson.period, {
-          period: lesson.period,
-          periodEnd: lesson.periodEnd,
-          time: lesson.time,
-        });
-      }
-    }
-  }
-  return Array.from(seen.values()).sort((a, b) => a.period - b.period);
-}
-
-function computeSkippedByDay(week: WeekPlan): Record<Weekday, Set<number>> {
-  const result = {} as Record<Weekday, Set<number>>;
-  for (const day of WEEKDAYS) {
-    const skipped = new Set<number>();
-    for (const l of week[day]) {
-      if (l.periodEnd) {
-        for (let p = l.period + 1; p <= l.periodEnd; p++) {
-          skipped.add(p);
+      const periodEnd = lesson.periodEnd ?? lesson.period;
+      for (let period = lesson.period; period <= periodEnd; period += 1) {
+        if (!seen.has(period)) {
+          seen.set(period, lesson.time);
         }
       }
     }
-    result[day] = skipped;
   }
-  return result;
+
+  return Array.from(seen.entries())
+    .map(([period, time]) => ({ period, time }))
+    .sort((a, b) => a.period - b.period);
+}
+
+function findLessonForPeriod(lessons: LessonEntry[], period: number): LessonEntry | null {
+  return lessons.find((lesson) => {
+    const periodEnd = lesson.periodEnd ?? lesson.period;
+    return period >= lesson.period && period <= periodEnd;
+  }) ?? null;
 }
 
 export function WeekSchedule({
@@ -65,10 +59,9 @@ export function WeekSchedule({
   todayKey?: Weekday;
 }) {
   const slots = collectPeriodSlots(week);
-  const skippedByDay = computeSkippedByDay(week);
 
   return (
-    <div className="overflow-x-auto">
+    <div className="wk-scroll" role="region" aria-label="Wochenstundenplan mit horizontalem Scrollen">
       <table className="wk-grid">
         <thead>
           <tr>
@@ -92,29 +85,18 @@ export function WeekSchedule({
           {slots.map((slot) => (
             <tr key={slot.period} className="wk-row">
               <td className="wk-period-cell">
-                <span className="wk-period-num">
-                  {slot.periodEnd ? `${slot.period}–${slot.periodEnd}` : slot.period}
-                </span>
+                <span className="wk-period-num">{slot.period}</span>
                 <span className="wk-period-time">{timeStart(slot.time)}</span>
               </td>
               {WEEKDAYS.map((day) => {
                 const isToday = day === todayKey;
                 const lessons = week[day];
-
-                if (skippedByDay[day].has(slot.period)) {
-                  return null;
-                }
-
-                const lesson = lessons.find((l: LessonEntry) => l.period === slot.period);
-                const rowSpan = lesson?.periodEnd
-                  ? lesson.periodEnd - lesson.period + 1
-                  : undefined;
+                const lesson = findLessonForPeriod(lessons, slot.period);
 
                 return (
                   <td
                     key={day}
                     className={`wk-cell ${isToday ? 'wk-cell-today' : ''}`}
-                    rowSpan={rowSpan}
                   >
                     {lesson ? (
                       <>
