@@ -1,6 +1,3 @@
-'use client';
-
-import { useState } from 'react';
 import { LessonEntry, WeekPlan, WEEKDAYS, Weekday } from '@/lib/timetable/types';
 
 const DAY_LABELS: Record<Weekday, string> = {
@@ -11,15 +8,9 @@ const DAY_FULL: Record<Weekday, string> = {
   MO: 'Montag', DI: 'Dienstag', MI: 'Mittwoch', DO: 'Donnerstag', FR: 'Freitag',
 };
 
-/** Extract readable time from "8.00 - 9.30" → "8:00 – 9:30" */
-function formatTime(time: string): string {
-  return time.replace(/\./g, ':').replace(/\s*-\s*/, ' – ');
-}
-
-/** Format period label: "1+2" for double periods, "3" for single */
-function periodLabel(lesson: LessonEntry): string {
-  if (lesson.periodEnd) return `${lesson.period}–${lesson.periodEnd}`;
-  return `${lesson.period}`;
+/** "8.00 - 9.30" → "8:00" */
+function timeStart(time: string): string {
+  return time.split('-')[0].trim().replace('.', ':');
 }
 
 function formatSubject(subject: string) {
@@ -29,175 +20,6 @@ function formatSubject(subject: string) {
     </span>
   ));
 }
-
-function DayCard({
-  day,
-  lessons,
-  isToday,
-  defaultOpen,
-}: {
-  day: Weekday;
-  lessons: LessonEntry[];
-  isToday: boolean;
-  defaultOpen: boolean;
-}) {
-  const [open, setOpen] = useState(defaultOpen);
-
-  return (
-    <div className={`wk-day-card ${isToday ? 'wk-day-today' : ''}`}>
-      <button
-        type="button"
-        className={`wk-day-toggle ${isToday ? 'today' : ''}`}
-        onClick={() => setOpen(!open)}
-        aria-expanded={open}
-      >
-        <span className="wk-day-name">
-          {DAY_FULL[day]}
-          {isToday && <span className="wk-badge-today">Heute</span>}
-        </span>
-        <span className="wk-day-count">
-          {lessons.length === 0 ? 'Frei' : `${lessons.length} ${lessons.length === 1 ? 'Fach' : 'Fächer'}`}
-        </span>
-        <span className={`wk-chevron ${open ? 'open' : ''}`} aria-hidden="true">
-          ›
-        </span>
-      </button>
-
-      {open && (
-        <div className="wk-day-lessons">
-          {lessons.length === 0 ? (
-            <p className="wk-free-text">Kein Unterricht</p>
-          ) : (
-            lessons.map((lesson) => (
-              <div key={`${lesson.period}-${lesson.time}`} className="wk-lesson-row">
-                <div className="wk-lesson-period">
-                  <span className="wk-lesson-pnum">{periodLabel(lesson)}</span>
-                  <span className="wk-lesson-time">{formatTime(lesson.time)}</span>
-                </div>
-                <div className="wk-lesson-body">
-                  <span className="wk-lesson-subject">
-                    {lesson.subject ? formatSubject(lesson.subject) : '–'}
-                  </span>
-                  {(lesson.room || lesson.detail) && (
-                    <span className="wk-lesson-meta">
-                      {lesson.room && <span className="wk-lesson-room">Raum {lesson.room}</span>}
-                      {lesson.detail && <span className="wk-lesson-detail">{lesson.detail}</span>}
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-export function WeekSchedule({
-  week,
-  todayKey,
-}: {
-  schoolClass?: string;
-  week: WeekPlan;
-  events?: unknown[];
-  todayKey?: Weekday;
-}) {
-  return (
-    <div className="wk-container">
-      {/* Mobile: Card layout (default) */}
-      <div className="wk-cards">
-        {WEEKDAYS.map((day) => (
-          <DayCard
-            key={day}
-            day={day}
-            lessons={week[day] ?? []}
-            isToday={day === todayKey}
-            defaultOpen={day === todayKey || !todayKey}
-          />
-        ))}
-      </div>
-
-      {/* Desktop: Clean table layout */}
-      <div className="wk-table-wrap">
-        <table className="wk-grid">
-          <thead>
-            <tr>
-              <th className="wk-corner">Std.</th>
-              {WEEKDAYS.map((day) => {
-                const isToday = day === todayKey;
-                return (
-                  <th
-                    key={day}
-                    className={`wk-day-head ${isToday ? 'today' : ''}`}
-                    title={DAY_FULL[day]}
-                  >
-                    {DAY_LABELS[day]}
-                    {isToday && <span className="wk-today-dot" aria-label="heute" />}
-                  </th>
-                );
-              })}
-            </tr>
-          </thead>
-          <tbody>
-            {collectPeriodSlots(week).map((slot) => {
-              const skippedByDay = computeSkippedByDay(week);
-              return (
-                <tr key={slot.period} className="wk-row">
-                  <td className="wk-period-cell">
-                    <span className="wk-period-num">
-                      {slot.periodEnd ? `${slot.period}–${slot.periodEnd}` : `${slot.period}`}
-                    </span>
-                    <span className="wk-period-time">{formatTime(slot.time)}</span>
-                  </td>
-                  {WEEKDAYS.map((day) => {
-                    const isToday = day === todayKey;
-                    const lessons = week[day];
-
-                    if (skippedByDay[day].has(slot.period)) {
-                      return null;
-                    }
-
-                    const lesson = lessons.find((l) => l.period === slot.period);
-                    const rowSpan = lesson?.periodEnd
-                      ? lesson.periodEnd - lesson.period + 1
-                      : undefined;
-
-                    return (
-                      <td
-                        key={day}
-                        className={`wk-cell ${isToday ? 'wk-cell-today' : ''}`}
-                        rowSpan={rowSpan}
-                      >
-                        {lesson ? (
-                          <>
-                            <span className="wk-subject">
-                              {formatSubject(lesson.subject ?? '–')}
-                            </span>
-                            {lesson.room && (
-                              <span className="wk-room">{lesson.room}</span>
-                            )}
-                            {lesson.detail && (
-                              <span className="wk-detail">{lesson.detail}</span>
-                            )}
-                          </>
-                        ) : (
-                          <span className="wk-empty">–</span>
-                        )}
-                      </td>
-                    );
-                  })}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-/* ── Helpers for the desktop table ─────────────────────────────── */
 
 type PeriodSlot = { period: number; periodEnd?: number; time: string };
 
@@ -231,4 +53,91 @@ function computeSkippedByDay(week: WeekPlan): Record<Weekday, Set<number>> {
     result[day] = skipped;
   }
   return result;
+}
+
+export function WeekSchedule({
+  week,
+  todayKey,
+}: {
+  schoolClass?: string;
+  week: WeekPlan;
+  events?: unknown[];
+  todayKey?: Weekday;
+}) {
+  const slots = collectPeriodSlots(week);
+  const skippedByDay = computeSkippedByDay(week);
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="wk-grid">
+        <thead>
+          <tr>
+            <th className="wk-corner">Std.</th>
+            {WEEKDAYS.map((day) => {
+              const isToday = day === todayKey;
+              return (
+                <th
+                  key={day}
+                  className={`wk-day-head ${isToday ? 'today' : ''}`}
+                  title={DAY_FULL[day]}
+                >
+                  {DAY_LABELS[day]}
+                  {isToday && <span className="wk-today-dot" aria-label="heute" />}
+                </th>
+              );
+            })}
+          </tr>
+        </thead>
+        <tbody>
+          {slots.map((slot) => (
+            <tr key={slot.period} className="wk-row">
+              <td className="wk-period-cell">
+                <span className="wk-period-num">
+                  {slot.periodEnd ? `${slot.period}–${slot.periodEnd}` : slot.period}
+                </span>
+                <span className="wk-period-time">{timeStart(slot.time)}</span>
+              </td>
+              {WEEKDAYS.map((day) => {
+                const isToday = day === todayKey;
+                const lessons = week[day];
+
+                if (skippedByDay[day].has(slot.period)) {
+                  return null;
+                }
+
+                const lesson = lessons.find((l: LessonEntry) => l.period === slot.period);
+                const rowSpan = lesson?.periodEnd
+                  ? lesson.periodEnd - lesson.period + 1
+                  : undefined;
+
+                return (
+                  <td
+                    key={day}
+                    className={`wk-cell ${isToday ? 'wk-cell-today' : ''}`}
+                    rowSpan={rowSpan}
+                  >
+                    {lesson ? (
+                      <>
+                        <span className="wk-subject">
+                          {formatSubject(lesson.subject ?? '–')}
+                        </span>
+                        {lesson.room && (
+                          <span className="wk-room">{lesson.room}</span>
+                        )}
+                        {lesson.detail && (
+                          <span className="wk-detail">{lesson.detail}</span>
+                        )}
+                      </>
+                    ) : (
+                      <span className="wk-empty">–</span>
+                    )}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 }
