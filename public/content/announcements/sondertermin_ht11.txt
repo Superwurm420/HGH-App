@@ -1,8 +1,10 @@
-title: Test
+# Hervorgehobene Nachricht: erscheint auf Pinnwand und als Sondertermin
 
+title: Test
 
 date: 20.04.2025 04:20
 audience: HT11 HT22 GT01
 expires: 20.04.2026 04:20
+highlight: ja
 ---
-Das ist ein Test. 
+Das ist ein Test.

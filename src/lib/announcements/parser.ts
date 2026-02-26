@@ -6,12 +6,26 @@ export type Announcement = {
   date?: string;
   audience?: string;
   expires?: string;
+  highlight: boolean;
   body: string;
   warnings: string[];
 };
 
 const DE_DATE = /^\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}$/;
 const CLASS_TOKEN = /\b[A-Z]{1,3}\d{2}\b/g;
+const COMMENT_PREFIXES = ['#', '//', ';'];
+
+function isCommentLine(line: string): boolean {
+  return COMMENT_PREFIXES.some((prefix) => line.startsWith(prefix));
+}
+
+function parseBooleanFlag(value?: string): boolean | null {
+  if (!value) return false;
+  const normalized = value.trim().toLowerCase();
+  if (['true', '1', 'ja', 'yes', 'y'].includes(normalized)) return true;
+  if (['false', '0', 'nein', 'no', 'n'].includes(normalized)) return false;
+  return null;
+}
 
 export function parseAnnouncement(raw: string, file: string): Announcement {
   const [headerRaw, ...bodyParts] = raw.split('\n---\n');
@@ -21,15 +35,18 @@ export function parseAnnouncement(raw: string, file: string): Announcement {
 
   for (const line of headerRaw.split(/\r?\n/)) {
     const trimmed = line.trim();
-    if (!trimmed || !trimmed.includes(':')) continue;
+    if (!trimmed || isCommentLine(trimmed) || !trimmed.includes(':')) continue;
     const idx = trimmed.indexOf(':');
     headers[trimmed.slice(0, idx).trim().toLowerCase()] = trimmed.slice(idx + 1).trim();
   }
+
+  const highlight = parseBooleanFlag(headers.highlight);
 
   if (!headers.title) warnings.push("Pflichtfeld 'title' fehlt.");
   if (!headers.date) warnings.push("Pflichtfeld 'date' fehlt.");
   if (headers.date && !DE_DATE.test(headers.date)) warnings.push("'date' hat nicht das Format TT.MM.JJJJ HH:mm.");
   if (headers.expires && !DE_DATE.test(headers.expires)) warnings.push("'expires' hat nicht das Format TT.MM.JJJJ HH:mm.");
+  if (highlight === null) warnings.push("'highlight' muss true/false, ja/nein oder 1/0 sein.");
   if (!body) warnings.push('Kein Text nach der Trennlinie gefunden.');
 
   return {
@@ -38,6 +55,7 @@ export function parseAnnouncement(raw: string, file: string): Announcement {
     date: headers.date,
     audience: headers.audience,
     expires: headers.expires,
+    highlight: highlight ?? false,
     body,
     warnings,
   };
@@ -67,7 +85,7 @@ export function isActive(item: Announcement, now: Date = new Date()): boolean {
 }
 
 export function toSpecialEvent(item: Announcement): SpecialEvent | null {
-  if (!item.title || !item.date) return null;
+  if (!item.highlight || !item.title || !item.date) return null;
 
   const classes = extractClasses(item.audience);
   return {

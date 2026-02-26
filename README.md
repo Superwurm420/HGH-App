@@ -6,6 +6,7 @@ Die App liest automatisch die neueste Stundenplan-PDF ein, erkennt verfügbare K
 - **Heute (`/`)**: Uhrzeit, Klassenauswahl, heutiger Unterricht, Sondertermine
 - **Wochenplan (`/woche`)**: komplette Wochenansicht als scrollbare Tabelle (ca. 3 Tage sichtbar) + Hervorhebung des aktuellen Tages + Datum der letzten Kalender-Aktualisierung
 - **Pinnwand (`/pinnwand`)**: TXT-basierte Meldungen inkl. Warnungen bei Teilfehlern
+- **Einheitliche Terminpflege**: Ein gemeinsames TXT-Format für Pinnwand + hervorgehobene Sondertermine (`highlight`)
 - **Einstellungen (`/einstellungen`)**: Weiterleitung auf „Weiteres“ (`/weiteres`)
 
 ## Neuen Stundenplan hinzufügen
@@ -58,7 +59,7 @@ public/content/
 ## Fachlogik kurz
 - **PDF-Erkennung**: Klassen und Spalten werden dynamisch aus dem PDF erkannt (nicht hardcodiert).
 - **Fallback**: Auch PDFs mit abweichenden Namen werden erkannt, wenn eine Jahreszahl im Namen steht.
-- **Sondertermine**: Werden im Tages-/Wochenplan priorisiert angezeigt.
+- **Sondertermine**: Kommen aus denselben TXT-Dateien wie Pinnwand-Beiträge und werden über `highlight: true` priorisiert angezeigt.
 - **Diagnose**: Das Build-Log zeigt genau, welche Klassen erkannt wurden und wie viele Stunden geparst wurden.
 
 ## Weiterführende Docs

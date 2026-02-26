@@ -14,6 +14,7 @@ function isAnnouncement(value: unknown): value is Announcement {
     && (value.date === undefined || typeof value.date === 'string')
     && (value.audience === undefined || typeof value.audience === 'string')
     && (value.expires === undefined || typeof value.expires === 'string')
+    && typeof value.highlight === 'boolean'
     && typeof value.body === 'string'
     && Array.isArray(value.warnings)
   );

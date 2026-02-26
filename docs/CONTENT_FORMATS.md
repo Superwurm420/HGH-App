@@ -27,15 +27,18 @@ title: Elternabend Klasse 2
 date: 24.06.2026 08:30
 audience: alle
 expires: 30.06.2026 16:00
+highlight: false
 ---
 Morgen entfällt die 3.+4. Stunde.
 ```
 
 ### Feldregeln
 - Pflicht: `title`, `date`
-- Optional: `audience`, `expires`
+- Optional: `audience`, `expires`, `highlight`
 - Datumsformat: `TT.MM.JJJJ HH:mm`
 - Zeitzone: `Europe/Berlin`
+- `highlight`: `true/ja/1` (zusätzlich als Sondertermin im Stundenplan) oder `false/nein/0` (nur Pinnwand)
+- Kommentarzeilen sind erlaubt (`#`, `//`, `;`)
 
 ### Fehlerregeln
 - Teilweise lesbar: nutzbare Felder werden angezeigt, plus Warnhinweis

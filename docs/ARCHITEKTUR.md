@@ -42,7 +42,7 @@ Der Parser erkennt Klassen und Spalten **dynamisch**. Er hat keine fest einprogr
 ```text
 public/content/                     ← HIER DATEIEN AUSTAUSCHEN
   timetables/                       ← Stundenplan-PDFs ablegen
-  announcements/                    ← Pinnwand-TXT ablegen
+  announcements/                    ← Einheitliche Termin-TXTs (Pinnwand + Sondertermin)
   branding/                         ← Logo etc.
 
 scripts/
@@ -67,7 +67,7 @@ src/
 ```
 
 ## Prioritäten
-1. Sondertermine / Ankündigungen (werden im Tages-/Wochenplan priorisiert angezeigt)
+1. Highlight-Termine aus Ankündigungen (`highlight: true`)
 2. Regulärer Unterricht aus PDF
 
 ## Offline / PWA
