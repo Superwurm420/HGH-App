@@ -2,7 +2,26 @@ import { Announcement, isActive, toSpecialEvent } from './parser';
 import { SchoolClass, SpecialEvent } from '@/lib/timetable/types';
 import rawAnnouncements from '@/generated/announcements-data.json';
 
-const allAnnouncements = rawAnnouncements as unknown as Announcement[];
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function isAnnouncement(value: unknown): value is Announcement {
+  if (!isObject(value)) return false;
+  return (
+    typeof value.file === 'string'
+    && (value.title === undefined || typeof value.title === 'string')
+    && (value.date === undefined || typeof value.date === 'string')
+    && (value.audience === undefined || typeof value.audience === 'string')
+    && (value.expires === undefined || typeof value.expires === 'string')
+    && typeof value.body === 'string'
+    && Array.isArray(value.warnings)
+  );
+}
+
+const allAnnouncements: Announcement[] = Array.isArray(rawAnnouncements)
+  ? rawAnnouncements.filter(isAnnouncement)
+  : [];
 
 export async function getAnnouncements(): Promise<Announcement[]> {
   return allAnnouncements.filter((x) => isActive(x));

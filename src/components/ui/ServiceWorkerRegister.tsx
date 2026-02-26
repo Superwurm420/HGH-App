@@ -7,42 +7,54 @@ export function ServiceWorkerRegister() {
     if (!('serviceWorker' in navigator)) return;
 
     let refreshing = false;
+    const debug = process.env.NODE_ENV !== 'production';
+    let onVisibilityChange: (() => void) | null = null;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
 
-    // Seite einmal neu laden, sobald ein neuer Service Worker die Kontrolle übernimmt.
-    // Guard verhindert Doppel-Reloads.
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
+    const onControllerChange = () => {
       if (refreshing) return;
       refreshing = true;
       window.location.reload();
-    });
+    };
+
+    navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
 
     navigator.serviceWorker
       .register('/sw.js')
       .then((registration) => {
         // Sofort nach Registration auf Updates prüfen
-        registration.update().catch(() => {});
+        registration.update().catch((error) => {
+          if (debug) console.warn('[SW] Initiales Update fehlgeschlagen:', error);
+        });
 
         // Bei Sichtbarkeits-Wechsel (App kommt in den Vordergrund) Update prüfen
-        const onVisibilityChange = () => {
+        onVisibilityChange = () => {
           if (document.visibilityState === 'visible') {
-            registration.update().catch(() => {});
+            registration.update().catch((error) => {
+              if (debug) console.warn('[SW] Update bei Sichtbarkeitswechsel fehlgeschlagen:', error);
+            });
           }
         };
         document.addEventListener('visibilitychange', onVisibilityChange);
 
         // Periodisch alle 60 s prüfen (nur wenn Tab sichtbar)
-        const interval = setInterval(() => {
+        intervalId = setInterval(() => {
           if (document.visibilityState === 'visible') {
-            registration.update().catch(() => {});
+            registration.update().catch((error) => {
+              if (debug) console.warn('[SW] Periodisches Update fehlgeschlagen:', error);
+            });
           }
         }, 60_000);
-
-        return () => {
-          document.removeEventListener('visibilitychange', onVisibilityChange);
-          clearInterval(interval);
-        };
       })
-      .catch(() => {});
+      .catch((error) => {
+        if (debug) console.warn('[SW] Registrierung fehlgeschlagen:', error);
+      });
+
+    return () => {
+      navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
+      if (onVisibilityChange) document.removeEventListener('visibilitychange', onVisibilityChange);
+      if (intervalId) clearInterval(intervalId);
+    };
   }, []);
 
   return null;

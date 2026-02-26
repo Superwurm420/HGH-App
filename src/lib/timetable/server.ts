@@ -5,10 +5,42 @@ import rawData from '@/generated/timetable-data.json';
 import { stat } from 'node:fs/promises';
 import path from 'node:path';
 
-const data = rawData as unknown as {
+type TimetableGeneratedData = {
   files: TimetableMeta[];
   schedules: Record<string, ParsedSchedule>;
 };
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function isTimetableMeta(value: unknown): value is TimetableMeta {
+  if (!isObject(value)) return false;
+  return (
+    typeof value.filename === 'string'
+    && typeof value.kw === 'number'
+    && (value.halfYear === 1 || value.halfYear === 2)
+    && typeof value.yearStart === 'number'
+    && typeof value.yearEndShort === 'number'
+    && typeof value.href === 'string'
+  );
+}
+
+function isWeekdayEntries(value: unknown): value is ParsedSchedule[string] {
+  if (!isObject(value)) return false;
+  return ['MO', 'DI', 'MI', 'DO', 'FR'].every((day) => Array.isArray(value[day]));
+}
+
+function isTimetableGeneratedData(value: unknown): value is TimetableGeneratedData {
+  if (!isObject(value)) return false;
+  if (!Array.isArray(value.files) || !value.files.every(isTimetableMeta)) return false;
+  if (!isObject(value.schedules)) return false;
+  return Object.values(value.schedules).every(isWeekdayEntries);
+}
+
+const data: TimetableGeneratedData = isTimetableGeneratedData(rawData)
+  ? rawData
+  : { files: [], schedules: {} };
 
 export function getLatestTimetable(): TimetableMeta | null {
   if (data.files.length === 0) return null;
