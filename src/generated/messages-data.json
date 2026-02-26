@@ -1,79 +1,120 @@
 {
-  "_hinweis": "Tägliche Meldungen – einfach bearbeitbar. Kategorien: morgen, mittag, nachmittag, schulschluss, wochenende. Unter 'klassen' können klassenspezifische Sprüche eingetragen werden.",
-  "morgen": [
-    "Guten Morgen! Heute wird ein guter Tag.",
-    "Frisch in den Tag – alles ist möglich.",
-    "Neuer Tag, neue Chancen. Macht was draus!",
-    "Der frühe Vogel... ihr wisst schon. Gut, dass ihr da seid!",
-    "Guten Morgen! Der erste Kaffee wirkt – gleich.",
-    "Heute wird gelernt, was morgen nützlich ist.",
-    "Ein starker Start in den Tag. Ihr habt das drauf!",
-    "Morgens frisch, mittags fit, abends stolz – so geht das!"
-  ],
-  "mittag": [
-    "Schon Halbzeit – weiter so!",
-    "Mittagstief? Kurz durchatmen und dann wieder Gas geben.",
-    "Fast über dem Berg – den Nachmittag kriegt ihr auch noch.",
-    "Halbzeit! Die zweite Hälfte gehört euch.",
-    "Nach der Pause läuft alles wieder runder.",
-    "Mittagspause verdient – gut gemacht bis hierher!",
-    "Noch ein paar Stunden und der Tag gehört euch.",
-    "Der Nachmittag ist die letzte Etappe – Zieleinlauf naht!"
-  ],
-  "nachmittag": [
-    "Nur noch ein bisschen – gleich ist Feierabend!",
-    "Die Ziellinie ist in Sicht. Nicht aufhören!",
-    "Fast geschafft – Kopf hoch und durch!",
-    "Nachmittag heißt: es wird bald besser.",
-    "Noch ein letzter Schub – dann ist der Tag im Kasten.",
-    "Ihr seid auf der Zielgeraden. Durchhalten!",
-    "Der Feierabend wartet – noch ein bisschen."
-  ],
-  "schulschluss": [
-    "Feierabend! Gut gemacht heute.",
-    "Der Tag ist rum – Kopf freilassen.",
-    "Geschafft! Genießt den Abend.",
-    "Ein weiterer erfolgreicher Schultag. Respekt!",
-    "Jetzt verdient ihr eure Pause. Bis morgen!"
-  ],
-  "wochenende": [
-    "Wochenende! Erholt euch gut.",
-    "Zwei Tage Freiheit – genießt sie!",
-    "Akkus aufladen für die nächste Woche.",
-    "Verdiente Auszeit – genießt das Wochenende!",
-    "Kein Unterricht – dafür umso mehr Leben.",
-    "Wochenende: die Zeit, die euch wirklich gehört."
-  ],
-  "klassen": {
-    "HT11": [
-      "HT11 – erstes Jahr, volle Energie!",
-      "Holztechnik 11: Hier wächst die nächste Generation.",
-      "HT11 – der Grundstein wird heute gelegt!"
+  "_hinweis": "Tagesmeldungen für Startseite. Bitte nur Textlisten bearbeiten. Struktur: standard (allgemein), stunden (1-10), klassen.<KLASSE>.allgemein und klassen.<KLASSE>.stunden.",
+  "_hinweis_zeitlogik": "Die App nimmt zuerst klassen+stundenbezogene Meldungen der aktuellen/naechsten Stunde. Wenn dort nichts steht, werden Standardmeldungen genutzt. Wochenende hat eigene Meldungen.",
+  "_hinweis_beispiel": "Beispiel fuer Klassenstunde: \"klassen\": { \"HT11\": { \"stunden\": { \"1\": [\"Text\"] } } }",
+  "standard": {
+    "vorUnterricht": [
+      "Guten Morgen! Bereit für einen guten Start?",
+      "Der Tag beginnt – Schritt für Schritt zum Ziel.",
+      "Früh da sein lohnt sich. Auf einen starken Start!"
     ],
-    "HT12": [
-      "HT12 – schon im zweiten Jahr, schon viel gelernt.",
-      "Holztechnik 12: Erfahrung trifft Präzision.",
-      "HT12 – ihr wisst was ihr tut!"
+    "inPause": [
+      "Kurz durchatmen – dann geht's weiter.",
+      "Pausen sind auch Lernzeit für den Kopf.",
+      "Energie sammeln, gleich startet die nächste Stunde."
     ],
-    "HT21": [
-      "HT21 – auf dem Weg zum Abschluss!",
-      "Holztechnik 21: Noch ein Jahr und ihr seid dabei.",
-      "HT21 – Durchhalten lohnt sich!"
+    "nachUnterricht": [
+      "Schultag geschafft – guten Feierabend!",
+      "Gut gemacht heute. Erholt euch für morgen.",
+      "Der Unterricht ist vorbei – Kopf frei, Akku aufladen."
     ],
-    "HT22": [
-      "HT22 – fast am Ziel. Nicht nachlassen!",
-      "Holztechnik 22: Der Abschluss ist zum Greifen nah.",
-      "HT22 – macht das Beste aus dem letzten Jahr!"
-    ],
-    "G11": [
-      "G11 – kreativ sein ist kein Privileg, es ist euer Handwerk.",
-      "Gestaltung 11: Ideen brauchen Zeit – nehmt sie euch.",
-      "G11 – die Welt wird ein bisschen schöner durch euch!"
-    ],
-    "G21": [
-      "G21 – Gestaltung auf höchstem Niveau.",
-      "Zweites Jahr Gestaltung: Ihr seht die Dinge mit anderen Augen.",
-      "G21 – eure Arbeit hinterlässt Eindruck!"
+    "wochenende": [
+      "Wochenende! Erholt euch gut.",
+      "Zeit zum Abschalten – schönes Wochenende!",
+      "Kein Unterricht heute – genießt die freie Zeit."
     ]
+  },
+  "stunden": {
+    "1": [
+      "1. Stunde – konzentriert starten, dann läuft der Rest leichter.",
+      "Erste Stunde, erster Fokus: ihr packt das."
+    ],
+    "2": [
+      "2. Stunde – dranbleiben, ihr seid im Rhythmus.",
+      "Zweite Runde: ruhig bleiben und sauber arbeiten."
+    ],
+    "3": [
+      "3. Stunde – weiter im Takt.",
+      "Dritte Stunde: Qualität vor Tempo."
+    ],
+    "4": [
+      "4. Stunde – Halbzeit in Sicht.",
+      "Vierte Stunde: jetzt zahlt sich Fokus aus."
+    ],
+    "5": [
+      "5. Stunde – nach der Pause nochmal sauber ansetzen.",
+      "Fünfte Stunde: ruhig und strukturiert weiter."
+    ],
+    "6": [
+      "6. Stunde – Endspurt vor dem Nachmittag.",
+      "Sechste Stunde: dranbleiben, ihr seid fast durch."
+    ],
+    "7": [
+      "7. Stunde – starker Nachmittag, starkes Ergebnis.",
+      "Siebte Stunde: Fokus halten, Ziel bleibt nah."
+    ],
+    "8": [
+      "8. Stunde – ihr seid auf der Zielgeraden.",
+      "Achte Stunde: letzter längerer Block, dann geschafft."
+    ],
+    "9": [
+      "9. Stunde – fast Feierabend.",
+      "Neunte Stunde: kurz sammeln, dann sauber abschließen."
+    ],
+    "10": [
+      "10. Stunde – letzte Stunde, sauber zu Ende bringen.",
+      "Zehnte Stunde: Endspurt!"
+    ]
+  },
+  "klassen": {
+    "HT11": {
+      "allgemein": [
+        "HT11 – ihr legt gerade den Grundstein.",
+        "HT11 – Schritt für Schritt zur sicheren Basis."
+      ],
+      "stunden": {
+        "1": [
+          "HT11 – in der 1. Stunde zählt ein sauberer Start."
+        ],
+        "5": [
+          "HT11 – 5. Stunde: ruhig bleiben und präzise arbeiten."
+        ]
+      }
+    },
+    "HT12": {
+      "allgemein": [
+        "HT12 – Erfahrung zeigt sich im Detail.",
+        "HT12 – ihr habt schon viel aufgebaut, bleibt dran."
+      ]
+    },
+    "HT21": {
+      "allgemein": [
+        "HT21 – ihr seid auf dem Weg zum Abschluss.",
+        "HT21 – Durchhalten zahlt sich jetzt aus."
+      ]
+    },
+    "HT22": {
+      "allgemein": [
+        "HT22 – Endphase: sauber arbeiten, sicher abschließen.",
+        "HT22 – der Abschluss ist in Reichweite."
+      ]
+    },
+    "G11": {
+      "allgemein": [
+        "G11 – gute Ideen werden mit jedem Entwurf besser.",
+        "G11 – kreativ bleiben und trotzdem strukturiert arbeiten."
+      ],
+      "stunden": {
+        "3": [
+          "G11 – 3. Stunde: Entwurf prüfen, dann verfeinern."
+        ]
+      }
+    },
+    "G21": {
+      "allgemein": [
+        "G21 – eure Gestaltung hat inzwischen klare Handschrift.",
+        "G21 – Präzision und Idee, genau diese Mischung zählt."
+      ]
+    }
   }
 }

@@ -53,3 +53,46 @@ Sondertermine sind alle Abweichungen vom Standardunterricht und dürfen:
 - einzelne Blöcke, halbe Tage oder längere Zeiträume abdecken.
 
 Bei Überschneidung hat Sondertermin immer Vorrang.
+
+## 4) Tagesmeldungen (`messages.json`)
+
+Datei: `public/content/messages.json`
+
+### Ziel
+- Meldungen auf der Startseite passend zur ausgewählten Klasse und zur aktuellen/kommenden Stunde.
+- Datei soll ohne Codekenntnisse editierbar sein.
+
+### Struktur
+```json
+{
+  "_hinweis": "Freitext-Hinweis für Redakteure",
+  "standard": {
+    "vorUnterricht": ["..."],
+    "inPause": ["..."],
+    "nachUnterricht": ["..."],
+    "wochenende": ["..."]
+  },
+  "stunden": {
+    "1": ["..."],
+    "2": ["..."]
+  },
+  "klassen": {
+    "HT11": {
+      "allgemein": ["..."],
+      "stunden": {
+        "1": ["..."]
+      }
+    }
+  }
+}
+```
+
+### Auswahllogik in der App
+1. Klassen- und stundenbezogene Meldungen (`klassen.<KLASSE>.stunden.<N>`) haben Vorrang.
+2. Sonst werden allgemeine Stundenmeldungen (`stunden.<N>`) genutzt.
+3. Wenn für die Stunde nichts vorhanden ist, greift `standard`.
+4. Am Wochenende wird `standard.wochenende` verwendet.
+
+### Hinweise
+- Stunden-Keys sind als String zu pflegen: `"1"` bis `"10"`.
+- Zusätzliche Hinweisfelder wie `_hinweis` sind erlaubt und werden ignoriert.
