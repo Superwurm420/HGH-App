@@ -1,6 +1,16 @@
 {
   "files": [
     {
+      "filename": "Stundenplan_kw_10_Hj2_2025_26.pdf",
+      "kw": 10,
+      "halfYear": 2,
+      "yearStart": 2025,
+      "yearEndShort": 26,
+      "href": "/content/timetables/Stundenplan_kw_10_Hj2_2025_26.pdf",
+      "source": "name-pattern",
+      "lastModifiedMs": 1772197114000
+    },
+    {
       "filename": "Stundenplan_kw_09_Hj2_2025_26.pdf",
       "kw": 9,
       "halfYear": 2,
@@ -8,7 +18,7 @@
       "yearEndShort": 26,
       "href": "/content/timetables/Stundenplan_kw_09_Hj2_2025_26.pdf",
       "source": "name-pattern",
-      "lastModifiedMs": 1772190667495.5024
+      "lastModifiedMs": 1772197114000
     },
     {
       "filename": "Stundenplan_kw_08_Hj2_2025_26.pdf",
@@ -18,7 +28,7 @@
       "yearEndShort": 26,
       "href": "/content/timetables/Stundenplan_kw_08_Hj2_2025_26.pdf",
       "source": "name-pattern",
-      "lastModifiedMs": 1772190667491.5024
+      "lastModifiedMs": 1772197114000
     },
     {
       "filename": "Stundenplan_kw_07_Hj2_2025_26.pdf",
@@ -28,7 +38,7 @@
       "yearEndShort": 26,
       "href": "/content/timetables/Stundenplan_kw_07_Hj2_2025_26.pdf",
       "source": "name-pattern",
-      "lastModifiedMs": 1772190667483.5024
+      "lastModifiedMs": 1772197114000
     },
     {
       "filename": "Stundenplan_kw_45_Hj1_2025_26.pdf",
@@ -38,7 +48,7 @@
       "yearEndShort": 26,
       "href": "/content/timetables/Stundenplan_kw_45_Hj1_2025_26.pdf",
       "source": "name-pattern",
-      "lastModifiedMs": 1772190667503.5024
+      "lastModifiedMs": 1772197114000
     },
     {
       "filename": "Stundenplan_kw_25_Hj2_2024_25.pdf",
@@ -48,10 +58,890 @@
       "yearEndShort": 25,
       "href": "/content/timetables/Stundenplan_kw_25_Hj2_2024_25.pdf",
       "source": "name-pattern",
-      "lastModifiedMs": 1772190667499.5024
+      "lastModifiedMs": 1772197114000
     }
   ],
   "schedules": {
+    "Stundenplan_kw_10_Hj2_2025_26.pdf": {
+      "HT11": {
+        "MO": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Deutsch",
+            "detail": "MEL",
+            "room": "6"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul1/KuSti",
+            "detail": "MEL",
+            "room": "6"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul7/Excel",
+            "detail": "WED",
+            "room": "3"
+          }
+        ],
+        "DI": [
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul2/Obfl",
+            "detail": "WED",
+            "room": "6"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Englisch",
+            "detail": "WEN",
+            "room": "9"
+          },
+          {
+            "period": 7,
+            "time": "14.10 - 14.55",
+            "subject": "Serviceteam"
+          }
+        ],
+        "MI": [
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul1/Wsk",
+            "detail": "TAM",
+            "room": "5"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul1/CAD",
+            "detail": "HOFF",
+            "room": "4"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Modul2/Statik",
+            "detail": "HOFF",
+            "room": "2"
+          }
+        ],
+        "DO": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Modul2/FT",
+            "detail": "STE",
+            "room": "1"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Politik",
+            "detail": "STI",
+            "room": "8"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Mathematik",
+            "detail": "TAM",
+            "room": "5"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Modul6/Mark/DTP",
+            "detail": "STI",
+            "room": "3/8"
+          }
+        ],
+        "FR": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Modul2/CNC",
+            "detail": "HOFF",
+            "room": "4"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul7/ReWe",
+            "detail": "STI",
+            "room": "8"
+          }
+        ]
+      },
+      "HT12": {
+        "MO": [
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul7/Excel",
+            "detail": "WED",
+            "room": "3"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul2/Statik",
+            "detail": "HOFF",
+            "room": "2"
+          }
+        ],
+        "DI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Politik",
+            "detail": "STI",
+            "room": "8"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Englisch",
+            "detail": "WEN",
+            "room": "9"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul2/Obfl",
+            "detail": "WED",
+            "room": "6"
+          }
+        ],
+        "MI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Modul7/ReWe",
+            "detail": "STI",
+            "room": "8"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul1/CAD",
+            "detail": "HOFF",
+            "room": "4"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul1/Wsk",
+            "detail": "TAM",
+            "room": "5"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Modul6/Mark/DTP",
+            "detail": "STI",
+            "room": "3/8"
+          }
+        ],
+        "DO": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Deutsch",
+            "detail": "MEL",
+            "room": "6"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Mathematik",
+            "detail": "TAM",
+            "room": "5"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul1/KuSti",
+            "detail": "MEL",
+            "room": "6"
+          }
+        ],
+        "FR": [
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul2/CNC",
+            "detail": "HOFF",
+            "room": "4"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul2/FT",
+            "detail": "STE",
+            "room": "1"
+          }
+        ]
+      },
+      "HT21": {
+        "MO": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Modul4/FeKo",
+            "detail": "HOG",
+            "room": "5"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul5/AV",
+            "detail": "TAM",
+            "room": "5"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul5/Betriebsplanung",
+            "detail": "HOG",
+            "room": "1"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Buchführung 5",
+            "detail": "TAM"
+          }
+        ],
+        "DI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Modul4/Obfl",
+            "detail": "WED",
+            "room": "6"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Mathematik",
+            "detail": "TAM",
+            "room": "5"
+          },
+          {
+            "period": 7,
+            "time": "14.10 - 14.55",
+            "subject": "USF-Treffen"
+          }
+        ],
+        "MI": [
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul8/BWL",
+            "detail": "STI",
+            "room": "8"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul8/ReWe",
+            "detail": "STI",
+            "room": "8"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Geschäftskunde",
+            "detail": "STE",
+            "room": "1"
+          }
+        ],
+        "DO": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "NAT/Chemie",
+            "detail": "STI",
+            "room": "8"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Englisch",
+            "detail": "HOFF",
+            "room": "2"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul4/Excel-Klausur",
+            "detail": "WED",
+            "room": "3"
+          }
+        ],
+        "FR": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Modul3/MöKo",
+            "detail": "STE",
+            "room": "1"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul3/MöKo",
+            "detail": "STE",
+            "room": "1"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul4/CAD",
+            "detail": "HOFF",
+            "room": "4"
+          }
+        ]
+      },
+      "HT22": {
+        "MO": [
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul5/Betriebsplanung",
+            "detail": "HOG",
+            "room": "1"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul5/AV",
+            "detail": "TAM",
+            "room": "5"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Buchführung 5",
+            "detail": "TAM"
+          }
+        ],
+        "DI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Modul4/FeKo",
+            "detail": "HOG",
+            "room": "5"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "NAT/Chemie",
+            "detail": "STI",
+            "room": "8"
+          }
+        ],
+        "MI": [
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul3/MöKo",
+            "detail": "STE",
+            "room": "1"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul3/MöKo",
+            "detail": "STE",
+            "room": "1"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Geschäftskunde",
+            "detail": "STE",
+            "room": "1"
+          }
+        ],
+        "DO": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Modul4/CAD",
+            "detail": "HOFF",
+            "room": "4"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul4/Excel-Klausur",
+            "detail": "WED",
+            "room": "3"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Englisch",
+            "detail": "HOFF",
+            "room": "1"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Mathematik",
+            "detail": "TAM",
+            "room": "5"
+          }
+        ],
+        "FR": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Modul8/BWL",
+            "detail": "STI",
+            "room": "8"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Modul8/ReWe",
+            "detail": "STI",
+            "room": "8"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Modul4/Obfl",
+            "detail": "WED",
+            "room": "6"
+          }
+        ]
+      },
+      "G11": {
+        "MO": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Materialkunde",
+            "detail": "BER/WEZ",
+            "room": "7"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Freihandzeichnen",
+            "detail": "WEN",
+            "room": "9"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "WEZ",
+            "room": "8/4"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "WEZ",
+            "room": "8/4"
+          }
+        ],
+        "DI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Politik",
+            "detail": "STI",
+            "room": "8"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Englisch",
+            "detail": "WEN",
+            "room": "9"
+          }
+        ],
+        "MI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Rechnungswesen",
+            "detail": "STI",
+            "room": "8"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "WEN",
+            "room": "9"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "WEN",
+            "room": "9"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "CAD",
+            "detail": "WEN",
+            "room": "4"
+          }
+        ],
+        "DO": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Deutsch",
+            "detail": "MEL",
+            "room": "6"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Mathematik",
+            "detail": "TAM",
+            "room": "5"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "KuSti",
+            "detail": "MEL",
+            "room": "6"
+          }
+        ],
+        "FR": []
+      },
+      "G21": {
+        "MO": [
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "BER/WEZ",
+            "room": "7/4"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "BER",
+            "room": "7/4"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Buchführung 5",
+            "detail": "TAM"
+          }
+        ],
+        "DI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "CAD",
+            "detail": "WEN",
+            "room": "9"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Haustechnik",
+            "detail": "WEZ/PET",
+            "room": "7"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Haustechnik",
+            "detail": "WEZ/PET",
+            "room": "7"
+          },
+          {
+            "period": 7,
+            "time": "14.10 - 14.55",
+            "subject": "Serviceteam"
+          }
+        ],
+        "MI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Freihandzeichnen",
+            "detail": "WEN",
+            "room": "9"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Fertigungstechnik",
+            "detail": "WED",
+            "room": "6"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "EDV/Excel",
+            "detail": "WED",
+            "room": "3"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Geschäftskunde",
+            "detail": "STE",
+            "room": "1"
+          }
+        ],
+        "DO": [
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Designgeschichte",
+            "detail": "STE",
+            "room": "BS"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Englisch",
+            "detail": "HOFF",
+            "room": "1"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "Mathematik",
+            "detail": "TAM",
+            "room": "5"
+          }
+        ],
+        "FR": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "WEN",
+            "room": "9"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "WEN",
+            "room": "9"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "WEN",
+            "room": "9"
+          }
+        ]
+      },
+      "GT01": {
+        "MO": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Materialkunde",
+            "detail": "BER/WEZ",
+            "room": "7"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "BER/WEZ",
+            "room": "7/4"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "BER",
+            "room": "7/4"
+          }
+        ],
+        "DI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "CAD",
+            "detail": "WEN",
+            "room": "9"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Haustechnik",
+            "detail": "WEZ/PET",
+            "room": "7"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Haustechnik",
+            "detail": "WEZ/PET",
+            "room": "7"
+          }
+        ],
+        "MI": [
+          {
+            "period": 1,
+            "periodEnd": 2,
+            "time": "8.00 - 9.30",
+            "subject": "Freihandzeichnen",
+            "detail": "WEN",
+            "room": "9"
+          },
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "WEN",
+            "room": "9"
+          },
+          {
+            "period": 5,
+            "periodEnd": 6,
+            "time": "11.40 - 13.10",
+            "subject": "Entwurf/Konstruktion",
+            "detail": "WEN",
+            "room": "9"
+          },
+          {
+            "period": 7,
+            "periodEnd": 8,
+            "time": "14.10 - 15.40",
+            "subject": "CAD",
+            "detail": "WEN",
+            "room": "4"
+          }
+        ],
+        "DO": [
+          {
+            "period": 3,
+            "periodEnd": 4,
+            "time": "9.50 - 11.20",
+            "subject": "Designgeschichte",
+            "detail": "STE",
+            "room": "BS"
+          }
+        ],
+        "FR": []
+      }
+    },
     "Stundenplan_kw_09_Hj2_2025_26.pdf": {
       "HT11": {
         "MO": [
