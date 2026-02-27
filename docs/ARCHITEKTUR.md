@@ -43,7 +43,7 @@ Der Parser erkennt Klassen und Spalten **dynamisch**. Er hat keine fest einprogr
 public/content/                     ← HIER DATEIEN AUSTAUSCHEN
   timetables/                       ← Stundenplan-PDFs ablegen
   announcements/                    ← Einheitliche Termin-TXTs (Pinnwand + Sondertermin)
-  branding/                         ← Logo etc.
+  branding/                         ← zentrale Logo-/Icon-Dateien für App & PWA
 
 scripts/
   prebuild.mjs                      ← Parst PDFs + TXTs → JSON (läuft vor Build)
@@ -75,6 +75,7 @@ src/
 - Manifest + Service Worker vorhanden
 - Zuletzt geladene Daten werden lokal gespeichert
 - API-Requests (`/api/*`) werden im Service Worker nicht gecacht, damit Version-Checks immer frisch bleiben.
+- Root-Iconpfade (`/favicon.ico`, `/apple-touch-icon.png`, ...) werden per Rewrite auf `public/content/branding/` abgebildet.
 - `/api/bootstrap` liefert ETag auf Basis der aktiven Stundenplan-Version; der Client pollt im sichtbaren Tab und aktualisiert bei Versionswechsel automatisch.
 
 ## Hosting-Hinweis

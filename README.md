@@ -53,8 +53,10 @@ Hinweis: GitHub Pages ist nur für statische Seiten gedacht. Diese App nutzt ser
 public/content/
   timetables/      # Stundenplan-PDFs hier ablegen
   announcements/   # TXT für Pinnwand/Sondertermine
-  branding/        # Logo, Icons etc.
+  branding/        # zentrale Logo-/Icon-Dateien für App & PWA
 ```
+
+Alle wichtigen Bilddateien liegen damit an einem Ort: `public/content/branding/`.
 
 ## Fachlogik kurz
 - **PDF-Erkennung**: Klassen und Spalten werden dynamisch aus dem PDF erkannt (nicht hardcodiert).
