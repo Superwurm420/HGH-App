@@ -61,6 +61,26 @@ function formatDuration(mins: number) {
   return m > 0 ? `${h} Std ${m} Min` : `${h} Std`;
 }
 
+function getIsoCalendarWeek(date: Date) {
+  const parts = new Intl.DateTimeFormat('de-DE', {
+    timeZone: 'Europe/Berlin',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).formatToParts(date);
+
+  const day = Number(parts.find((part) => part.type === 'day')?.value ?? 1);
+  const month = Number(parts.find((part) => part.type === 'month')?.value ?? 1);
+  const year = Number(parts.find((part) => part.type === 'year')?.value ?? 1970);
+
+  const utcDate = new Date(Date.UTC(year, month - 1, day));
+  const weekday = utcDate.getUTCDay() || 7;
+  utcDate.setUTCDate(utcDate.getUTCDate() + 4 - weekday);
+
+  const yearStart = new Date(Date.UTC(utcDate.getUTCFullYear(), 0, 1));
+  return Math.ceil((((utcDate.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+}
+
 export function Countdown({ lessons = [] }: { lessons?: LessonEntry[] }) {
   const [now, setNow] = useState(new Date());
 
@@ -86,6 +106,7 @@ export function Countdown({ lessons = [] }: { lessons?: LessonEntry[] }) {
 
   const timeStr = berlinFormatter.format(now);
   const dateStr = dateFormatter.format(now);
+  const calendarWeek = getIsoCalendarWeek(now);
 
   // Get Berlin-local hours/minutes for countdown calculation
   const berlinParts = new Intl.DateTimeFormat('de-DE', {
@@ -154,7 +175,7 @@ export function Countdown({ lessons = [] }: { lessons?: LessonEntry[] }) {
     <div className="countdown">
       <div className="flex items-center gap-2 mb-2">
         <NetworkDot />
-        <span className="text-xs text-muted">{dateStr}</span>
+        <span className="text-xs text-muted">{dateStr} · KW {String(calendarWeek).padStart(2, '0')}</span>
       </div>
       <div className="countdown-main">
         <div className="now-time" aria-live="polite">{timeStr}</div>
