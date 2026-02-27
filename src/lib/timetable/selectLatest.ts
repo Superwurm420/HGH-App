@@ -24,6 +24,27 @@ function parseDateFromName(filename: string): number | null {
   return Date.UTC(year, month - 1, day);
 }
 
+function getIsoWeekMondayUtc(year: number, isoWeek: number): number {
+  const jan4 = new Date(Date.UTC(year, 0, 4));
+  const jan4Day = jan4.getUTCDay() || 7;
+  const week1Monday = new Date(jan4);
+  week1Monday.setUTCDate(jan4.getUTCDate() - jan4Day + 1);
+
+  const monday = new Date(week1Monday);
+  monday.setUTCDate(week1Monday.getUTCDate() + (isoWeek - 1) * 7);
+  return monday.getTime();
+}
+
+function resolveCalendarYear(meta: Pick<TimetableMeta, 'yearStart' | 'halfYear' | 'kw'>): number {
+  if (meta.halfYear === 2) return meta.yearStart + 1;
+  return meta.kw <= 6 ? meta.yearStart + 1 : meta.yearStart;
+}
+
+function getTimetableStartUtc(meta: TimetableMeta): number {
+  const calendarYear = resolveCalendarYear(meta);
+  return getIsoWeekMondayUtc(calendarYear, meta.kw);
+}
+
 export function parseTimetableFilename(filename: string, options: ParseOptions = {}): TimetableMeta | null {
   const match = filename.match(PATTERN);
   if (match) {
@@ -83,9 +104,12 @@ export function parseTimetableFilename(filename: string, options: ParseOptions =
 }
 
 export function compareTimetable(a: TimetableMeta, b: TimetableMeta): number {
+  const aStart = getTimetableStartUtc(a);
+  const bStart = getTimetableStartUtc(b);
   const aMtime = a.lastModifiedMs ?? 0;
   const bMtime = b.lastModifiedMs ?? 0;
 
+  if (bStart !== aStart) return bStart - aStart;
   if (b.yearStart !== a.yearStart) return b.yearStart - a.yearStart;
   if (b.halfYear !== a.halfYear) return b.halfYear - a.halfYear;
   if (b.kw !== a.kw) return b.kw - a.kw;
