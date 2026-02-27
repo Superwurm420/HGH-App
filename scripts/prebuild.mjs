@@ -276,6 +276,8 @@ async function parsePdf(filePath, getDocument) {
     classes.map((cls) => [cls, { MO: [], DI: [], MI: [], DO: [], FR: [] }]),
   );
 
+  const dayPeriodTimes = { MO: {}, DI: {}, MI: {}, DO: {}, FR: {} };
+
   // Dynamische Spalten-Zuordnung statt fester Offsets
   const cellText = (row, cls) => {
     const { left, right } = columnBounds[cls];
@@ -359,6 +361,7 @@ async function parsePdf(filePath, getDocument) {
     if (lessonMatch) {
       const period = Number(lessonMatch[1]);
       const time = lessonMatch[2];
+      if (!dayPeriodTimes[day][period]) dayPeriodTimes[day][period] = time;
       for (const cls of classes) {
         const subject = cellText(row, cls);
         const entry = { period, time, subject: subject || undefined };
@@ -391,9 +394,17 @@ async function parsePdf(filePath, getDocument) {
 
   for (const cls of classes) {
     for (const d of WEEKDAYS) {
+      // Promote detail-only entries to subjects (merged PDF cells can place text in continuation rows)
+      const normalized = out[cls][d].map((lesson) => {
+        if (lesson.subject || !lesson.detail) return lesson;
+        const promoted = lesson.detail.trim();
+        if (!promoted || isNoValue(promoted) || isRoomValue(promoted)) return lesson;
+        return { ...lesson, subject: promoted, detail: undefined };
+      });
+
       // Remove entries with no subject, 'R' headers, #NV-only subjects,
       // class names as subjects, or time ranges as subjects
-      let filtered = out[cls][d].filter((l) => {
+      let filtered = normalized.filter((l) => {
         if (!l.subject || l.subject === 'R' || isNoValue(l.subject)) return false;
         if (classSet.has(l.subject.toUpperCase().replace(/\s+/g, ''))) return false;
         if (TIME_RANGE_SUBJECT.test(l.subject)) return false;
@@ -414,7 +425,99 @@ async function parsePdf(filePath, getDocument) {
     }
   }
 
+  normalizeBlockSpecialEntries(out, dayPeriodTimes);
+
   return out;
+}
+
+function normalizeBlockSpecialEntries(schedule, dayPeriodTimes) {
+  const dayIndex = Object.fromEntries(WEEKDAYS.map((day, idx) => [day, idx]));
+
+  function sanitizeSubject(subject) {
+    return subject.replace(/["„“”'`]/g, '').replace(/\s+/g, ' ').trim();
+  }
+
+
+  function buildBlockTitle(entries) {
+    const tokens = entries
+      .map((entry) => sanitizeSubject(entry.subject ?? ''))
+      .filter(Boolean);
+
+    if (tokens.length === 0) return null;
+
+    const deduped = [];
+    for (const token of tokens) {
+      if (deduped.length === 0 || deduped[deduped.length - 1] !== token) {
+        deduped.push(token);
+      }
+    }
+
+    let title = '';
+    for (const token of deduped) {
+      if (!title) {
+        title = token;
+        continue;
+      }
+      if (title.endsWith('-')) title = `${title.slice(0, -1)}${token}`;
+      else title = `${title} ${token}`;
+    }
+
+    return title.replace(/\s+/g, ' ').trim();
+  }
+
+  for (const cls of Object.keys(schedule)) {
+    const entries = WEEKDAYS.flatMap((day) =>
+      (schedule[cls][day] ?? []).map((entry) => ({ ...entry, day })),
+    ).sort((a, b) => (dayIndex[a.day] - dayIndex[b.day]) || a.period - b.period);
+
+    if (entries.length < 2) continue;
+    if (entries.some((entry) => entry.room || entry.detail)) continue;
+
+    const dayCounts = Object.fromEntries(WEEKDAYS.map((day) => [day, 0]));
+    for (const entry of entries) dayCounts[entry.day] += 1;
+    if (Object.values(dayCounts).some((count) => count > 3)) continue;
+
+    const fragmentEntries = entries.filter((entry) => sanitizeSubject(entry.subject ?? '').length > 0);
+
+    if (fragmentEntries.length < 2) continue;
+
+    const hasFragmentLikeText = fragmentEntries.some((entry) => {
+      const subject = sanitizeSubject(entry.subject ?? '');
+      return subject.includes('-') || subject !== subject.toLowerCase();
+    });
+    if (!hasFragmentLikeText) continue;
+
+    const classHasOnlyFragments = entries.length === fragmentEntries.length;
+    const firstDayIndex = Math.min(...fragmentEntries.map((entry) => dayIndex[entry.day]));
+    const lastDayIndex = Math.max(...fragmentEntries.map((entry) => dayIndex[entry.day]));
+
+    const coveredDays = (classHasOnlyFragments && entries.length <= 10
+      ? WEEKDAYS
+      : WEEKDAYS.slice(firstDayIndex, lastDayIndex + 1)
+    ).filter((day) => Object.keys(dayPeriodTimes[day]).length > 0);
+
+    if (coveredDays.length === 0) continue;
+    if (entries.length > coveredDays.length * 3) continue;
+
+    const title = buildBlockTitle(fragmentEntries);
+    if (!title || title.length < 4) continue;
+
+    for (const day of coveredDays) {
+      const periods = Object.keys(dayPeriodTimes[day]).map(Number).sort((a, b) => a - b);
+      if (periods.length === 0) continue;
+
+      const first = periods[0];
+      const last = periods[periods.length - 1];
+      const time = mergeTimeRange(dayPeriodTimes[day][first], dayPeriodTimes[day][last]);
+
+      schedule[cls][day] = [{
+        period: first,
+        periodEnd: last,
+        time,
+        subject: title,
+      }];
+    }
+  }
 }
 
 /**
@@ -434,12 +537,13 @@ function mergePeriodPairs(lessons) {
     const curr = sorted[i];
     const next = sorted[i + 1];
 
-    // Merge wenn: curr ist ungerade Stunde UND next ist curr+1
+    // Merge nur, wenn die Folgestunde wie ein Lehrerkürzel aussieht
     const isOdd = curr.period % 2 === 1;
     const isConsecutive = next && next.period === curr.period + 1;
+    const teacherKuerzel = (next?.subject ?? '').trim();
+    const isTeacherToken = /^[A-ZÄÖÜ]{2,6}(\/[A-ZÄÖÜ]{2,6})*$/.test(teacherKuerzel);
 
-    if (isOdd && isConsecutive) {
-      const teacherKuerzel = (next.subject ?? '').trim();
+    if (isOdd && isConsecutive && isTeacherToken) {
       const existingDetail = (curr.detail ?? '').trim();
       const mergedDetail = teacherKuerzel
         ? existingDetail ? `${teacherKuerzel} · ${existingDetail}` : teacherKuerzel

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { LessonEntry, SpecialEvent, WeekPlan, WEEKDAYS, Weekday, dayFromGermanDate } from '@/lib/timetable/types';
+import { LessonEntry, SpecialEvent, WeekPlan, WEEKDAYS, Weekday, eventAppliesToDay } from '@/lib/timetable/types';
 
 const DAY_SHORT: Record<Weekday, string> = {
   MO: 'Mo', DI: 'Di', MI: 'Mi', DO: 'Do', FR: 'Fr',
@@ -26,7 +26,7 @@ export function DayTimetable({
 }) {
   const [activeDay, setActiveDay] = useState<Weekday>(todayKey);
   const lessons = week[activeDay] ?? [];
-  const dayEvents = events.filter((e) => dayFromGermanDate(e.startsAt) === activeDay);
+  const dayEvents = events.filter((e) => eventAppliesToDay(e, activeDay));
 
   return (
     <div>
