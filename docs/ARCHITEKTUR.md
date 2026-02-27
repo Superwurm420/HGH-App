@@ -43,11 +43,12 @@ Der Parser erkennt Klassen und Spalten **dynamisch**. Er hat keine fest einprogr
 public/content/                     ← HIER DATEIEN AUSTAUSCHEN
   timetables/                       ← Stundenplan-PDFs ablegen
   announcements/                    ← Einheitliche Termin-TXTs (Pinnwand + Sondertermin)
+  schulferien-nds.json              ← Ferien-/schulfreie Tage Niedersachsen (editierbar)
   branding/                         ← zentrale Logo-/Icon-Dateien für App & PWA
 
 scripts/
-  prebuild.mjs                      ← Parst PDFs + TXTs → JSON (läuft vor Build)
-  validate-content.mjs              ← Prüft Dateinamen + TXT-Format
+  prebuild.mjs                      ← Parst PDFs + Content-Dateien → JSON (läuft vor Build)
+  validate-content.mjs              ← Prüft Dateinamen + Content-Formate
   select-latest-timetable.mjs       ← Zeigt neueste PDF an
   parse-timetable-pdf.mjs           ← Parst einzelne PDF (Debugging)
 

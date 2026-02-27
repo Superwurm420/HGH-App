@@ -4,12 +4,14 @@ import path from 'node:path';
 const root = process.cwd();
 const timetableDir = path.join(root, 'public/content/timetables');
 const announcementDir = path.join(root, 'public/content/announcements');
+const schoolHolidayFile = path.join(root, 'public/content/schulferien-nds.json');
 
 const timetablePattern = /^Stundenplan_kw_(\d{2})_Hj([12])_(\d{4})_(\d{2})\.pdf$/i;
 const fallbackPattern = /(\d{4}).*?(\d{1,2})/;
 const deDateTimePattern = /^\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}$/;
 const commentPrefixes = ['#', '//', ';'];
 const classTokenPattern = /\b[A-Z]{1,3}\d{2}\b/g;
+const isoDatePattern = /^\d{4}-\d{2}-\d{2}$/;
 
 let hasError = false;
 let hasWarning = false;
@@ -94,6 +96,37 @@ function parseAnnouncement(raw) {
   return { headers, body };
 }
 
+
+function validateSchoolHolidays() {
+  console.log('\n═══ Schulferien (Niedersachsen) ═══');
+
+  if (!fs.existsSync(schoolHolidayFile)) {
+    warn('Datei fehlt: public/content/schulferien-nds.json (Ferienlogik nutzt dann leere Liste).');
+    return;
+  }
+
+  try {
+    const raw = fs.readFileSync(schoolHolidayFile, 'utf8');
+    const parsed = JSON.parse(raw);
+    const ranges = Array.isArray(parsed?.ranges) ? parsed.ranges : [];
+
+    for (const [idx, range] of ranges.entries()) {
+      const start = range?.start;
+      const end = range?.end;
+      if (!isoDatePattern.test(start ?? '') || !isoDatePattern.test(end ?? '')) {
+        fail(`schulferien-nds.json: ranges[${idx}] braucht start/end im Format YYYY-MM-DD.`);
+        continue;
+      }
+      if (Date.parse(`${start}T00:00:00Z`) > Date.parse(`${end}T00:00:00Z`)) {
+        fail(`schulferien-nds.json: ranges[${idx}] hat start nach end.`);
+      }
+    }
+
+    console.log(`  OK: schulferien-nds.json (${ranges.length} Bereich(e))`);
+  } catch (err) {
+    fail(`schulferien-nds.json ist ungültig: ${err instanceof Error ? err.message : String(err)}`);
+  }
+}
 function validateAnnouncements() {
   console.log('\n═══ Pinnwand/Ankündigungen ═══');
   const files = readDirSafe(announcementDir).filter((f) => f.toLowerCase().endsWith('.txt'));
@@ -123,6 +156,7 @@ function validateAnnouncements() {
 
 validateTimetables();
 validateAnnouncements();
+validateSchoolHolidays();
 
 console.log('\n═══ Ergebnis ═══');
 if (hasError) {

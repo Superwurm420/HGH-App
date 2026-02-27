@@ -2,6 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { LessonEntry } from '@/lib/timetable/types';
+import {
+  isDateInSchoolHolidayRanges,
+  isLowerSaxonyPublicHoliday,
+  type BerlinDateParts,
+  type SchoolHolidayRange,
+} from '@/lib/calendar/lowerSaxonySchoolFreeDays';
+import schoolHolidaysData from '@/generated/school-holidays-data.json';
 
 type MessagesData = {
   _hinweis?: string;
@@ -11,6 +18,7 @@ type MessagesData = {
     nachUnterricht?: string[];
     wochenende?: string[];
     feiertag?: string[];
+    freierTag?: string[];
   };
   // Legacy-Felder für Abwärtskompatibilität
   morgen?: string[];
@@ -19,6 +27,14 @@ type MessagesData = {
   schulschluss?: string[];
   [key: string]: unknown;
 };
+
+type SchoolHolidaysData = {
+  ranges?: SchoolHolidayRange[];
+};
+
+const schoolHolidayRanges = ((schoolHolidaysData as SchoolHolidaysData).ranges ?? []).filter(
+  (range) => typeof range.start === 'string' && typeof range.end === 'string',
+);
 
 function timeToMinutes(h: number, m: number): number {
   return h * 60 + m;
@@ -29,9 +45,12 @@ function parseTime(value: string): number {
   return timeToMinutes(h, m);
 }
 
-function getBerlinNowParts(): { hour: number; minute: number; weekdayShort: string } {
+function getBerlinNowParts(): BerlinDateParts & { hour: number; minute: number; weekdayShort: string } {
   const parts = new Intl.DateTimeFormat('de-DE', {
     timeZone: 'Europe/Berlin',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
     weekday: 'short',
@@ -39,6 +58,9 @@ function getBerlinNowParts(): { hour: number; minute: number; weekdayShort: stri
   }).formatToParts(new Date());
 
   return {
+    year: Number(parts.find((p) => p.type === 'year')?.value ?? 0),
+    month: Number(parts.find((p) => p.type === 'month')?.value ?? 0),
+    day: Number(parts.find((p) => p.type === 'day')?.value ?? 0),
     hour: Number(parts.find((p) => p.type === 'hour')?.value ?? 0),
     minute: Number(parts.find((p) => p.type === 'minute')?.value ?? 0),
     weekdayShort: parts.find((p) => p.type === 'weekday')?.value ?? '',
@@ -59,9 +81,6 @@ function normalizeTime(value: string): string | null {
   return `${match[1].padStart(2, '0')}:${match[2]}`;
 }
 
-/**
- * Berechnet die Zeitkategorie anhand des tatsächlichen Stundenplans der Klasse.
- */
 function getTimeCategoryFromLessons(
   nowMinutes: number,
   lessons: LessonEntry[],
@@ -94,6 +113,20 @@ function pickMessage(pool: string[], seed: number = 0): string {
   return pool[(dayOfYear * 13 + seed) % pool.length];
 }
 
+type StandardCategory =
+  | 'vorUnterricht'
+  | 'inPause'
+  | 'nachUnterricht'
+  | 'wochenende'
+  | 'feiertag'
+  | 'freierTag';
+
+function getFreeDayCategory(date: BerlinDateParts): 'feiertag' | 'freierTag' | null {
+  if (isLowerSaxonyPublicHoliday(date)) return 'feiertag';
+  if (isDateInSchoolHolidayRanges(date, schoolHolidayRanges)) return 'freierTag';
+  return null;
+}
+
 export function DailyMessage({
   messages,
   lessons = [],
@@ -109,31 +142,41 @@ export function DailyMessage({
     const nowMinutes = timeToMinutes(now.hour, now.minute);
     const isWeekend = now.weekdayShort.startsWith('Sa') || now.weekdayShort.startsWith('So');
 
-    const standardCategory = isWeekend
-      ? 'wochenende'
-      : lessons.length === 0
-        ? 'feiertag'
-        : getTimeCategoryFromLessons(nowMinutes, lessons);
+    const freeDayCategory = lessons.length === 0 ? getFreeDayCategory(now) : null;
 
-    const categorySeed: Record<string, number> = {
+    const standardCategory: StandardCategory | null = isWeekend
+      ? 'wochenende'
+      : freeDayCategory
+        ? freeDayCategory
+        : lessons.length > 0
+          ? getTimeCategoryFromLessons(nowMinutes, lessons)
+          : null;
+
+    const categorySeed: Record<StandardCategory, number> = {
       vorUnterricht: 20,
       inPause: 21,
       nachUnterricht: 22,
       wochenende: 23,
       feiertag: 24,
+      freierTag: 25,
     };
 
-    const standardPool = (messages.standard?.[standardCategory] as string[] | undefined) ?? [];
+    if (standardCategory) {
+      const standardPool = (messages.standard?.[standardCategory] as string[] | undefined) ?? [];
+      const freeDayFallbackPool =
+        standardCategory === 'freierTag'
+          ? (messages.standard?.feiertag as string[] | undefined) ?? []
+          : [];
 
-    if (standardPool.length > 0) {
-      setText(pickMessage(standardPool, categorySeed[standardCategory] ?? 0));
-      return;
+      if (standardPool.length > 0 || freeDayFallbackPool.length > 0) {
+        const pool = standardPool.length > 0 ? standardPool : freeDayFallbackPool;
+        setText(pickMessage(pool, categorySeed[standardCategory] ?? 0));
+        return;
+      }
     }
 
-    // Fallback für bestehende (ältere) messages.json-Struktur
     const legacyCategory = getLegacyTimeCategory(now.hour, isWeekend);
     const legacyGeneral = (messages[legacyCategory] as string[] | undefined) ?? [];
-
     setText(pickMessage(legacyGeneral, 0));
   }, [lessons, messages]);
 

@@ -804,6 +804,22 @@ async function main() {
   );
   console.log('  → calendar-data.json geschrieben.');
 
+  // ── Schulferien (Niedersachsen) ──
+  console.log('\n═══ Schulferien (Niedersachsen) ═══');
+  let schoolHolidays = { ranges: [] };
+  try {
+    const schoolHolidaysRaw = await fs.readFile(path.join(ROOT, 'public/content/schulferien-nds.json'), 'utf8');
+    schoolHolidays = JSON.parse(schoolHolidaysRaw);
+    console.log('  schulferien-nds.json geladen.');
+  } catch {
+    console.log('  Keine schulferien-nds.json gefunden – nutze leere Ferienliste.');
+  }
+  await fs.writeFile(
+    path.join(OUTPUT_DIR, 'school-holidays-data.json'),
+    JSON.stringify(schoolHolidays, null, 2),
+  );
+  console.log('  → school-holidays-data.json geschrieben.');
+
   // ── Tägliche Meldungen ──
   console.log('\n═══ Tägliche Meldungen ═══');
   let messages = {};
