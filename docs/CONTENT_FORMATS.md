@@ -92,9 +92,9 @@ Datei: `public/content/messages.json`
 5. Am Wochenende wird `wochenende` verwendet.
 6. An Wochentagen ohne Unterricht wird unterschieden:
    - Gesetzlicher Feiertag in Niedersachsen → `feiertag`
-   - Sonstiger schulfreier Tag/Ferien laut `public/content/schulferien-nds.json` → `freierTag`
-7. Wenn für ein Jahr keine Ferienbereiche gepflegt sind, werden dafür keine `freierTag`-Meldungen ausgelöst.
-8. Die Meldung aktualisiert sich laufend (spätestens jede Minute), damit der Wechsel zwischen Zeitkategorien ohne Neuladen sichtbar wird.
+   - Alle übrigen unterrichtsfreien Wochentage → `freierTag`
+   - Ferienbereiche aus `public/content/schulferien-nds.json` werden zusätzlich als `freierTag` erkannt.
+7. Die Meldung aktualisiert sich laufend (spätestens jede Minute), damit der Wechsel zwischen Zeitkategorien ohne Neuladen sichtbar wird.
 
 ### Hinweise
 - Zusätzliche Hinweisfelder wie `_hinweis` sind erlaubt und werden ignoriert.
@@ -123,4 +123,4 @@ Datei: `public/content/schulferien-nds.json`
 ### Verhalten in der App
 - Die Datei wird beim Build automatisch eingelesen.
 - Liegt das aktuelle Datum in einem Bereich, nutzt die Tagesmeldung `standard.freierTag`.
-- Gibt es für das aktuelle Jahr keine Bereiche, wird **kein** Ferien-`freierTag` angenommen.
+- Auch ohne gepflegte Ferienbereiche gilt: Wochentage ohne Unterricht werden als `freierTag` behandelt (außer gesetzliche Feiertage).
