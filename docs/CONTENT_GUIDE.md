@@ -57,7 +57,8 @@ Wenn eine Klasse `0 Stunden` hat oder `Keine Klassen erkannt` erscheint, stimmt 
 ## 3) Branding austauschen
 1. Logos/Bilder in `public/content/branding/` ersetzen.
 2. Dateinamen möglichst stabil halten.
-3. Commit + Push.
+3. Root-URLs (`/favicon.ico`, `/apple-touch-icon.png`, ...) werden automatisch auf diesen Ordner umgeleitet.
+4. Commit + Push.
 
 ## 4) Vor dem Push lokal prüfen (optional)
 ```bash

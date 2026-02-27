@@ -2,6 +2,8 @@
   "name": "HGH Stundenplan",
   "short_name": "HGH Plan",
   "lang": "de",
+  "id": "/",
+  "scope": "/",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#06090f",

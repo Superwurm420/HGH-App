@@ -16,7 +16,15 @@ export const metadata: Metadata = {
       { url: '/content/branding/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
       { url: '/content/branding/school-logo.svg', type: 'image/svg+xml' },
     ],
+    shortcut: '/favicon.ico',
     apple: '/content/branding/apple-touch-icon.png',
+    other: [
+      {
+        rel: 'mask-icon',
+        url: '/content/branding/school-logo.svg',
+        color: '#007AFF',
+      },
+    ],
   },
 };
 
