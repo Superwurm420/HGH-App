@@ -1,9 +1,9 @@
-# Einfacher Hinweis für alle, nur auf der Pinnwand
+# Einfacher Eintrag für alle, nur auf der Pinnwand
 
 title: Hinweis Test
 date: 26.02.2026 08:00
 audience: alle
 classes: alle
-highlight: false
+anzeige: nein
 ---
 Ein Test für Hinweise

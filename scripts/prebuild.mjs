@@ -635,12 +635,9 @@ function isCommentLine(line) {
   return COMMENT_PREFIXES.some((prefix) => line.startsWith(prefix));
 }
 
-function parseBooleanFlag(value) {
-  if (!value) return false;
-  const normalized = value.trim().toLowerCase();
-  if (['true', '1', 'ja', 'yes', 'y'].includes(normalized)) return true;
-  if (['false', '0', 'nein', 'no', 'n'].includes(normalized)) return false;
-  return null;
+// "ja" → über dem Stundenplan anzeigen; alles andere (oder kein Wert) → nur Pinnwand.
+function parseAnzeige(value) {
+  return value?.trim().toLowerCase() === 'ja';
 }
 
 function parseAnnouncement(raw, file) {
@@ -656,17 +653,11 @@ function parseAnnouncement(raw, file) {
     headers[trimmed.slice(0, idx).trim().toLowerCase()] = trimmed.slice(idx + 1).trim();
   }
 
-  const highlight = parseBooleanFlag(headers.highlight);
+  // anzeige: ja → über dem Stundenplan + Pinnwand; alles andere → nur Pinnwand.
+  const highlight = parseAnzeige(headers.anzeige);
 
+  // Fehlende oder falsch formatierte Felder werden still ignoriert und als "dauerhaft" behandelt.
   if (!headers.title) warnings.push("Pflichtfeld 'title' fehlt.");
-  if (!headers.date) warnings.push("Pflichtfeld 'date' fehlt.");
-  if (headers.date && !DE_DATE.test(headers.date))
-    warnings.push("'date' hat nicht das Format TT.MM.JJJJ HH:mm.");
-  if (headers.expires && !DE_DATE.test(headers.expires))
-    warnings.push("'expires' hat nicht das Format TT.MM.JJJJ HH:mm.");
-  if (highlight === null)
-    warnings.push("'highlight' muss true/false, ja/nein oder 1/0 sein.");
-  if (!body) warnings.push('Kein Text nach der Trennlinie gefunden.');
 
   return {
     file,
@@ -675,7 +666,7 @@ function parseAnnouncement(raw, file) {
     audience: headers.audience,
     classes: headers.classes,
     expires: headers.expires,
-    highlight: highlight ?? false,
+    highlight,
     body,
     warnings,
   };

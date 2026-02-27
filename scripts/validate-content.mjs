@@ -76,11 +76,6 @@ function isCommentLine(line) {
   return commentPrefixes.some((prefix) => line.startsWith(prefix));
 }
 
-function isValidBooleanFlag(value) {
-  if (!value) return true;
-  return ['true', '1', 'ja', 'yes', 'y', 'false', '0', 'nein', 'no', 'n']
-    .includes(value.trim().toLowerCase());
-}
 
 function parseAnnouncement(raw) {
   const [headerRaw, ...bodyParts] = raw.split('\n---\n');
@@ -112,23 +107,13 @@ function validateAnnouncements() {
     const raw = fs.readFileSync(fullPath, 'utf8');
     const { headers, body } = parseAnnouncement(raw);
 
-    if (!headers.title) fail(`${file}: Feld 'title' fehlt.`);
-    if (!headers.date) fail(`${file}: Feld 'date' fehlt.`);
+    // Nur fehlender Titel ist ein echter Fehler – alles andere wird still ignoriert.
+    if (!headers.title) fail(`${file}: Feld 'title' fehlt (Eintrag hat keinen Titel).`);
     if (headers.date && !deDateTimePattern.test(headers.date)) {
-      fail(`${file}: 'date' muss Format TT.MM.JJJJ HH:mm haben.`);
+      warn(`${file}: 'date' hat nicht das Format TT.MM.JJJJ HH:mm – Feld wird ignoriert.`);
     }
     if (headers.expires && !deDateTimePattern.test(headers.expires)) {
-      fail(`${file}: 'expires' muss Format TT.MM.JJJJ HH:mm haben.`);
-    }
-    if (!isValidBooleanFlag(headers.highlight)) {
-      fail(`${file}: 'highlight' muss true/false, ja/nein oder 1/0 sein.`);
-    }
-    if (headers.classes) {
-      const normalized = headers.classes.trim().toLowerCase();
-      const classes = headers.classes.toUpperCase().match(classTokenPattern) ?? [];
-      if (normalized !== 'alle' && classes.length === 0) {
-        fail(`${file}: 'classes' muss 'alle' oder Klassenkürzel wie HT11, G21 enthalten.`);
-      }
+      warn(`${file}: 'expires' hat nicht das Format TT.MM.JJJJ HH:mm – gilt als dauerhaft.`);
     }
     if (!body) warn(`${file}: kein Text nach '---' gefunden.`);
 
