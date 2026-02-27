@@ -23,9 +23,8 @@ export function TodaySchedule({
     <div>
       {todaysEvents.length > 0 && (
         <div className="announcement-card highlight mb-3">
-          <p className="text-sm font-bold mb-1">Sondertermine</p>
           {todaysEvents.map((event) => (
-            <p key={event.id} className="text-sm">{event.title} · {event.startsAt}</p>
+            <p key={event.id} className="text-sm font-bold mb-1">{event.title}</p>
           ))}
         </div>
       )}
