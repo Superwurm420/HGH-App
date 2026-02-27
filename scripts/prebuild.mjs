@@ -276,6 +276,8 @@ async function parsePdf(filePath, getDocument) {
     classes.map((cls) => [cls, { MO: [], DI: [], MI: [], DO: [], FR: [] }]),
   );
 
+  const dayPeriodTimes = { MO: {}, DI: {}, MI: {}, DO: {}, FR: {} };
+
   // Dynamische Spalten-Zuordnung statt fester Offsets
   const cellText = (row, cls) => {
     const { left, right } = columnBounds[cls];
@@ -359,6 +361,7 @@ async function parsePdf(filePath, getDocument) {
     if (lessonMatch) {
       const period = Number(lessonMatch[1]);
       const time = lessonMatch[2];
+      if (!dayPeriodTimes[day][period]) dayPeriodTimes[day][period] = time;
       for (const cls of classes) {
         const subject = cellText(row, cls);
         const entry = { period, time, subject: subject || undefined };
@@ -391,9 +394,17 @@ async function parsePdf(filePath, getDocument) {
 
   for (const cls of classes) {
     for (const d of WEEKDAYS) {
+      // Promote detail-only entries to subjects (merged PDF cells can place text in continuation rows)
+      const normalized = out[cls][d].map((lesson) => {
+        if (lesson.subject || !lesson.detail) return lesson;
+        const promoted = lesson.detail.trim();
+        if (!promoted || isNoValue(promoted) || isRoomValue(promoted)) return lesson;
+        return { ...lesson, subject: promoted, detail: undefined };
+      });
+
       // Remove entries with no subject, 'R' headers, #NV-only subjects,
       // class names as subjects, or time ranges as subjects
-      let filtered = out[cls][d].filter((l) => {
+      let filtered = normalized.filter((l) => {
         if (!l.subject || l.subject === 'R' || isNoValue(l.subject)) return false;
         if (classSet.has(l.subject.toUpperCase().replace(/\s+/g, ''))) return false;
         if (TIME_RANGE_SUBJECT.test(l.subject)) return false;
@@ -414,7 +425,68 @@ async function parsePdf(filePath, getDocument) {
     }
   }
 
+  repairFragmentedWeekBlocks(out, dayPeriodTimes);
+
   return out;
+}
+
+function repairFragmentedWeekBlocks(schedule, dayPeriodTimes) {
+  const dayIndex = Object.fromEntries(WEEKDAYS.map((day, idx) => [day, idx]));
+
+  function isFragmentSubject(subject) {
+    const cleaned = subject.replace(/["„“”'`]/g, '').trim();
+    return /^[A-ZÄÖÜ0-9-]{3,}$/.test(cleaned);
+  }
+
+  function buildTitle(entries) {
+    const tokens = entries
+      .map((entry) => (entry.subject ?? '').trim())
+      .filter(Boolean);
+
+    if (tokens.length === 0) return null;
+
+    let title = '';
+    for (const token of tokens) {
+      if (!title) {
+        title = token;
+        continue;
+      }
+      if (title.endsWith('-')) title = `${title.slice(0, -1)}${token}`;
+      else title = `${title} ${token}`;
+    }
+
+    return title.replace(/\s+/g, ' ').trim();
+  }
+
+  for (const cls of Object.keys(schedule)) {
+    const entries = WEEKDAYS.flatMap((day) =>
+      (schedule[cls][day] ?? []).map((entry) => ({ ...entry, day })),
+    ).sort((a, b) => (dayIndex[a.day] - dayIndex[b.day]) || a.period - b.period);
+
+    if (entries.length < 3) continue;
+    if (entries.some((entry) => entry.room || entry.detail)) continue;
+    if (!entries.some((entry) => (entry.subject ?? '').includes('-'))) continue;
+    if (!entries.every((entry) => entry.subject && isFragmentSubject(entry.subject))) continue;
+
+    const title = buildTitle(entries);
+    if (!title) continue;
+
+    for (const day of WEEKDAYS) {
+      const periods = Object.keys(dayPeriodTimes[day]).map(Number).sort((a, b) => a - b);
+      if (periods.length === 0) continue;
+
+      const first = periods[0];
+      const last = periods[periods.length - 1];
+      const time = mergeTimeRange(dayPeriodTimes[day][first], dayPeriodTimes[day][last]);
+
+      schedule[cls][day] = [{
+        period: first,
+        periodEnd: last,
+        time,
+        subject: title,
+      }];
+    }
+  }
 }
 
 /**
@@ -434,12 +506,13 @@ function mergePeriodPairs(lessons) {
     const curr = sorted[i];
     const next = sorted[i + 1];
 
-    // Merge wenn: curr ist ungerade Stunde UND next ist curr+1
+    // Merge nur, wenn die Folgestunde wie ein Lehrerkürzel aussieht
     const isOdd = curr.period % 2 === 1;
     const isConsecutive = next && next.period === curr.period + 1;
+    const teacherKuerzel = (next?.subject ?? '').trim();
+    const isTeacherToken = /^[A-ZÄÖÜ]{2,6}(\/[A-ZÄÖÜ]{2,6})*$/.test(teacherKuerzel);
 
-    if (isOdd && isConsecutive) {
-      const teacherKuerzel = (next.subject ?? '').trim();
+    if (isOdd && isConsecutive && isTeacherToken) {
       const existingDetail = (curr.detail ?? '').trim();
       const mergedDetail = teacherKuerzel
         ? existingDetail ? `${teacherKuerzel} · ${existingDetail}` : teacherKuerzel

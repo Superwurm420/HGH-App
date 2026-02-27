@@ -1,4 +1,4 @@
-import { LessonEntry, SpecialEvent, Weekday, dayFromGermanDate } from '@/lib/timetable/types';
+import { LessonEntry, SpecialEvent, Weekday, eventAppliesToDay } from '@/lib/timetable/types';
 
 function formatSubject(subject: string) {
   return subject.split('/').map((part, i, arr) => (
@@ -17,7 +17,7 @@ export function TodaySchedule({
   lessons: LessonEntry[];
   events: SpecialEvent[];
 }) {
-  const todaysEvents = events.filter((event) => dayFromGermanDate(event.startsAt) === day);
+  const todaysEvents = events.filter((event) => eventAppliesToDay(event, day));
 
   return (
     <div>

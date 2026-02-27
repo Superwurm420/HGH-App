@@ -13,7 +13,8 @@ export type Announcement = {
 };
 
 const DE_DATE = /^\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}$/;
-const CLASS_TOKEN = /\b[A-Z]{1,3}\d{2}\b/g;
+const COMBINED_CLASS_TOKEN = /\b[A-ZÄÖÜ]{1,5}\s*-?\s*\d{1,3}[A-Z]?\b/g;
+const SPLIT_CLASS_TOKENS = /[;,/|\s]+/;
 const COMMENT_PREFIXES = ['#', '//', ';'];
 
 function isCommentLine(line: string): boolean {
@@ -87,14 +88,27 @@ export function isActive(item: Announcement, now: Date = new Date()): boolean {
 
 export function announcementClasses(item: Announcement): SchoolClass[] | 'alle' {
   if (item.classes) {
-    const matches = item.classes.toUpperCase().match(CLASS_TOKEN) ?? [];
-    const classes = [...new Set(matches)];
+    const classes = extractClassNames(item.classes);
     return classes.length > 0 ? classes : 'alle';
   }
   if (!item.audience || item.audience.toLowerCase() === 'alle') return 'alle';
-  const fallbackMatches = item.audience.toUpperCase().match(CLASS_TOKEN) ?? [];
-  const fallbackClasses = [...new Set(fallbackMatches)];
+  const fallbackClasses = extractClassNames(item.audience);
   return fallbackClasses.length > 0 ? fallbackClasses : 'alle';
+}
+
+function normalizeClassToken(value: string): string {
+  return value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+}
+
+function extractClassNames(value: string): SchoolClass[] {
+  const combined = value.match(COMBINED_CLASS_TOKEN) ?? [];
+  const split = value.split(SPLIT_CLASS_TOKENS);
+
+  const allTokens = [...combined, ...split]
+    .map((token) => normalizeClassToken(token))
+    .filter((token) => /[A-Z]/.test(token) && /\d/.test(token));
+
+  return [...new Set(allTokens)];
 }
 
 export function isVisibleForClass(item: Announcement, schoolClass: SchoolClass): boolean {
