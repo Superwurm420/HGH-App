@@ -1,8 +1,9 @@
 import { weekdayForToday } from './pdfParser';
 import { compareTimetable } from './selectLatest';
 import { ParsedSchedule, SchoolClass, TimetableMeta, WEEKDAYS } from './types';
-import rawData from '@/generated/timetable-data.json';
+import { readFileSync, readdirSync } from 'node:fs';
 import { stat } from 'node:fs/promises';
+import { execSync } from 'node:child_process';
 import path from 'node:path';
 import crypto from 'node:crypto';
 
@@ -10,6 +11,17 @@ type TimetableGeneratedData = {
   files: TimetableMeta[];
   schedules: Record<string, ParsedSchedule>;
 };
+
+const EMPTY_DATA: TimetableGeneratedData = { files: [], schedules: {} };
+const TIMETABLE_DIR = path.join(process.cwd(), 'public/content/timetables');
+const DATA_PATH = path.join(process.cwd(), 'src/generated/timetable-data.json');
+const CHECK_INTERVAL_MS = 5_000;
+
+let cachedData: TimetableGeneratedData | null = null;
+let lastCheckedAt = 0;
+let isRebuilding = false;
+
+// ── Validation helpers ──────────────────────────────────────────────────────
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -58,11 +70,79 @@ function isTimetableGeneratedData(value: unknown): value is TimetableGeneratedDa
   return Object.values(value.schedules).every(isParsedSchedule);
 }
 
-const data: TimetableGeneratedData = isTimetableGeneratedData(rawData)
-  ? rawData
-  : { files: [], schedules: {} };
+// ── Dynamic data loading with auto-detection ────────────────────────────────
+
+function readDataFromDisk(): TimetableGeneratedData {
+  try {
+    const raw: unknown = JSON.parse(readFileSync(DATA_PATH, 'utf8'));
+    return isTimetableGeneratedData(raw) ? raw : EMPTY_DATA;
+  } catch {
+    return EMPTY_DATA;
+  }
+}
+
+function listPdfFiles(): string[] {
+  try {
+    return readdirSync(TIMETABLE_DIR).filter((f) => f.toLowerCase().endsWith('.pdf'));
+  } catch {
+    return [];
+  }
+}
+
+function hasDirectoryChanged(data: TimetableGeneratedData): boolean {
+  const pdfFiles = listPdfFiles();
+  const knownFiles = new Set(data.files.map((f) => f.filename));
+  const diskFiles = new Set(pdfFiles);
+  const hasNew = pdfFiles.some((f) => !knownFiles.has(f));
+  const hasRemoved = data.files.some((f) => !diskFiles.has(f.filename));
+  return hasNew || hasRemoved;
+}
+
+function runPrebuild(): boolean {
+  try {
+    console.log('[timetable] Neue/entfernte PDFs erkannt – regeneriere Daten…');
+    execSync('node scripts/prebuild.mjs', { cwd: process.cwd(), timeout: 60_000, stdio: 'pipe' });
+    console.log('[timetable] Prebuild erfolgreich.');
+    return true;
+  } catch (err) {
+    console.error('[timetable] Prebuild fehlgeschlagen:', err instanceof Error ? err.message : err);
+    return false;
+  }
+}
+
+function loadTimetableData(): TimetableGeneratedData {
+  const now = Date.now();
+
+  // Return cache if checked recently
+  if (cachedData && now - lastCheckedAt < CHECK_INTERVAL_MS) {
+    return cachedData;
+  }
+  lastCheckedAt = now;
+
+  const currentData = readDataFromDisk();
+
+  if (hasDirectoryChanged(currentData) && !isRebuilding) {
+    isRebuilding = true;
+    try {
+      if (runPrebuild()) {
+        cachedData = readDataFromDisk();
+      } else {
+        cachedData = currentData;
+      }
+    } finally {
+      isRebuilding = false;
+    }
+  } else {
+    cachedData = currentData;
+  }
+
+  return cachedData;
+}
+
+// ── Public API ──────────────────────────────────────────────────────────────
 
 export function getLatestTimetable(): TimetableMeta | null {
+  const data = loadTimetableData();
   if (data.files.length === 0) return null;
   const sorted = [...data.files].sort(compareTimetable);
   return sorted[0];
@@ -91,6 +171,7 @@ async function getLatestTimetableUpdatedDate(latest: TimetableMeta): Promise<str
 }
 
 export async function getWeeklyPlanForClass(requestedClass?: SchoolClass) {
+  const data = loadTimetableData();
   const latest = getLatestTimetable();
   if (!latest) return null;
 
