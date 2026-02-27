@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { LessonEntry } from '@/lib/timetable/types';
 
 type MessageMap = Record<string, string[]>;
 
@@ -28,7 +29,7 @@ type MessagesData = {
   [key: string]: unknown;
 };
 
-const SCHEDULE = [
+const DEFAULT_SCHEDULE = [
   { period: 1, start: '08:30', end: '09:15' },
   { period: 2, start: '09:15', end: '10:00' },
   { period: 3, start: '10:20', end: '11:05' },
@@ -74,8 +75,35 @@ function getLegacyTimeCategory(hour: number, isWeekend: boolean): string {
   return 'schulschluss';
 }
 
+function normalizeTime(value: string): string | null {
+  const match = value.match(/(\d{1,2})[:.](\d{2})/);
+  if (!match) return null;
+  return `${match[1].padStart(2, '0')}:${match[2]}`;
+}
+
+function getCurrentOrNextPeriodFromLessons(nowMinutes: number, lessons: LessonEntry[]): number | null {
+  const lessonSlots = lessons
+    .map((lesson) => {
+      const parts = lesson.time.split('-').map((part) => part.trim());
+      if (parts.length < 2) return null;
+      const start = normalizeTime(parts[0]);
+      const end = normalizeTime(parts[1]);
+      if (!start || !end) return null;
+      return { period: lesson.period, start: parseTime(start), end: parseTime(end) };
+    })
+    .filter((slot): slot is { period: number; start: number; end: number } => slot !== null)
+    .sort((a, b) => a.start - b.start);
+
+  for (const slot of lessonSlots) {
+    if (nowMinutes >= slot.start && nowMinutes < slot.end) return slot.period;
+    if (slot.start > nowMinutes) return slot.period;
+  }
+
+  return null;
+}
+
 function getCurrentOrNextPeriod(nowMinutes: number): number | null {
-  for (const slot of SCHEDULE) {
+  for (const slot of DEFAULT_SCHEDULE) {
     const start = parseTime(slot.start);
     const end = parseTime(slot.end);
     if (nowMinutes >= start && nowMinutes < end) return slot.period;
@@ -100,9 +128,11 @@ function normalizeClassMessages(value: string[] | ClassMessages | undefined): Cl
 export function DailyMessage({
   messages,
   schoolClass,
+  lessons = [],
 }: {
   messages: MessagesData;
   schoolClass?: string;
+  lessons?: LessonEntry[];
 }) {
   const [text, setText] = useState('');
 
@@ -111,7 +141,11 @@ export function DailyMessage({
     const nowMinutes = timeToMinutes(now.hour, now.minute);
     const isWeekend = now.weekdayShort.startsWith('Sa') || now.weekdayShort.startsWith('So');
 
-    const period = isWeekend ? null : getCurrentOrNextPeriod(nowMinutes);
+    const period = isWeekend
+      ? null
+      : lessons.length > 0
+        ? getCurrentOrNextPeriodFromLessons(nowMinutes, lessons)
+        : getCurrentOrNextPeriod(nowMinutes);
     const classMessages = normalizeClassMessages(
       schoolClass ? messages.klassen?.[schoolClass] : undefined,
     );
@@ -131,9 +165,9 @@ export function DailyMessage({
 
     const standardCategory = isWeekend
       ? 'wochenende'
-      : nowMinutes < parseTime(SCHEDULE[0].start)
+      : nowMinutes < parseTime(DEFAULT_SCHEDULE[0].start)
         ? 'vorUnterricht'
-        : nowMinutes >= parseTime(SCHEDULE[SCHEDULE.length - 1].end)
+        : nowMinutes >= parseTime(DEFAULT_SCHEDULE[DEFAULT_SCHEDULE.length - 1].end)
           ? 'nachUnterricht'
           : 'inPause';
 
@@ -159,7 +193,7 @@ export function DailyMessage({
       : legacyGeneral;
 
     setText(pickMessage(fallbackPool));
-  }, [messages, schoolClass]);
+  }, [lessons, messages, schoolClass]);
 
   if (!text) return null;
 

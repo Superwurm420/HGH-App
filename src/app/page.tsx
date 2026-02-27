@@ -57,6 +57,7 @@ export default async function HomePage({ searchParams }: { searchParams: { klass
         <DailyMessage
           messages={messagesData as Record<string, unknown>}
           schoolClass={plan.schoolClass}
+          lessons={plan.week[plan.todayKey]}
         />
 
         <TodaySchedule
