@@ -14,7 +14,7 @@
 Stundenplan_kw_09_Hj2_2025_26.pdf   ← bevorzugtes Schema
 Plan_2025_KW10.pdf                   ← Fallback (Jahreszahl reicht)
 ```
-Sortierung: Jahr → Halbjahr → Kalenderwoche (absteigend). Bei Gleichstand: `lastModified` und danach Dateiname (deterministisch).
+Sortierung: echtes Startdatum der ISO-Kalenderwoche (Montag, absteigend). Dadurch wird ein neuer Plan für die kommende Woche direkt bevorzugt, auch rund um den Jahreswechsel. Bei Gleichstand: `lastModified` und danach Dateiname (deterministisch).
 
 ### 2. PDF → Geparste Daten (Build-Zeit)
 Das Prebuild-Script (`scripts/prebuild.mjs`) läuft vor jedem `next build`:
