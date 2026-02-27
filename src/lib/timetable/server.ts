@@ -2,7 +2,6 @@ import { weekdayForToday } from './pdfParser';
 import { compareTimetable } from './selectLatest';
 import { ParsedSchedule, SchoolClass, TimetableMeta, WEEKDAYS } from './types';
 import { readFileSync, readdirSync } from 'node:fs';
-import { stat } from 'node:fs/promises';
 import { execSync } from 'node:child_process';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -154,20 +153,14 @@ export function getTimetableVersion(latest: TimetableMeta | null): string {
   return crypto.createHash('sha1').update(signature).digest('hex').slice(0, 12);
 }
 
-async function getLatestTimetableUpdatedDate(latest: TimetableMeta): Promise<string | null> {
-  try {
-    const relativePath = latest.href.replace(/^\//, '');
-    const filePath = path.join(process.cwd(), 'public', relativePath.replace(/^content\//, 'content/'));
-    const fileStats = await stat(filePath);
-    return new Intl.DateTimeFormat('de-DE', {
-      timeZone: 'Europe/Berlin',
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    }).format(fileStats.mtime);
-  } catch {
-    return null;
-  }
+function getLatestTimetableUpdatedDate(latest: TimetableMeta): string | null {
+  if (typeof latest.lastModifiedMs !== 'number') return null;
+  return new Intl.DateTimeFormat('de-DE', {
+    timeZone: 'Europe/Berlin',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(new Date(latest.lastModifiedMs));
 }
 
 export async function getWeeklyPlanForClass(requestedClass?: SchoolClass) {
@@ -184,7 +177,7 @@ export async function getWeeklyPlanForClass(requestedClass?: SchoolClass) {
   const schoolClass =
     requestedClass && parsed[requestedClass] ? requestedClass : availableClasses[0];
 
-  const updatedAt = await getLatestTimetableUpdatedDate(latest);
+  const updatedAt = getLatestTimetableUpdatedDate(latest);
 
   return {
     latest,
