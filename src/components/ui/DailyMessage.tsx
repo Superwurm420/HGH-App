@@ -20,6 +20,17 @@ type MessagesData = {
     feiertag?: string[];
     freierTag?: string[];
   };
+  klassen?: Record<
+    string,
+    {
+      vorUnterricht?: string[];
+      inPause?: string[];
+      nachUnterricht?: string[];
+      wochenende?: string[];
+      feiertag?: string[];
+      freierTag?: string[];
+    }
+  >;
   // Legacy-Felder für Abwärtskompatibilität
   morgen?: string[];
   mittag?: string[];
@@ -129,6 +140,7 @@ function getFreeDayCategory(date: BerlinDateParts): 'feiertag' | 'freierTag' | n
 
 export function DailyMessage({
   messages,
+  schoolClass,
   lessons = [],
 }: {
   messages: MessagesData;
@@ -138,47 +150,61 @@ export function DailyMessage({
   const [text, setText] = useState('');
 
   useEffect(() => {
-    const now = getBerlinNowParts();
-    const nowMinutes = timeToMinutes(now.hour, now.minute);
-    const isWeekend = now.weekdayShort.startsWith('Sa') || now.weekdayShort.startsWith('So');
+    const classKey = schoolClass?.trim().toUpperCase() ?? '';
 
-    const freeDayCategory = lessons.length === 0 ? getFreeDayCategory(now) : null;
+    const updateMessage = () => {
+      const now = getBerlinNowParts();
+      const nowMinutes = timeToMinutes(now.hour, now.minute);
+      const isWeekend = now.weekdayShort.startsWith('Sa') || now.weekdayShort.startsWith('So');
 
-    const standardCategory: StandardCategory | null = isWeekend
-      ? 'wochenende'
-      : freeDayCategory
-        ? freeDayCategory
-        : lessons.length > 0
-          ? getTimeCategoryFromLessons(nowMinutes, lessons)
-          : null;
+      const freeDayCategory = lessons.length === 0 ? getFreeDayCategory(now) : null;
 
-    const categorySeed: Record<StandardCategory, number> = {
-      vorUnterricht: 20,
-      inPause: 21,
-      nachUnterricht: 22,
-      wochenende: 23,
-      feiertag: 24,
-      freierTag: 25,
+      const standardCategory: StandardCategory | null = isWeekend
+        ? 'wochenende'
+        : freeDayCategory
+          ? freeDayCategory
+          : lessons.length > 0
+            ? getTimeCategoryFromLessons(nowMinutes, lessons)
+            : null;
+
+      const categorySeed: Record<StandardCategory, number> = {
+        vorUnterricht: 20,
+        inPause: 21,
+        nachUnterricht: 22,
+        wochenende: 23,
+        feiertag: 24,
+        freierTag: 25,
+      };
+
+      if (standardCategory) {
+        const classPool =
+          ((classKey ? messages.klassen?.[classKey]?.[standardCategory] : undefined) as string[] | undefined) ?? [];
+        const standardPool = (messages.standard?.[standardCategory] as string[] | undefined) ?? [];
+        const freeDayFallbackPool =
+          standardCategory === 'freierTag'
+            ? [
+                ...((((classKey ? messages.klassen?.[classKey]?.feiertag : undefined) as string[] | undefined) ?? [])),
+                ...(((messages.standard?.feiertag as string[] | undefined) ?? [])),
+              ]
+            : [];
+
+        if (classPool.length > 0 || standardPool.length > 0 || freeDayFallbackPool.length > 0) {
+          const pool = classPool.length > 0 ? classPool : standardPool.length > 0 ? standardPool : freeDayFallbackPool;
+          setText(pickMessage(pool, categorySeed[standardCategory] ?? 0));
+          return;
+        }
+      }
+
+      const legacyCategory = getLegacyTimeCategory(now.hour, isWeekend);
+      const legacyGeneral = (messages[legacyCategory] as string[] | undefined) ?? [];
+      setText(pickMessage(legacyGeneral, 0));
     };
 
-    if (standardCategory) {
-      const standardPool = (messages.standard?.[standardCategory] as string[] | undefined) ?? [];
-      const freeDayFallbackPool =
-        standardCategory === 'freierTag'
-          ? (messages.standard?.feiertag as string[] | undefined) ?? []
-          : [];
+    updateMessage();
+    const intervalId = window.setInterval(updateMessage, 60_000);
 
-      if (standardPool.length > 0 || freeDayFallbackPool.length > 0) {
-        const pool = standardPool.length > 0 ? standardPool : freeDayFallbackPool;
-        setText(pickMessage(pool, categorySeed[standardCategory] ?? 0));
-        return;
-      }
-    }
-
-    const legacyCategory = getLegacyTimeCategory(now.hour, isWeekend);
-    const legacyGeneral = (messages[legacyCategory] as string[] | undefined) ?? [];
-    setText(pickMessage(legacyGeneral, 0));
-  }, [lessons, messages]);
+    return () => window.clearInterval(intervalId);
+  }, [lessons, messages, schoolClass]);
 
   if (!text) return null;
 

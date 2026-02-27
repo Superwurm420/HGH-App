@@ -5,6 +5,7 @@ const root = process.cwd();
 const timetableDir = path.join(root, 'public/content/timetables');
 const announcementDir = path.join(root, 'public/content/announcements');
 const schoolHolidayFile = path.join(root, 'public/content/schulferien-nds.json');
+const messagesFile = path.join(root, 'public/content/messages.json');
 
 const timetablePattern = /^Stundenplan_kw_(\d{2})_Hj([12])_(\d{4})_(\d{2})\.pdf$/i;
 const fallbackPattern = /(\d{4}).*?(\d{1,2})/;
@@ -12,6 +13,7 @@ const deDateTimePattern = /^\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}$/;
 const commentPrefixes = ['#', '//', ';'];
 const classTokenPattern = /\b[A-Z]{1,3}\d{2}\b/g;
 const isoDatePattern = /^\d{4}-\d{2}-\d{2}$/;
+const messageCategories = ['vorUnterricht', 'inPause', 'nachUnterricht', 'wochenende', 'feiertag', 'freierTag'];
 
 let hasError = false;
 let hasWarning = false;
@@ -127,6 +129,61 @@ function validateSchoolHolidays() {
     fail(`schulferien-nds.json ist ungültig: ${err instanceof Error ? err.message : String(err)}`);
   }
 }
+
+function isStringArray(value) {
+  return Array.isArray(value) && value.every((entry) => typeof entry === 'string');
+}
+
+function validateMessageContainer(container, pathLabel) {
+  if (!container || typeof container !== 'object') {
+    fail(`${pathLabel} fehlt oder ist kein Objekt.`);
+    return;
+  }
+
+  for (const category of messageCategories) {
+    const value = container[category];
+    if (value === undefined) continue;
+    if (!isStringArray(value)) {
+      fail(`${pathLabel}.${category} muss eine Liste aus Texten sein.`);
+    } else if (value.length === 0) {
+      warn(`${pathLabel}.${category} ist leer.`);
+    }
+  }
+}
+
+function validateMessages() {
+  console.log('\n═══ Tagesmeldungen ═══');
+
+  if (!fs.existsSync(messagesFile)) {
+    warn('Datei fehlt: public/content/messages.json (DailyMessage bleibt dann leer).');
+    return;
+  }
+
+  try {
+    const raw = fs.readFileSync(messagesFile, 'utf8');
+    const parsed = JSON.parse(raw);
+
+    validateMessageContainer(parsed?.standard, 'messages.standard');
+
+    if (parsed?.klassen !== undefined) {
+      if (!parsed.klassen || typeof parsed.klassen !== 'object' || Array.isArray(parsed.klassen)) {
+        fail('messages.klassen muss ein Objekt mit Klassenschlüsseln sein.');
+      } else {
+        for (const [classKey, classMessages] of Object.entries(parsed.klassen)) {
+          if (!/^[A-Z0-9]+$/i.test(classKey)) {
+            warn(`messages.klassen[${classKey}] nutzt einen ungewöhnlichen Klassenschlüssel.`);
+          }
+          validateMessageContainer(classMessages, `messages.klassen.${classKey}`);
+        }
+      }
+    }
+
+    console.log('  OK: messages.json geprüft.');
+  } catch (err) {
+    fail(`messages.json ist ungültig: ${err instanceof Error ? err.message : String(err)}`);
+  }
+}
+
 function validateAnnouncements() {
   console.log('\n═══ Pinnwand/Ankündigungen ═══');
   const files = readDirSafe(announcementDir).filter((f) => f.toLowerCase().endsWith('.txt'));
@@ -157,6 +214,7 @@ function validateAnnouncements() {
 validateTimetables();
 validateAnnouncements();
 validateSchoolHolidays();
+validateMessages();
 
 console.log('\n═══ Ergebnis ═══');
 if (hasError) {

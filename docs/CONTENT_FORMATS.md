@@ -73,22 +73,32 @@ Datei: `public/content/messages.json`
     "wochenende": ["..."],
     "feiertag": ["..."],
     "freierTag": ["..."]
+  },
+  "klassen": {
+    "HT11": {
+      "vorUnterricht": ["..."],
+      "inPause": ["..."],
+      "nachUnterricht": ["..."]
+    }
   }
 }
 ```
 
 ### Auswahllogik in der App
 1. Die App bestimmt die Zeitkategorie anhand des Stundenplans der ausgewählten Klasse.
-2. Kategorien an Unterrichtstagen: `vorUnterricht`, `inPause`, `nachUnterricht`.
-3. Am Wochenende wird `standard.wochenende` verwendet.
-4. An Wochentagen ohne Unterricht wird unterschieden:
-   - Gesetzlicher Feiertag in Niedersachsen → `standard.feiertag`
-   - Sonstiger schulfreier Tag/Ferien laut `public/content/schulferien-nds.json` → `standard.freierTag`
-   - Wenn für ein Jahr keine Ferienbereiche gepflegt sind, werden dafür keine `freierTag`-Meldungen ausgelöst.
+2. Falls für die gewählte Klasse passende Einträge in `klassen.<KLASSE>.<kategorie>` vorhanden sind, werden diese bevorzugt genutzt.
+3. Fehlen dort Einträge, fällt die App automatisch auf `standard.<kategorie>` zurück.
+4. Kategorien an Unterrichtstagen: `vorUnterricht`, `inPause`, `nachUnterricht`.
+5. Am Wochenende wird `wochenende` verwendet.
+6. An Wochentagen ohne Unterricht wird unterschieden:
+   - Gesetzlicher Feiertag in Niedersachsen → `feiertag`
+   - Sonstiger schulfreier Tag/Ferien laut `public/content/schulferien-nds.json` → `freierTag`
+7. Wenn für ein Jahr keine Ferienbereiche gepflegt sind, werden dafür keine `freierTag`-Meldungen ausgelöst.
+8. Die Meldung aktualisiert sich laufend (spätestens jede Minute), damit der Wechsel zwischen Zeitkategorien ohne Neuladen sichtbar wird.
 
 ### Hinweise
 - Zusätzliche Hinweisfelder wie `_hinweis` sind erlaubt und werden ignoriert.
-- Es gibt keine stunden- oder klassenspezifischen Tagesmeldungen mehr.
+- Für jede Klasse sind optional eigene Meldungen möglich (`klassen.<KLASSE>`). Nicht gepflegte Kategorien nutzen automatisch `standard`.
 
 
 ## 5) Schulferien (Niedersachsen)

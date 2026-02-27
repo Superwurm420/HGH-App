@@ -66,6 +66,8 @@ Alle wichtigen Bilddateien liegen damit an einem Ort: `public/content/branding/`
 - **Auto-Update ohne Handarbeit**: Client prüft regelmäßig per ETag auf neue Stundenplan-Version und aktualisiert die UI per `router.refresh()` ohne harten Full-Reload.
 - **Sondertermine**: Kommen aus denselben TXT-Dateien wie Pinnwand-Beiträge und werden über `highlight: true` priorisiert angezeigt.
 - **Sichtbarkeit je Klasse**: Beiträge können über `classes` gezielt auf Klassen begrenzt werden.
+- **Tagesmeldungen**: Zeitlogik orientiert sich am aktuell ausgewählten Stundenplan (`vorUnterricht`, `inPause`, `nachUnterricht`) mit optionalen Klassen-Overrides in `public/content/messages.json` unter `klassen.<KLASSE>`.
+- **Ferienlogik**: Schulfreie Tage/Ferien kommen aus `public/content/schulferien-nds.json`; gesetzliche Feiertage werden separat erkannt.
 - **Diagnose**: Das Build-Log zeigt genau, welche Klassen erkannt wurden und wie viele Stunden geparst wurden.
 
 ## Weiterführende Docs

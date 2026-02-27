@@ -1,6 +1,6 @@
 {
-  "_hinweis": "Tagesmeldungen für Startseite. Bitte nur Textlisten bearbeiten. Struktur: standard.vorUnterricht, standard.inPause, standard.nachUnterricht, standard.wochenende, standard.feiertag, standard.freierTag.",
-  "_hinweis_zeitlogik": "An Wochentagen ohne Unterricht unterscheidet die App zwischen niedersächsischen Feiertagen (standard.feiertag) und schulfreien Tagen/Ferien aus public/content/schulferien-nds.json (standard.freierTag).",
+  "_hinweis": "Tagesmeldungen für Startseite. Pflege zuerst allgemeine Texte unter \"standard\". Optional kannst du unter \"klassen\" einzelne Klassen überschreiben (z. B. \"HT11\").",
+  "_hinweis_zeitlogik": "Die App wählt je nach Tageszeit passend zum Stundenplan: vorUnterricht, inPause oder nachUnterricht. Am Wochenende gilt wochenende. Ohne Unterricht gilt feiertag (gesetzlich) bzw. freierTag (laut schulferien-nds.json).",
   "standard": {
     "vorUnterricht": [
       "Guten Morgen! Gleich startet dein Schultag – komm entspannt an.",
@@ -32,5 +32,22 @@
       "Kein Unterricht heute: schulfreier Tag in Niedersachsen.",
       "Heute ist ein freier Schultag – erhol dich gut."
     ]
+  },
+  "_hinweis_klassenlogik": "Wenn für die ausgewählte Klasse in \"klassen\" Einträge vorhanden sind, haben diese Vorrang vor \"standard\". Fehlende Felder fallen automatisch auf \"standard\" zurück.",
+  "klassen": {
+    "HT11": {
+      "vorUnterricht": [
+        "HT11: Guten Morgen! Werkzeug checken, dann startet ihr sauber in den Tag.",
+        "HT11: Erst Überblick, dann Praxis – guten Start in den Unterricht!"
+      ],
+      "inPause": [
+        "HT11: Kurze Pause – trinken, durchatmen und weiter geht's.",
+        "HT11: Pause nutzen, damit ihr im nächsten Block wieder voll da seid."
+      ],
+      "nachUnterricht": [
+        "HT11: Feierabend für heute – gute Erholung!",
+        "HT11: Unterricht geschafft, bis morgen mit frischer Energie."
+      ]
+    }
   }
 }
