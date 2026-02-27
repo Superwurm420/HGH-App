@@ -1,19 +1,25 @@
-# Vorlage für Pinnwand + optional hervorgehobene Sondertermine
+# Vorlage für Pinnwand-Einträge + optional Ankündigung über dem Stundenplan
 # Pflichtfelder: title, date
-# Optional: audience, classes, expires, highlight
+# Optional: audience, classes, expires, anzeige
 # Datumsformat immer: TT.MM.JJJJ HH:mm (Zeitzone Europe/Berlin)
+#
 # classes steuert die Sichtbarkeit:
-#   - classes: alle
-#   - classes: HT11, HT22, G21
-# audience ist optionaler Hinweistext für Menschen
-# highlight: true/ja/1 => zusätzlich als Sondertermin vor dem Stundenplan
-# highlight: false/nein/0 (oder weglassen) => nur Pinnwand
+#   classes: alle               (Standard, wenn nicht angegeben)
+#   classes: HT11, HT22, G21   (nur für diese Klassen sichtbar)
+#
+# audience ist ein optionaler Hinweistext für Menschen
+# (z. B. "Für alle GT-Klassen") – hat keinen Einfluss auf die Filterung
+# wenn classes angegeben ist.
+#
+# anzeige steuert wo der Eintrag erscheint:
+#   anzeige: pinnwand       (Standard – nur auf der Pinnwand)
+#   anzeige: stundenplan    (über dem Stundenplan UND auf der Pinnwand)
 
 title: Beispieltitel
 date: 24.06.2026 08:30
 audience: Für HT11 und HT22
 classes: HT11, HT22
 expires: 30.06.2026 16:00
-highlight: false
+anzeige: pinnwand
 ---
 Hier steht der eigentliche Text für die Pinnwand.

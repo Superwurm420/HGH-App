@@ -42,13 +42,26 @@ export function parseAnnouncement(raw: string, file: string): Announcement {
     headers[trimmed.slice(0, idx).trim().toLowerCase()] = trimmed.slice(idx + 1).trim();
   }
 
-  const highlight = parseBooleanFlag(headers.highlight);
+  // `anzeige` hat Vorrang; `highlight` wird als Fallback für ältere Dateien unterstützt.
+  let highlight: boolean;
+  const anzeige = headers.anzeige?.trim().toLowerCase();
+  if (anzeige === 'stundenplan') {
+    highlight = true;
+  } else if (anzeige === 'pinnwand') {
+    highlight = false;
+  } else if (anzeige !== undefined) {
+    warnings.push("'anzeige' muss 'pinnwand' oder 'stundenplan' sein.");
+    highlight = false;
+  } else {
+    const legacyHighlight = parseBooleanFlag(headers.highlight);
+    if (legacyHighlight === null) warnings.push("'highlight' muss true/false, ja/nein oder 1/0 sein.");
+    highlight = legacyHighlight ?? false;
+  }
 
   if (!headers.title) warnings.push("Pflichtfeld 'title' fehlt.");
   if (!headers.date) warnings.push("Pflichtfeld 'date' fehlt.");
   if (headers.date && !DE_DATE.test(headers.date)) warnings.push("'date' hat nicht das Format TT.MM.JJJJ HH:mm.");
   if (headers.expires && !DE_DATE.test(headers.expires)) warnings.push("'expires' hat nicht das Format TT.MM.JJJJ HH:mm.");
-  if (highlight === null) warnings.push("'highlight' muss true/false, ja/nein oder 1/0 sein.");
   if (!body) warnings.push('Kein Text nach der Trennlinie gefunden.');
 
   return {
@@ -58,7 +71,7 @@ export function parseAnnouncement(raw: string, file: string): Announcement {
     audience: headers.audience,
     classes: headers.classes,
     expires: headers.expires,
-    highlight: highlight ?? false,
+    highlight,
     body,
     warnings,
   };

@@ -120,7 +120,13 @@ function validateAnnouncements() {
     if (headers.expires && !deDateTimePattern.test(headers.expires)) {
       fail(`${file}: 'expires' muss Format TT.MM.JJJJ HH:mm haben.`);
     }
-    if (!isValidBooleanFlag(headers.highlight)) {
+    if (headers.anzeige !== undefined) {
+      const v = headers.anzeige.trim().toLowerCase();
+      if (!['pinnwand', 'stundenplan'].includes(v)) {
+        fail(`${file}: 'anzeige' muss 'pinnwand' oder 'stundenplan' sein.`);
+      }
+    } else if (!isValidBooleanFlag(headers.highlight)) {
+      // Rückwärtskompatibilität: highlight wird noch akzeptiert, falls kein anzeige-Feld vorhanden
       fail(`${file}: 'highlight' muss true/false, ja/nein oder 1/0 sein.`);
     }
     if (headers.classes) {

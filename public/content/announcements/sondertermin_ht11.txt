@@ -1,10 +1,10 @@
-# Hervorgehobene Nachricht: erscheint auf Pinnwand und als Sondertermin
+# Ankündigung: erscheint über dem Stundenplan und auf der Pinnwand
 
 title: Test
 date: 20.04.2025 04:20
 audience: Betrifft HT11, HT22 und GT01
 classes: HT11, HT22, GT01
 expires: 20.04.2026 04:20
-highlight: ja
+anzeige: stundenplan
 ---
 Das ist ein Test.
