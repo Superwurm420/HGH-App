@@ -52,19 +52,21 @@ export default async function HomePage({ searchParams }: { searchParams: { klass
           <ClassSelector classes={plan.availableClasses} />
         </div>
 
-        <Countdown lessons={plan.week[plan.todayKey]} />
+        <div className="flex flex-col gap-3">
+          <Countdown lessons={plan.week[plan.todayKey]} />
 
-        <DailyMessage
-          messages={messagesData as Record<string, unknown>}
-          schoolClass={plan.schoolClass}
-          lessons={plan.week[plan.todayKey]}
-        />
+          <DailyMessage
+            messages={messagesData as Record<string, unknown>}
+            schoolClass={plan.schoolClass}
+            lessons={plan.week[plan.todayKey]}
+          />
 
-        <TodaySchedule
-          day={plan.todayKey}
-          lessons={plan.week[plan.todayKey]}
-          events={events}
-        />
+          <TodaySchedule
+            day={plan.todayKey}
+            lessons={plan.week[plan.todayKey]}
+            events={events}
+          />
+        </div>
 
         {plan.updatedAt && (
           <p className="meta-note">Aktualisiert am: {plan.updatedAt}</p>
