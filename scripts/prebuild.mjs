@@ -635,12 +635,9 @@ function isCommentLine(line) {
   return COMMENT_PREFIXES.some((prefix) => line.startsWith(prefix));
 }
 
-// anzeige: ja → über dem Stundenplan anzeigen; alles andere → nur Pinnwand.
-// Ungültige oder fehlende Werte werden stillschweigend als "nein" behandelt.
-function parseAnzeige(anzeige, legacyHighlight) {
-  const check = (v) =>
-    v !== undefined && ['ja', 'stundenplan', 'true', '1', 'yes', 'y'].includes(v.trim().toLowerCase());
-  return check(anzeige) || (!anzeige && check(legacyHighlight));
+// "ja" → über dem Stundenplan anzeigen; alles andere (oder kein Wert) → nur Pinnwand.
+function parseAnzeige(value) {
+  return value?.trim().toLowerCase() === 'ja';
 }
 
 function parseAnnouncement(raw, file) {
@@ -657,8 +654,7 @@ function parseAnnouncement(raw, file) {
   }
 
   // anzeige: ja → über dem Stundenplan + Pinnwand; alles andere → nur Pinnwand.
-  // Falsche oder fehlende Werte werden als "nein" (nur Pinnwand) gewertet.
-  const highlight = parseAnzeige(headers.anzeige, headers.highlight);
+  const highlight = parseAnzeige(headers.anzeige);
 
   // Fehlende oder falsch formatierte Felder werden still ignoriert und als "dauerhaft" behandelt.
   if (!headers.title) warnings.push("Pflichtfeld 'title' fehlt.");

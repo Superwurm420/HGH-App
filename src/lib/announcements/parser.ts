@@ -21,13 +21,9 @@ function isCommentLine(line: string): boolean {
   return COMMENT_PREFIXES.some((prefix) => line.startsWith(prefix));
 }
 
-// Wertet das anzeige-Feld aus. "ja" → über dem Stundenplan anzeigen, alles andere → nur Pinnwand.
-// Akzeptiert auch ältere Werte (stundenplan / true / 1) für Rückwärtskompatibilität.
-// Ungültige oder fehlende Werte werden stillschweigend als "nein" behandelt.
-function parseAnzeige(anzeige?: string, legacyHighlight?: string): boolean {
-  const check = (v?: string) =>
-    v !== undefined && ['ja', 'stundenplan', 'true', '1', 'yes', 'y'].includes(v.trim().toLowerCase());
-  return check(anzeige) || (!anzeige && check(legacyHighlight));
+// "ja" → über dem Stundenplan anzeigen; alles andere (oder kein Wert) → nur Pinnwand.
+function parseAnzeige(value?: string): boolean {
+  return value?.trim().toLowerCase() === 'ja';
 }
 
 export function parseAnnouncement(raw: string, file: string): Announcement {
@@ -44,8 +40,7 @@ export function parseAnnouncement(raw: string, file: string): Announcement {
   }
 
   // anzeige: ja → über dem Stundenplan + Pinnwand; alles andere → nur Pinnwand.
-  // Falsche oder fehlende Werte werden als "nein" (nur Pinnwand) gewertet.
-  const highlight = parseAnzeige(headers.anzeige, headers.highlight);
+  const highlight = parseAnzeige(headers.anzeige);
 
   // Fehlende oder falsch formatierte Felder werden still ignoriert und als "dauerhaft" behandelt.
   // Nur ein fehlender Titel wird als Warnung geloggt, da er für die Anzeige unbedingt nötig ist.
