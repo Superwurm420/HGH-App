@@ -65,6 +65,10 @@ export default async function HomePage({ searchParams }: { searchParams: { klass
           lessons={plan.week[plan.todayKey]}
           events={events}
         />
+
+        {plan.updatedAt && (
+          <p className="mt-3 text-xs text-muted">Aktualisiert am: {plan.updatedAt}</p>
+        )}
       </div>
 
       {previewAnnouncements.length > 0 && (

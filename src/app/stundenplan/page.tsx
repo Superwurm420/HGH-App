@@ -33,6 +33,12 @@ export default async function StundenplanPage({ searchParams }: { searchParams: 
         </div>
 
         <DayTimetable week={plan.week} todayKey={plan.todayKey} events={events} />
+
+        {plan.updatedAt && (
+          <p className="mt-3 text-xs text-muted">
+            Aktualisiert am: {plan.updatedAt}
+          </p>
+        )}
       </div>
     </>
   );
