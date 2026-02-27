@@ -71,7 +71,8 @@ Datei: `public/content/messages.json`
     "inPause": ["..."],
     "nachUnterricht": ["..."],
     "wochenende": ["..."],
-    "feiertag": ["..."]
+    "feiertag": ["..."],
+    "freierTag": ["..."]
   }
 }
 ```
@@ -80,7 +81,9 @@ Datei: `public/content/messages.json`
 1. Die App bestimmt die Zeitkategorie anhand des Stundenplans der ausgewählten Klasse.
 2. Kategorien an Unterrichtstagen: `vorUnterricht`, `inPause`, `nachUnterricht`.
 3. Am Wochenende wird `standard.wochenende` verwendet.
-4. An Wochentagen ohne Unterricht (z. B. Feiertag/unterrichtsfrei) wird `standard.feiertag` verwendet.
+4. An Wochentagen ohne Unterricht wird unterschieden:
+   - Gesetzlicher Feiertag in Niedersachsen → `standard.feiertag`
+   - Sonstiger schulfreier Tag/Ferien in Niedersachsen → `standard.freierTag`
 
 ### Hinweise
 - Zusätzliche Hinweisfelder wie `_hinweis` sind erlaubt und werden ignoriert.

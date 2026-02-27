@@ -2,6 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { LessonEntry } from '@/lib/timetable/types';
+import {
+  isLowerSaxonyPublicHoliday,
+  isLowerSaxonySchoolHoliday,
+} from '@/lib/calendar/lowerSaxonySchoolFreeDays';
 
 type MessagesData = {
   _hinweis?: string;
@@ -11,6 +15,7 @@ type MessagesData = {
     nachUnterricht?: string[];
     wochenende?: string[];
     feiertag?: string[];
+    freierTag?: string[];
   };
   // Legacy-Felder für Abwärtskompatibilität
   morgen?: string[];
@@ -29,9 +34,12 @@ function parseTime(value: string): number {
   return timeToMinutes(h, m);
 }
 
-function getBerlinNowParts(): { hour: number; minute: number; weekdayShort: string } {
+function getBerlinNowParts(): { year: number; month: number; day: number; hour: number; minute: number; weekdayShort: string } {
   const parts = new Intl.DateTimeFormat('de-DE', {
     timeZone: 'Europe/Berlin',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
     weekday: 'short',
@@ -39,6 +47,9 @@ function getBerlinNowParts(): { hour: number; minute: number; weekdayShort: stri
   }).formatToParts(new Date());
 
   return {
+    year: Number(parts.find((p) => p.type === 'year')?.value ?? 0),
+    month: Number(parts.find((p) => p.type === 'month')?.value ?? 0),
+    day: Number(parts.find((p) => p.type === 'day')?.value ?? 0),
     hour: Number(parts.find((p) => p.type === 'hour')?.value ?? 0),
     minute: Number(parts.find((p) => p.type === 'minute')?.value ?? 0),
     weekdayShort: parts.find((p) => p.type === 'weekday')?.value ?? '',
@@ -94,6 +105,14 @@ function pickMessage(pool: string[], seed: number = 0): string {
   return pool[(dayOfYear * 13 + seed) % pool.length];
 }
 
+type StandardCategory = 'vorUnterricht' | 'inPause' | 'nachUnterricht' | 'wochenende' | 'feiertag' | 'freierTag';
+
+function getFreeDayCategory(date: { year: number; month: number; day: number }): 'feiertag' | 'freierTag' {
+  if (isLowerSaxonyPublicHoliday(date)) return 'feiertag';
+  if (isLowerSaxonySchoolHoliday(date)) return 'freierTag';
+  return 'freierTag';
+}
+
 export function DailyMessage({
   messages,
   lessons = [],
@@ -109,24 +128,30 @@ export function DailyMessage({
     const nowMinutes = timeToMinutes(now.hour, now.minute);
     const isWeekend = now.weekdayShort.startsWith('Sa') || now.weekdayShort.startsWith('So');
 
-    const standardCategory = isWeekend
+    const standardCategory: StandardCategory = isWeekend
       ? 'wochenende'
       : lessons.length === 0
-        ? 'feiertag'
+        ? getFreeDayCategory(now)
         : getTimeCategoryFromLessons(nowMinutes, lessons);
 
-    const categorySeed: Record<string, number> = {
+    const categorySeed: Record<StandardCategory, number> = {
       vorUnterricht: 20,
       inPause: 21,
       nachUnterricht: 22,
       wochenende: 23,
       feiertag: 24,
+      freierTag: 25,
     };
 
     const standardPool = (messages.standard?.[standardCategory] as string[] | undefined) ?? [];
+    const freeDayFallbackPool =
+      standardCategory === 'freierTag'
+        ? (messages.standard?.feiertag as string[] | undefined) ?? []
+        : [];
 
-    if (standardPool.length > 0) {
-      setText(pickMessage(standardPool, categorySeed[standardCategory] ?? 0));
+    if (standardPool.length > 0 || freeDayFallbackPool.length > 0) {
+      const pool = standardPool.length > 0 ? standardPool : freeDayFallbackPool;
+      setText(pickMessage(pool, categorySeed[standardCategory] ?? 0));
       return;
     }
 

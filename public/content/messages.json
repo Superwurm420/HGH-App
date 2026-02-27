@@ -1,7 +1,6 @@
 {
-  "_hinweis": "Tagesmeldungen für Startseite. Bitte nur Textlisten bearbeiten. Struktur: standard.vorUnterricht, standard.inPause, standard.nachUnterricht, standard.wochenende, standard.feiertag.",
-  "_hinweis_zeitlogik": "Die App nutzt nur Zeitfenster. Die Einordnung erfolgt weiterhin anhand des Stundenplans der ausgewählten Klasse. An Wochentagen ohne Unterricht werden Feiertag-/unterrichtsfrei-Meldungen genutzt.",
-
+  "_hinweis": "Tagesmeldungen für Startseite. Bitte nur Textlisten bearbeiten. Struktur: standard.vorUnterricht, standard.inPause, standard.nachUnterricht, standard.wochenende, standard.feiertag, standard.freierTag.",
+  "_hinweis_zeitlogik": "An Wochentagen ohne Unterricht unterscheidet die App zwischen niedersächsischen Feiertagen (standard.feiertag) und sonstigen schulfreien Tagen/Ferien in Niedersachsen (standard.freierTag).",
   "standard": {
     "vorUnterricht": [
       "Guten Morgen! Gleich startet dein Schultag – komm entspannt an.",
@@ -27,6 +26,11 @@
       "Heute ist unterrichtsfrei – hab einen schönen Feiertag!",
       "Feiertag: Schule pausiert, genieße den Tag.",
       "Unterrichtsfrei heute – erhol dich gut."
+    ],
+    "freierTag": [
+      "Heute ist schulfrei (Ferien/freier Tag in Niedersachsen) – genieße den Tag!",
+      "Kein Unterricht heute: schulfreier Tag in Niedersachsen.",
+      "Heute ist ein freier Schultag – erhol dich gut."
     ]
   }
 }
