@@ -425,28 +425,35 @@ async function parsePdf(filePath, getDocument) {
     }
   }
 
-  repairFragmentedWeekBlocks(out, dayPeriodTimes);
+  normalizeBlockSpecialEntries(out, dayPeriodTimes);
 
   return out;
 }
 
-function repairFragmentedWeekBlocks(schedule, dayPeriodTimes) {
+function normalizeBlockSpecialEntries(schedule, dayPeriodTimes) {
   const dayIndex = Object.fromEntries(WEEKDAYS.map((day, idx) => [day, idx]));
 
-  function isFragmentSubject(subject) {
-    const cleaned = subject.replace(/["„“”'`]/g, '').trim();
-    return /^[A-ZÄÖÜ0-9-]{3,}$/.test(cleaned);
+  function sanitizeSubject(subject) {
+    return subject.replace(/["„“”'`]/g, '').replace(/\s+/g, ' ').trim();
   }
 
-  function buildTitle(entries) {
+
+  function buildBlockTitle(entries) {
     const tokens = entries
-      .map((entry) => (entry.subject ?? '').trim())
+      .map((entry) => sanitizeSubject(entry.subject ?? ''))
       .filter(Boolean);
 
     if (tokens.length === 0) return null;
 
-    let title = '';
+    const deduped = [];
     for (const token of tokens) {
+      if (deduped.length === 0 || deduped[deduped.length - 1] !== token) {
+        deduped.push(token);
+      }
+    }
+
+    let title = '';
+    for (const token of deduped) {
       if (!title) {
         title = token;
         continue;
@@ -463,15 +470,39 @@ function repairFragmentedWeekBlocks(schedule, dayPeriodTimes) {
       (schedule[cls][day] ?? []).map((entry) => ({ ...entry, day })),
     ).sort((a, b) => (dayIndex[a.day] - dayIndex[b.day]) || a.period - b.period);
 
-    if (entries.length < 3) continue;
+    if (entries.length < 2) continue;
     if (entries.some((entry) => entry.room || entry.detail)) continue;
-    if (!entries.some((entry) => (entry.subject ?? '').includes('-'))) continue;
-    if (!entries.every((entry) => entry.subject && isFragmentSubject(entry.subject))) continue;
 
-    const title = buildTitle(entries);
-    if (!title) continue;
+    const dayCounts = Object.fromEntries(WEEKDAYS.map((day) => [day, 0]));
+    for (const entry of entries) dayCounts[entry.day] += 1;
+    if (Object.values(dayCounts).some((count) => count > 3)) continue;
 
-    for (const day of WEEKDAYS) {
+    const fragmentEntries = entries.filter((entry) => sanitizeSubject(entry.subject ?? '').length > 0);
+
+    if (fragmentEntries.length < 2) continue;
+
+    const hasFragmentLikeText = fragmentEntries.some((entry) => {
+      const subject = sanitizeSubject(entry.subject ?? '');
+      return subject.includes('-') || subject !== subject.toLowerCase();
+    });
+    if (!hasFragmentLikeText) continue;
+
+    const classHasOnlyFragments = entries.length === fragmentEntries.length;
+    const firstDayIndex = Math.min(...fragmentEntries.map((entry) => dayIndex[entry.day]));
+    const lastDayIndex = Math.max(...fragmentEntries.map((entry) => dayIndex[entry.day]));
+
+    const coveredDays = (classHasOnlyFragments && entries.length <= 10
+      ? WEEKDAYS
+      : WEEKDAYS.slice(firstDayIndex, lastDayIndex + 1)
+    ).filter((day) => Object.keys(dayPeriodTimes[day]).length > 0);
+
+    if (coveredDays.length === 0) continue;
+    if (entries.length > coveredDays.length * 3) continue;
+
+    const title = buildBlockTitle(fragmentEntries);
+    if (!title || title.length < 4) continue;
+
+    for (const day of coveredDays) {
       const periods = Object.keys(dayPeriodTimes[day]).map(Number).sort((a, b) => a - b);
       if (periods.length === 0) continue;
 

@@ -8,7 +8,7 @@
       "yearEndShort": 26,
       "href": "/content/timetables/Stundenplan_kw_09_Hj2_2025_26.pdf",
       "source": "name-pattern",
-      "lastModifiedMs": 1772190664724.791
+      "lastModifiedMs": 1772190667495.5024
     },
     {
       "filename": "Stundenplan_kw_08_Hj2_2025_26.pdf",
@@ -18,7 +18,7 @@
       "yearEndShort": 26,
       "href": "/content/timetables/Stundenplan_kw_08_Hj2_2025_26.pdf",
       "source": "name-pattern",
-      "lastModifiedMs": 1772190664720.791
+      "lastModifiedMs": 1772190667491.5024
     },
     {
       "filename": "Stundenplan_kw_07_Hj2_2025_26.pdf",
@@ -28,7 +28,7 @@
       "yearEndShort": 26,
       "href": "/content/timetables/Stundenplan_kw_07_Hj2_2025_26.pdf",
       "source": "name-pattern",
-      "lastModifiedMs": 1772190664716.791
+      "lastModifiedMs": 1772190667483.5024
     },
     {
       "filename": "Stundenplan_kw_45_Hj1_2025_26.pdf",
@@ -38,7 +38,7 @@
       "yearEndShort": 26,
       "href": "/content/timetables/Stundenplan_kw_45_Hj1_2025_26.pdf",
       "source": "name-pattern",
-      "lastModifiedMs": 1772190664728.791
+      "lastModifiedMs": 1772190667503.5024
     },
     {
       "filename": "Stundenplan_kw_25_Hj2_2024_25.pdf",
@@ -48,7 +48,7 @@
       "yearEndShort": 25,
       "href": "/content/timetables/Stundenplan_kw_25_Hj2_2024_25.pdf",
       "source": "name-pattern",
-      "lastModifiedMs": 1772190664728.791
+      "lastModifiedMs": 1772190667499.5024
     }
   ],
   "schedules": {
@@ -462,7 +462,7 @@
             "period": 1,
             "periodEnd": 10,
             "time": "8.00 - 17.15",
-            "subject": "UNTERNEHMENSPROJEKT SERIENFERTIGUNG USF \"LYS\""
+            "subject": "UNTERNEHMENSPROJEKT SERIENFERTIGUNG USF LYS"
           }
         ],
         "DI": [
@@ -470,7 +470,7 @@
             "period": 1,
             "periodEnd": 10,
             "time": "8.00 - 17.15",
-            "subject": "UNTERNEHMENSPROJEKT SERIENFERTIGUNG USF \"LYS\""
+            "subject": "UNTERNEHMENSPROJEKT SERIENFERTIGUNG USF LYS"
           }
         ],
         "MI": [
@@ -478,7 +478,7 @@
             "period": 1,
             "periodEnd": 10,
             "time": "8.00 - 17.15",
-            "subject": "UNTERNEHMENSPROJEKT SERIENFERTIGUNG USF \"LYS\""
+            "subject": "UNTERNEHMENSPROJEKT SERIENFERTIGUNG USF LYS"
           }
         ],
         "DO": [
@@ -486,7 +486,7 @@
             "period": 1,
             "periodEnd": 10,
             "time": "8.00 - 17.15",
-            "subject": "UNTERNEHMENSPROJEKT SERIENFERTIGUNG USF \"LYS\""
+            "subject": "UNTERNEHMENSPROJEKT SERIENFERTIGUNG USF LYS"
           }
         ],
         "FR": [
@@ -494,7 +494,7 @@
             "period": 1,
             "periodEnd": 6,
             "time": "8.00 - 13.10",
-            "subject": "UNTERNEHMENSPROJEKT SERIENFERTIGUNG USF \"LYS\""
+            "subject": "UNTERNEHMENSPROJEKT SERIENFERTIGUNG USF LYS"
           }
         ]
       },
@@ -1886,7 +1886,7 @@
             "period": 1,
             "periodEnd": 10,
             "time": "8.00 - 17.15",
-            "subject": "UNTERNEHMENSPROJEKT SERIENFERTIGUNG USF \"LUNIDO\""
+            "subject": "UNTERNEHMENSPROJEKT SERIENFERTIGUNG USF LUNIDO"
           }
         ],
         "DI": [
@@ -1894,7 +1894,7 @@
             "period": 1,
             "periodEnd": 10,
             "time": "8.00 - 17.15",
-            "subject": "UNTERNEHMENSPROJEKT SERIENFERTIGUNG USF \"LUNIDO\""
+            "subject": "UNTERNEHMENSPROJEKT SERIENFERTIGUNG USF LUNIDO"
           }
         ],
         "MI": [
@@ -1902,7 +1902,7 @@
             "period": 1,
             "periodEnd": 10,
             "time": "8.00 - 17.15",
-            "subject": "UNTERNEHMENSPROJEKT SERIENFERTIGUNG USF \"LUNIDO\""
+            "subject": "UNTERNEHMENSPROJEKT SERIENFERTIGUNG USF LUNIDO"
           }
         ],
         "DO": [
@@ -1910,7 +1910,7 @@
             "period": 1,
             "periodEnd": 10,
             "time": "8.00 - 17.15",
-            "subject": "UNTERNEHMENSPROJEKT SERIENFERTIGUNG USF \"LUNIDO\""
+            "subject": "UNTERNEHMENSPROJEKT SERIENFERTIGUNG USF LUNIDO"
           }
         ],
         "FR": [
@@ -1918,7 +1918,7 @@
             "period": 1,
             "periodEnd": 6,
             "time": "8.00 - 13.10",
-            "subject": "UNTERNEHMENSPROJEKT SERIENFERTIGUNG USF \"LUNIDO\""
+            "subject": "UNTERNEHMENSPROJEKT SERIENFERTIGUNG USF LUNIDO"
           }
         ]
       },
