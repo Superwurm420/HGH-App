@@ -23,7 +23,7 @@ export default async function HomePage({ searchParams }: { searchParams: { klass
     return (
       <>
         <div className="card surface">
-          <Countdown />
+          <Countdown lessons={[]} />
           <DailyMessage messages={messagesData as Record<string, unknown>} />
           <p className="text-sm text-muted mt-2">Kein Stundenplan verfügbar.</p>
         </div>
@@ -52,7 +52,7 @@ export default async function HomePage({ searchParams }: { searchParams: { klass
           <ClassSelector classes={plan.availableClasses} />
         </div>
 
-        <Countdown />
+        <Countdown lessons={plan.week[plan.todayKey]} />
 
         <DailyMessage
           messages={messagesData as Record<string, unknown>}
