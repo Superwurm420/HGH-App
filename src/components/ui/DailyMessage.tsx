@@ -132,10 +132,10 @@ type StandardCategory =
   | 'feiertag'
   | 'freierTag';
 
-function getFreeDayCategory(date: BerlinDateParts): 'feiertag' | 'freierTag' | null {
+function getFreeDayCategory(date: BerlinDateParts): 'feiertag' | 'freierTag' {
   if (isLowerSaxonyPublicHoliday(date)) return 'feiertag';
   if (isDateInSchoolHolidayRanges(date, schoolHolidayRanges)) return 'freierTag';
-  return null;
+  return 'freierTag';
 }
 
 export function DailyMessage({
