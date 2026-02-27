@@ -635,12 +635,12 @@ function isCommentLine(line) {
   return COMMENT_PREFIXES.some((prefix) => line.startsWith(prefix));
 }
 
-function parseBooleanFlag(value) {
-  if (!value) return false;
-  const normalized = value.trim().toLowerCase();
-  if (['true', '1', 'ja', 'yes', 'y'].includes(normalized)) return true;
-  if (['false', '0', 'nein', 'no', 'n'].includes(normalized)) return false;
-  return null;
+// anzeige: ja → über dem Stundenplan anzeigen; alles andere → nur Pinnwand.
+// Ungültige oder fehlende Werte werden stillschweigend als "nein" behandelt.
+function parseAnzeige(anzeige, legacyHighlight) {
+  const check = (v) =>
+    v !== undefined && ['ja', 'stundenplan', 'true', '1', 'yes', 'y'].includes(v.trim().toLowerCase());
+  return check(anzeige) || (!anzeige && check(legacyHighlight));
 }
 
 function parseAnnouncement(raw, file) {
@@ -656,29 +656,12 @@ function parseAnnouncement(raw, file) {
     headers[trimmed.slice(0, idx).trim().toLowerCase()] = trimmed.slice(idx + 1).trim();
   }
 
-  // `anzeige` hat Vorrang; `highlight` wird als Fallback für ältere Dateien unterstützt.
-  let highlight;
-  const anzeige = headers.anzeige?.trim().toLowerCase();
-  if (anzeige === 'stundenplan') {
-    highlight = true;
-  } else if (anzeige === 'pinnwand') {
-    highlight = false;
-  } else if (anzeige !== undefined) {
-    warnings.push("'anzeige' muss 'pinnwand' oder 'stundenplan' sein.");
-    highlight = false;
-  } else {
-    const legacyHighlight = parseBooleanFlag(headers.highlight);
-    if (legacyHighlight === null) warnings.push("'highlight' muss true/false, ja/nein oder 1/0 sein.");
-    highlight = legacyHighlight ?? false;
-  }
+  // anzeige: ja → über dem Stundenplan + Pinnwand; alles andere → nur Pinnwand.
+  // Falsche oder fehlende Werte werden als "nein" (nur Pinnwand) gewertet.
+  const highlight = parseAnzeige(headers.anzeige, headers.highlight);
 
+  // Fehlende oder falsch formatierte Felder werden still ignoriert und als "dauerhaft" behandelt.
   if (!headers.title) warnings.push("Pflichtfeld 'title' fehlt.");
-  if (!headers.date) warnings.push("Pflichtfeld 'date' fehlt.");
-  if (headers.date && !DE_DATE.test(headers.date))
-    warnings.push("'date' hat nicht das Format TT.MM.JJJJ HH:mm.");
-  if (headers.expires && !DE_DATE.test(headers.expires))
-    warnings.push("'expires' hat nicht das Format TT.MM.JJJJ HH:mm.");
-  if (!body) warnings.push('Kein Text nach der Trennlinie gefunden.');
 
   return {
     file,

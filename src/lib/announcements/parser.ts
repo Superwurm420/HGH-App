@@ -21,12 +21,13 @@ function isCommentLine(line: string): boolean {
   return COMMENT_PREFIXES.some((prefix) => line.startsWith(prefix));
 }
 
-function parseBooleanFlag(value?: string): boolean | null {
-  if (!value) return false;
-  const normalized = value.trim().toLowerCase();
-  if (['true', '1', 'ja', 'yes', 'y'].includes(normalized)) return true;
-  if (['false', '0', 'nein', 'no', 'n'].includes(normalized)) return false;
-  return null;
+// Wertet das anzeige-Feld aus. "ja" → über dem Stundenplan anzeigen, alles andere → nur Pinnwand.
+// Akzeptiert auch ältere Werte (stundenplan / true / 1) für Rückwärtskompatibilität.
+// Ungültige oder fehlende Werte werden stillschweigend als "nein" behandelt.
+function parseAnzeige(anzeige?: string, legacyHighlight?: string): boolean {
+  const check = (v?: string) =>
+    v !== undefined && ['ja', 'stundenplan', 'true', '1', 'yes', 'y'].includes(v.trim().toLowerCase());
+  return check(anzeige) || (!anzeige && check(legacyHighlight));
 }
 
 export function parseAnnouncement(raw: string, file: string): Announcement {
@@ -42,27 +43,13 @@ export function parseAnnouncement(raw: string, file: string): Announcement {
     headers[trimmed.slice(0, idx).trim().toLowerCase()] = trimmed.slice(idx + 1).trim();
   }
 
-  // `anzeige` hat Vorrang; `highlight` wird als Fallback für ältere Dateien unterstützt.
-  let highlight: boolean;
-  const anzeige = headers.anzeige?.trim().toLowerCase();
-  if (anzeige === 'stundenplan') {
-    highlight = true;
-  } else if (anzeige === 'pinnwand') {
-    highlight = false;
-  } else if (anzeige !== undefined) {
-    warnings.push("'anzeige' muss 'pinnwand' oder 'stundenplan' sein.");
-    highlight = false;
-  } else {
-    const legacyHighlight = parseBooleanFlag(headers.highlight);
-    if (legacyHighlight === null) warnings.push("'highlight' muss true/false, ja/nein oder 1/0 sein.");
-    highlight = legacyHighlight ?? false;
-  }
+  // anzeige: ja → über dem Stundenplan + Pinnwand; alles andere → nur Pinnwand.
+  // Falsche oder fehlende Werte werden als "nein" (nur Pinnwand) gewertet.
+  const highlight = parseAnzeige(headers.anzeige, headers.highlight);
 
+  // Fehlende oder falsch formatierte Felder werden still ignoriert und als "dauerhaft" behandelt.
+  // Nur ein fehlender Titel wird als Warnung geloggt, da er für die Anzeige unbedingt nötig ist.
   if (!headers.title) warnings.push("Pflichtfeld 'title' fehlt.");
-  if (!headers.date) warnings.push("Pflichtfeld 'date' fehlt.");
-  if (headers.date && !DE_DATE.test(headers.date)) warnings.push("'date' hat nicht das Format TT.MM.JJJJ HH:mm.");
-  if (headers.expires && !DE_DATE.test(headers.expires)) warnings.push("'expires' hat nicht das Format TT.MM.JJJJ HH:mm.");
-  if (!body) warnings.push('Kein Text nach der Trennlinie gefunden.');
 
   return {
     file,

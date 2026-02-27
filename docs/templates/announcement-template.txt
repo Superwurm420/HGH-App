@@ -1,25 +1,39 @@
-# Vorlage für Pinnwand-Einträge + optional Ankündigung über dem Stundenplan
-# Pflichtfelder: title, date
-# Optional: audience, classes, expires, anzeige
-# Datumsformat immer: TT.MM.JJJJ HH:mm (Zeitzone Europe/Berlin)
+# ══════════════════════════════════════════════════════════════════════════════
+# VORLAGE FÜR TERMINE / EINTRÄGE
+# ══════════════════════════════════════════════════════════════════════════════
 #
-# classes steuert die Sichtbarkeit:
-#   classes: alle               (Standard, wenn nicht angegeben)
-#   classes: HT11, HT22, G21   (nur für diese Klassen sichtbar)
+# Jede TXT-Datei in diesem Ordner wird automatisch als Eintrag erkannt.
+# Zeilen die mit # beginnen sind Kommentare und werden ignoriert.
+# Der Aufbau ist immer:  Felder oben → Trennlinie (---) → Text unten
 #
-# audience ist ein optionaler Hinweistext für Menschen
-# (z. B. "Für alle GT-Klassen") – hat keinen Einfluss auf die Filterung
-# wenn classes angegeben ist.
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │  PFLICHTFELD                                                            │
+# │  title: Titel des Eintrags                                              │
+# │                                                                         │
+# │  OPTIONALE FELDER (können weggelassen werden)                           │
+# │  date:    Datum und Uhrzeit des Termins  → TT.MM.JJJJ HH:mm            │
+# │  expires: Ablaufdatum (danach verschwindet der Eintrag automatisch)     │
+# │           → TT.MM.JJJJ HH:mm  │  fehlt → Eintrag bleibt dauerhaft     │
+# │  classes: Welche Klassen sehen diesen Eintrag?                          │
+# │           → "alle"  oder  Kürzel wie  HT11, HT22, G21                  │
+# │           fehlt → alle Klassen sehen den Eintrag                        │
+# │  audience: Kurzer Hinweis für wen der Eintrag ist (nur zur Info,        │
+# │            hat keinen Einfluss auf die Sichtbarkeit)                    │
+# │  anzeige:  Wo soll der Eintrag erscheinen?                              │
+# │            nein → nur auf der Pinnwand (Standard)                       │
+# │            ja   → über dem Stundenplan UND auf der Pinnwand             │
+# └─────────────────────────────────────────────────────────────────────────┘
 #
-# anzeige steuert wo der Eintrag erscheint:
-#   anzeige: pinnwand       (Standard – nur auf der Pinnwand)
-#   anzeige: stundenplan    (über dem Stundenplan UND auf der Pinnwand)
+# HINWEIS: Falsche oder fehlende Angaben werden automatisch ignoriert.
+#          Ein fehlender Ablauftermin bedeutet: der Eintrag bleibt dauerhaft.
+# ══════════════════════════════════════════════════════════════════════════════
 
 title: Beispieltitel
 date: 24.06.2026 08:30
-audience: Für HT11 und HT22
-classes: HT11, HT22
 expires: 30.06.2026 16:00
-anzeige: pinnwand
+classes: HT11, HT22
+audience: Für HT11 und HT22
+anzeige: nein
 ---
-Hier steht der eigentliche Text für die Pinnwand.
+Hier steht der eigentliche Text des Eintrags.
+Er kann mehrere Zeilen lang sein.
