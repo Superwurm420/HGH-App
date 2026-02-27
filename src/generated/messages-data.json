@@ -1,6 +1,6 @@
 {
   "_hinweis": "Tagesmeldungen für Startseite. Bitte nur Textlisten bearbeiten. Struktur: standard.vorUnterricht, standard.inPause, standard.nachUnterricht, standard.wochenende, standard.feiertag, standard.freierTag.",
-  "_hinweis_zeitlogik": "An Wochentagen ohne Unterricht unterscheidet die App zwischen niedersächsischen Feiertagen (standard.feiertag) und sonstigen schulfreien Tagen/Ferien in Niedersachsen (standard.freierTag).",
+  "_hinweis_zeitlogik": "An Wochentagen ohne Unterricht unterscheidet die App zwischen niedersächsischen Feiertagen (standard.feiertag) und schulfreien Tagen/Ferien aus public/content/schulferien-nds.json (standard.freierTag).",
   "standard": {
     "vorUnterricht": [
       "Guten Morgen! Gleich startet dein Schultag – komm entspannt an.",

@@ -1,0 +1,29 @@
+{
+  "_hinweis": "Pflege hier schulfreie Tage/Ferien für Niedersachsen. Format: YYYY-MM-DD. Wenn für ein Jahr keine Einträge vorhanden sind, werden dafür keine 'freierTag'-Meldungen gezeigt.",
+  "ranges": [
+    {
+      "start": "2025-10-13",
+      "end": "2025-10-25"
+    },
+    {
+      "start": "2025-12-22",
+      "end": "2026-01-05"
+    },
+    {
+      "start": "2026-02-02",
+      "end": "2026-02-03"
+    },
+    {
+      "start": "2026-03-23",
+      "end": "2026-04-07"
+    },
+    {
+      "start": "2026-05-15",
+      "end": "2026-05-15"
+    },
+    {
+      "start": "2026-07-02",
+      "end": "2026-08-12"
+    }
+  ]
+}

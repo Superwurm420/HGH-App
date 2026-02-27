@@ -83,8 +83,34 @@ Datei: `public/content/messages.json`
 3. Am Wochenende wird `standard.wochenende` verwendet.
 4. An Wochentagen ohne Unterricht wird unterschieden:
    - Gesetzlicher Feiertag in Niedersachsen → `standard.feiertag`
-   - Sonstiger schulfreier Tag/Ferien in Niedersachsen → `standard.freierTag`
+   - Sonstiger schulfreier Tag/Ferien laut `public/content/schulferien-nds.json` → `standard.freierTag`
+   - Wenn für ein Jahr keine Ferienbereiche gepflegt sind, werden dafür keine `freierTag`-Meldungen ausgelöst.
 
 ### Hinweise
 - Zusätzliche Hinweisfelder wie `_hinweis` sind erlaubt und werden ignoriert.
 - Es gibt keine stunden- oder klassenspezifischen Tagesmeldungen mehr.
+
+
+## 5) Schulferien (Niedersachsen)
+
+Datei: `public/content/schulferien-nds.json`
+
+### Struktur
+```json
+{
+  "_hinweis": "Freitext",
+  "ranges": [
+    { "start": "2026-07-02", "end": "2026-08-12" }
+  ]
+}
+```
+
+### Feldregeln
+- `ranges` ist eine Liste von Zeitbereichen.
+- `start` und `end` sind Pflichtfelder im Format `YYYY-MM-DD`.
+- `start` darf nicht nach `end` liegen.
+
+### Verhalten in der App
+- Die Datei wird beim Build automatisch eingelesen.
+- Liegt das aktuelle Datum in einem Bereich, nutzt die Tagesmeldung `standard.freierTag`.
+- Gibt es für das aktuelle Jahr keine Bereiche, wird **kein** Ferien-`freierTag` angenommen.

@@ -1,7 +1,12 @@
-type BerlinDateParts = {
+export type BerlinDateParts = {
   year: number;
   month: number;
   day: number;
+};
+
+export type SchoolHolidayRange = {
+  start: string;
+  end: string;
 };
 
 function toDateKey(year: number, month: number, day: number): string {
@@ -39,6 +44,11 @@ function addUtcDays(date: Date, days: number): Date {
 
 function getNiedersachsenHolidayKeys(year: number): Set<string> {
   const easter = getEasterSundayUtc(year);
+  const goodFriday = addUtcDays(easter, -2);
+  const easterMonday = addUtcDays(easter, 1);
+  const ascensionDay = addUtcDays(easter, 39);
+  const pentecostMonday = addUtcDays(easter, 50);
+
   const list = [
     toDateKey(year, 1, 1),
     toDateKey(year, 5, 1),
@@ -46,47 +56,26 @@ function getNiedersachsenHolidayKeys(year: number): Set<string> {
     toDateKey(year, 10, 31),
     toDateKey(year, 12, 25),
     toDateKey(year, 12, 26),
-    toDateKey(addUtcDays(easter, -2).getUTCFullYear(), addUtcDays(easter, -2).getUTCMonth() + 1, addUtcDays(easter, -2).getUTCDate()), // Karfreitag
-    toDateKey(addUtcDays(easter, 1).getUTCFullYear(), addUtcDays(easter, 1).getUTCMonth() + 1, addUtcDays(easter, 1).getUTCDate()), // Ostermontag
-    toDateKey(addUtcDays(easter, 39).getUTCFullYear(), addUtcDays(easter, 39).getUTCMonth() + 1, addUtcDays(easter, 39).getUTCDate()), // Christi Himmelfahrt
-    toDateKey(addUtcDays(easter, 50).getUTCFullYear(), addUtcDays(easter, 50).getUTCMonth() + 1, addUtcDays(easter, 50).getUTCDate()), // Pfingstmontag
+    toDateKey(goodFriday.getUTCFullYear(), goodFriday.getUTCMonth() + 1, goodFriday.getUTCDate()),
+    toDateKey(easterMonday.getUTCFullYear(), easterMonday.getUTCMonth() + 1, easterMonday.getUTCDate()),
+    toDateKey(ascensionDay.getUTCFullYear(), ascensionDay.getUTCMonth() + 1, ascensionDay.getUTCDate()),
+    toDateKey(pentecostMonday.getUTCFullYear(), pentecostMonday.getUTCMonth() + 1, pentecostMonday.getUTCDate()),
   ];
 
   return new Set(list);
 }
-
-// Niedersächsische Schulferien/Ferientage.
-// Stand: Schuljahre 2024/25 bis 2026/27.
-const LOWER_SAXONY_SCHOOL_HOLIDAY_RANGES: Array<{ start: string; end: string }> = [
-  { start: '2024-10-04', end: '2024-10-19' },
-  { start: '2024-11-01', end: '2024-11-01' },
-  { start: '2024-12-23', end: '2025-01-04' },
-  { start: '2025-02-03', end: '2025-02-04' },
-  { start: '2025-04-07', end: '2025-04-19' },
-  { start: '2025-05-30', end: '2025-05-30' },
-  { start: '2025-07-03', end: '2025-08-13' },
-  { start: '2025-10-13', end: '2025-10-25' },
-  { start: '2025-12-22', end: '2026-01-05' },
-  { start: '2026-02-02', end: '2026-02-03' },
-  { start: '2026-03-23', end: '2026-04-07' },
-  { start: '2026-05-15', end: '2026-05-15' },
-  { start: '2026-07-02', end: '2026-08-12' },
-  { start: '2026-10-19', end: '2026-10-30' },
-  { start: '2026-12-23', end: '2027-01-09' },
-];
 
 export function isLowerSaxonyPublicHoliday(date: BerlinDateParts): boolean {
   const key = toDateKey(date.year, date.month, date.day);
   return getNiedersachsenHolidayKeys(date.year).has(key);
 }
 
-export function isLowerSaxonySchoolHoliday(date: BerlinDateParts): boolean {
+export function isDateInSchoolHolidayRanges(date: BerlinDateParts, ranges: SchoolHolidayRange[]): boolean {
   const key = parseDateKey(toDateKey(date.year, date.month, date.day));
 
-  return LOWER_SAXONY_SCHOOL_HOLIDAY_RANGES.some((range) => {
+  return ranges.some((range) => {
     const start = parseDateKey(range.start);
     const end = parseDateKey(range.end);
-    return key >= start && key <= end;
+    return Number.isFinite(start) && Number.isFinite(end) && key >= start && key <= end;
   });
 }
-

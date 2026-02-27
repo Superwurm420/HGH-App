@@ -53,6 +53,7 @@ Hinweis: GitHub Pages ist nur für statische Seiten gedacht. Diese App nutzt ser
 public/content/
   timetables/      # Stundenplan-PDFs hier ablegen
   announcements/   # TXT für Pinnwand/Sondertermine
+  schulferien-nds.json # Ferien/schulfreie Tage Niedersachsen (für Tagesmeldungen)
   branding/        # zentrale Logo-/Icon-Dateien für App & PWA
 ```
 

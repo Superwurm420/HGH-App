@@ -3,9 +3,12 @@
 import { useEffect, useState } from 'react';
 import { LessonEntry } from '@/lib/timetable/types';
 import {
+  isDateInSchoolHolidayRanges,
   isLowerSaxonyPublicHoliday,
-  isLowerSaxonySchoolHoliday,
+  type BerlinDateParts,
+  type SchoolHolidayRange,
 } from '@/lib/calendar/lowerSaxonySchoolFreeDays';
+import schoolHolidaysData from '@/generated/school-holidays-data.json';
 
 type MessagesData = {
   _hinweis?: string;
@@ -25,6 +28,14 @@ type MessagesData = {
   [key: string]: unknown;
 };
 
+type SchoolHolidaysData = {
+  ranges?: SchoolHolidayRange[];
+};
+
+const schoolHolidayRanges = ((schoolHolidaysData as SchoolHolidaysData).ranges ?? []).filter(
+  (range) => typeof range.start === 'string' && typeof range.end === 'string',
+);
+
 function timeToMinutes(h: number, m: number): number {
   return h * 60 + m;
 }
@@ -34,7 +45,7 @@ function parseTime(value: string): number {
   return timeToMinutes(h, m);
 }
 
-function getBerlinNowParts(): { year: number; month: number; day: number; hour: number; minute: number; weekdayShort: string } {
+function getBerlinNowParts(): BerlinDateParts & { hour: number; minute: number; weekdayShort: string } {
   const parts = new Intl.DateTimeFormat('de-DE', {
     timeZone: 'Europe/Berlin',
     year: 'numeric',
@@ -70,9 +81,6 @@ function normalizeTime(value: string): string | null {
   return `${match[1].padStart(2, '0')}:${match[2]}`;
 }
 
-/**
- * Berechnet die Zeitkategorie anhand des tatsächlichen Stundenplans der Klasse.
- */
 function getTimeCategoryFromLessons(
   nowMinutes: number,
   lessons: LessonEntry[],
@@ -105,12 +113,18 @@ function pickMessage(pool: string[], seed: number = 0): string {
   return pool[(dayOfYear * 13 + seed) % pool.length];
 }
 
-type StandardCategory = 'vorUnterricht' | 'inPause' | 'nachUnterricht' | 'wochenende' | 'feiertag' | 'freierTag';
+type StandardCategory =
+  | 'vorUnterricht'
+  | 'inPause'
+  | 'nachUnterricht'
+  | 'wochenende'
+  | 'feiertag'
+  | 'freierTag';
 
-function getFreeDayCategory(date: { year: number; month: number; day: number }): 'feiertag' | 'freierTag' {
+function getFreeDayCategory(date: BerlinDateParts): 'feiertag' | 'freierTag' | null {
   if (isLowerSaxonyPublicHoliday(date)) return 'feiertag';
-  if (isLowerSaxonySchoolHoliday(date)) return 'freierTag';
-  return 'freierTag';
+  if (isDateInSchoolHolidayRanges(date, schoolHolidayRanges)) return 'freierTag';
+  return null;
 }
 
 export function DailyMessage({
@@ -128,11 +142,15 @@ export function DailyMessage({
     const nowMinutes = timeToMinutes(now.hour, now.minute);
     const isWeekend = now.weekdayShort.startsWith('Sa') || now.weekdayShort.startsWith('So');
 
-    const standardCategory: StandardCategory = isWeekend
+    const freeDayCategory = lessons.length === 0 ? getFreeDayCategory(now) : null;
+
+    const standardCategory: StandardCategory | null = isWeekend
       ? 'wochenende'
-      : lessons.length === 0
-        ? getFreeDayCategory(now)
-        : getTimeCategoryFromLessons(nowMinutes, lessons);
+      : freeDayCategory
+        ? freeDayCategory
+        : lessons.length > 0
+          ? getTimeCategoryFromLessons(nowMinutes, lessons)
+          : null;
 
     const categorySeed: Record<StandardCategory, number> = {
       vorUnterricht: 20,
@@ -143,22 +161,22 @@ export function DailyMessage({
       freierTag: 25,
     };
 
-    const standardPool = (messages.standard?.[standardCategory] as string[] | undefined) ?? [];
-    const freeDayFallbackPool =
-      standardCategory === 'freierTag'
-        ? (messages.standard?.feiertag as string[] | undefined) ?? []
-        : [];
+    if (standardCategory) {
+      const standardPool = (messages.standard?.[standardCategory] as string[] | undefined) ?? [];
+      const freeDayFallbackPool =
+        standardCategory === 'freierTag'
+          ? (messages.standard?.feiertag as string[] | undefined) ?? []
+          : [];
 
-    if (standardPool.length > 0 || freeDayFallbackPool.length > 0) {
-      const pool = standardPool.length > 0 ? standardPool : freeDayFallbackPool;
-      setText(pickMessage(pool, categorySeed[standardCategory] ?? 0));
-      return;
+      if (standardPool.length > 0 || freeDayFallbackPool.length > 0) {
+        const pool = standardPool.length > 0 ? standardPool : freeDayFallbackPool;
+        setText(pickMessage(pool, categorySeed[standardCategory] ?? 0));
+        return;
+      }
     }
 
-    // Fallback für bestehende (ältere) messages.json-Struktur
     const legacyCategory = getLegacyTimeCategory(now.hour, isWeekend);
     const legacyGeneral = (messages[legacyCategory] as string[] | undefined) ?? [];
-
     setText(pickMessage(legacyGeneral, 0));
   }, [lessons, messages]);
 
