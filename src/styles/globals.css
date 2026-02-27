@@ -954,16 +954,10 @@ body {
 
 .countdown + .daily-message {
   margin-top: 0;
-  border-top: none;
-  border-radius: 0 0 var(--radius2) var(--radius2);
-}
-
-.countdown:has(+ .daily-message) {
-  border-radius: var(--radius2) var(--radius2) 0 0;
 }
 
 .daily-message {
-  margin-top: 14px;
+  margin-top: 0;
   padding: 14px 18px;
   border-radius: var(--radius2);
   border: 1px solid var(--line);
