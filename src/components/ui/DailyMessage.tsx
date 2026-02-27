@@ -112,11 +112,47 @@ function getCurrentOrNextPeriod(nowMinutes: number): number | null {
   return null;
 }
 
-function pickMessage(pool: string[]): string {
+/**
+ * Berechnet die Zeitkategorie anhand des tatsächlichen Stundenplans der Klasse.
+ * Statt der fest hinterlegten Standardzeiten werden Start und Ende des
+ * heutigen Unterrichts aus dem echten Stundenplan ermittelt.
+ */
+function getTimeCategoryFromLessons(
+  nowMinutes: number,
+  lessons: LessonEntry[],
+): 'vorUnterricht' | 'inPause' | 'nachUnterricht' {
+  const slots = lessons
+    .map((lesson) => {
+      const parts = lesson.time.split('-').map((part) => part.trim());
+      if (parts.length < 2) return null;
+      const start = normalizeTime(parts[0]);
+      const end = normalizeTime(parts[1]);
+      if (!start || !end) return null;
+      return { start: parseTime(start), end: parseTime(end) };
+    })
+    .filter((s): s is { start: number; end: number } => s !== null)
+    .sort((a, b) => a.start - b.start);
+
+  if (slots.length === 0) return 'inPause';
+
+  const firstStart = slots[0].start;
+  const lastEnd = slots[slots.length - 1].end;
+
+  if (nowMinutes < firstStart) return 'vorUnterricht';
+  if (nowMinutes >= lastEnd) return 'nachUnterricht';
+  return 'inPause';
+}
+
+/**
+ * Wählt eine Meldung aus dem Pool.
+ * Kombiniert dayOfYear + seed (Stundenperiode) damit:
+ *  – täglich eine andere Meldung erscheint
+ *  – die Meldung sich pro Unterrichtsstunde ändert
+ */
+function pickMessage(pool: string[], seed: number = 0): string {
   if (pool.length === 0) return '';
-  // Gleiche Meldung den ganzen Tag – wechselt täglich
   const dayOfYear = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
-  return pool[dayOfYear % pool.length];
+  return pool[(dayOfYear * 13 + seed) % pool.length];
 }
 
 function normalizeClassMessages(value: string[] | ClassMessages | undefined): ClassMessages {
@@ -154,31 +190,42 @@ export function DailyMessage({
       ? [
           ...((messages.stunden?.[String(period)] as string[] | undefined) ?? []),
           ...((classMessages.stunden?.[String(period)] as string[] | undefined) ?? []),
-          ...((classMessages.stunden?.[String(period)] as string[] | undefined) ?? []),
         ]
       : [];
 
     if (periodPool.length > 0) {
-      setText(pickMessage(periodPool));
+      // Seed = Periode → Meldung wechselt mit jeder Unterrichtsstunde
+      setText(pickMessage(periodPool, period ?? 0));
       return;
     }
 
+    // Zeitkategorie: bei vorhandenem Stundenplan anhand der echten Klassen-Zeiten,
+    // sonst anhand der Standard-Zeiten (Fallback für den Fall ohne Stundenplan).
     const standardCategory = isWeekend
       ? 'wochenende'
-      : nowMinutes < parseTime(DEFAULT_SCHEDULE[0].start)
-        ? 'vorUnterricht'
-        : nowMinutes >= parseTime(DEFAULT_SCHEDULE[DEFAULT_SCHEDULE.length - 1].end)
-          ? 'nachUnterricht'
-          : 'inPause';
+      : lessons.length > 0
+        ? getTimeCategoryFromLessons(nowMinutes, lessons)
+        : nowMinutes < parseTime(DEFAULT_SCHEDULE[0].start)
+          ? 'vorUnterricht'
+          : nowMinutes >= parseTime(DEFAULT_SCHEDULE[DEFAULT_SCHEDULE.length - 1].end)
+            ? 'nachUnterricht'
+            : 'inPause';
+
+    // Seed pro Kategorie damit sich auch diese Meldungen täglich leicht verschieben
+    const categorySeed: Record<string, number> = {
+      vorUnterricht: 20,
+      inPause: 21,
+      nachUnterricht: 22,
+      wochenende: 23,
+    };
 
     const standardPool = [
       ...((messages.standard?.[standardCategory] as string[] | undefined) ?? []),
       ...(classMessages.allgemein ?? []),
-      ...(classMessages.allgemein ?? []),
     ];
 
     if (standardPool.length > 0) {
-      setText(pickMessage(standardPool));
+      setText(pickMessage(standardPool, categorySeed[standardCategory] ?? 0));
       return;
     }
 
@@ -192,7 +239,7 @@ export function DailyMessage({
       ? [...legacyGeneral, ...legacyClass, ...legacyClass]
       : legacyGeneral;
 
-    setText(pickMessage(fallbackPool));
+    setText(pickMessage(fallbackPool, 0));
   }, [lessons, messages, schoolClass]);
 
   if (!text) return null;
