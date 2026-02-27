@@ -10,7 +10,7 @@ export default async function PinnwandPage({ searchParams }: { searchParams: { k
   if (!plan) {
     return (
       <div className="card surface">
-        <h2 className="text-lg font-bold mb-3">Pinnwand</h2>
+        <h2 className="section-title">Pinnwand</h2>
         <p className="text-sm text-muted">Kein Stundenplan verfügbar.</p>
       </div>
     );
@@ -22,9 +22,11 @@ export default async function PinnwandPage({ searchParams }: { searchParams: { k
     <>
       <ClassFromStorage classes={plan.availableClasses} />
       <div className="card surface">
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-          <h2 className="text-lg font-bold">Pinnwand</h2>
-          <ClassSelector classes={plan.availableClasses} />
+        <div className="section-header">
+          <h2 className="section-title">Pinnwand</h2>
+          <div className="section-actions">
+            <ClassSelector classes={plan.availableClasses} />
+          </div>
         </div>
         <AnnouncementList items={items} />
       </div>

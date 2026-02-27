@@ -67,14 +67,14 @@ export default async function HomePage({ searchParams }: { searchParams: { klass
         />
 
         {plan.updatedAt && (
-          <p className="mt-3 text-xs text-muted">Aktualisiert am: {plan.updatedAt}</p>
+          <p className="meta-note">Aktualisiert am: {plan.updatedAt}</p>
         )}
       </div>
 
       {previewAnnouncements.length > 0 && (
         <div className="card surface mt-3">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-bold">Ankündigungen</h2>
+          <div className="section-header">
+            <h2 className="section-title">Ankündigungen</h2>
             {hasMore && (
               <Link href="/pinnwand" className="text-sm font-semibold" style={{ color: 'var(--accent)' }}>
                 Alle anzeigen

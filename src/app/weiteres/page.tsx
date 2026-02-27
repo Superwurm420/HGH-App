@@ -43,7 +43,7 @@ export default function WeiteresPage() {
   return (
     <>
       <div className="card surface">
-        <h2 className="text-lg font-bold mb-3">Links</h2>
+        <h2 className="section-title mb-3">Links</h2>
         <nav className="space-y-2" aria-label="Wichtige Links">
           {LINKS.map((link) => (
             <a
@@ -65,7 +65,7 @@ export default function WeiteresPage() {
       </div>
 
       <div className="card surface mt-3">
-        <h2 className="text-lg font-bold mb-3">Instagram</h2>
+        <h2 className="section-title mb-3">Instagram</h2>
         <nav className="space-y-2" aria-label="Instagram">
           {INSTAGRAM.map((ig) => (
             <a
@@ -87,7 +87,7 @@ export default function WeiteresPage() {
       </div>
 
       <div className="card surface mt-3">
-        <h2 className="text-lg font-bold mb-3">Informationen</h2>
+        <h2 className="section-title mb-3">Informationen</h2>
         <div className="space-y-4 text-sm">
           <div>
             <h3 className="font-semibold mb-1">Installation</h3>
