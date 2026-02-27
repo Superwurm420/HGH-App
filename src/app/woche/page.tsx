@@ -19,9 +19,9 @@ export default async function WochePage({ searchParams }: { searchParams: { klas
     <>
       <ClassFromStorage classes={plan.availableClasses} />
       <div className="card surface">
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-          <h2 className="text-lg font-bold">Wochenübersicht</h2>
-          <div className="flex flex-wrap items-center gap-3">
+        <div className="section-header">
+          <h2 className="section-title">Wochenübersicht</h2>
+          <div className="section-actions">
             <ClassSelector classes={plan.availableClasses} />
             <a className="btn secondary text-sm" href={plan.latest.href} target="_blank" rel="noreferrer">
               PDF
@@ -32,9 +32,7 @@ export default async function WochePage({ searchParams }: { searchParams: { klas
         <WeekSchedule schoolClass={plan.schoolClass} week={plan.week} todayKey={plan.todayKey} />
 
         {plan.updatedAt && (
-          <p className="mt-3 text-xs text-muted">
-            Aktualisiert am: {plan.updatedAt}
-          </p>
+          <p className="meta-note">Aktualisiert am: {plan.updatedAt}</p>
         )}
       </div>
     </>
