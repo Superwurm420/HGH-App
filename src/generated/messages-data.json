@@ -1,120 +1,31 @@
 {
-  "_hinweis": "Tagesmeldungen für Startseite. Bitte nur Textlisten bearbeiten. Struktur: standard (allgemein), stunden (1-10), klassen.<KLASSE>.allgemein und klassen.<KLASSE>.stunden.",
-  "_hinweis_zeitlogik": "Die App nimmt zuerst klassen+stundenbezogene Meldungen der aktuellen/naechsten Stunde. Wenn dort nichts steht, werden Standardmeldungen genutzt. Wochenende hat eigene Meldungen.",
-  "_hinweis_beispiel": "Beispiel fuer Klassenstunde: \"klassen\": { \"HT11\": { \"stunden\": { \"1\": [\"Text\"] } } }",
+  "_hinweis": "Tagesmeldungen für Startseite. Bitte nur Textlisten bearbeiten. Struktur: standard.vorUnterricht, standard.inPause, standard.nachUnterricht, standard.wochenende, standard.feiertag.",
+  "_hinweis_zeitlogik": "Die App nutzt nur Zeitfenster. Die Einordnung erfolgt weiterhin anhand des Stundenplans der ausgewählten Klasse. An Wochentagen ohne Unterricht werden Feiertag-/unterrichtsfrei-Meldungen genutzt.",
   "standard": {
     "vorUnterricht": [
-      "Guten Morgen! Bereit für einen guten Start?",
-      "Der Tag beginnt – Schritt für Schritt zum Ziel.",
-      "Früh da sein lohnt sich. Auf einen starken Start!"
+      "Guten Morgen! Gleich startet dein Schultag – komm entspannt an.",
+      "Vor dem Unterricht: kurz sortieren, dann geht’s fokussiert los.",
+      "Früher Start, klarer Kopf – auf einen guten Schultag!"
     ],
     "inPause": [
-      "Kurz durchatmen – dann geht's weiter.",
-      "Pausen sind auch Lernzeit für den Kopf.",
-      "Energie sammeln, gleich startet die nächste Stunde."
+      "Pause: durchatmen, trinken, kurz abschalten.",
+      "Kleine Pause, neue Energie für den nächsten Block.",
+      "Zwischen den Stunden: kurz sammeln, dann weiter."
     ],
     "nachUnterricht": [
-      "Schultag geschafft – guten Feierabend!",
-      "Gut gemacht heute. Erholt euch für morgen.",
-      "Der Unterricht ist vorbei – Kopf frei, Akku aufladen."
+      "Unterricht geschafft – guten Feierabend!",
+      "Der Schultag ist vorbei. Erhol dich gut.",
+      "Heute viel geschafft – jetzt ist Zeit zum Abschalten."
     ],
     "wochenende": [
-      "Wochenende! Erholt euch gut.",
-      "Zeit zum Abschalten – schönes Wochenende!",
-      "Kein Unterricht heute – genießt die freie Zeit."
+      "Wochenende – genieße deine freie Zeit!",
+      "Kein Unterricht heute. Schönes Wochenende!",
+      "Zeit zum Auftanken: entspanntes Wochenende!"
+    ],
+    "feiertag": [
+      "Heute ist unterrichtsfrei – hab einen schönen Feiertag!",
+      "Feiertag: Schule pausiert, genieße den Tag.",
+      "Unterrichtsfrei heute – erhol dich gut."
     ]
-  },
-  "stunden": {
-    "1": [
-      "1. Stunde – konzentriert starten, dann läuft der Rest leichter.",
-      "Erste Stunde, erster Fokus: ihr packt das."
-    ],
-    "2": [
-      "2. Stunde – dranbleiben, ihr seid im Rhythmus.",
-      "Zweite Runde: ruhig bleiben und sauber arbeiten."
-    ],
-    "3": [
-      "3. Stunde – weiter im Takt.",
-      "Dritte Stunde: Qualität vor Tempo."
-    ],
-    "4": [
-      "4. Stunde – Halbzeit in Sicht.",
-      "Vierte Stunde: jetzt zahlt sich Fokus aus."
-    ],
-    "5": [
-      "5. Stunde – nach der Pause nochmal sauber ansetzen.",
-      "Fünfte Stunde: ruhig und strukturiert weiter."
-    ],
-    "6": [
-      "6. Stunde – Endspurt vor dem Nachmittag.",
-      "Sechste Stunde: dranbleiben, ihr seid fast durch."
-    ],
-    "7": [
-      "7. Stunde – starker Nachmittag, starkes Ergebnis.",
-      "Siebte Stunde: Fokus halten, Ziel bleibt nah."
-    ],
-    "8": [
-      "8. Stunde – ihr seid auf der Zielgeraden.",
-      "Achte Stunde: letzter längerer Block, dann geschafft."
-    ],
-    "9": [
-      "9. Stunde – fast Feierabend.",
-      "Neunte Stunde: kurz sammeln, dann sauber abschließen."
-    ],
-    "10": [
-      "10. Stunde – letzte Stunde, sauber zu Ende bringen.",
-      "Zehnte Stunde: Endspurt!"
-    ]
-  },
-  "klassen": {
-    "HT11": {
-      "allgemein": [
-        "HT11 – ihr legt gerade den Grundstein.",
-        "HT11 – Schritt für Schritt zur sicheren Basis."
-      ],
-      "stunden": {
-        "1": [
-          "HT11 – in der 1. Stunde zählt ein sauberer Start."
-        ],
-        "5": [
-          "HT11 – 5. Stunde: ruhig bleiben und präzise arbeiten."
-        ]
-      }
-    },
-    "HT12": {
-      "allgemein": [
-        "HT12 – Erfahrung zeigt sich im Detail.",
-        "HT12 – ihr habt schon viel aufgebaut, bleibt dran."
-      ]
-    },
-    "HT21": {
-      "allgemein": [
-        "HT21 – ihr seid auf dem Weg zum Abschluss.",
-        "HT21 – Durchhalten zahlt sich jetzt aus."
-      ]
-    },
-    "HT22": {
-      "allgemein": [
-        "HT22 – Endphase: sauber arbeiten, sicher abschließen.",
-        "HT22 – der Abschluss ist in Reichweite."
-      ]
-    },
-    "G11": {
-      "allgemein": [
-        "G11 – gute Ideen werden mit jedem Entwurf besser.",
-        "G11 – kreativ bleiben und trotzdem strukturiert arbeiten."
-      ],
-      "stunden": {
-        "3": [
-          "G11 – 3. Stunde: Entwurf prüfen, dann verfeinern."
-        ]
-      }
-    },
-    "G21": {
-      "allgemein": [
-        "G21 – eure Gestaltung hat inzwischen klare Handschrift.",
-        "G21 – Präzision und Idee, genau diese Mischung zählt."
-      ]
-    }
   }
 }
