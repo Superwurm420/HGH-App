@@ -190,22 +190,14 @@ body {
   background: rgba(255, 255, 255, 0.4);
 }
 
-/* Mobile-first: Zeit oben, Badge darunter */
+/* Kompakt und mittig ausgerichtet */
 .countdown-main {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   gap: 10px;
-}
-
-/* Ab ~480px: nebeneinander */
-@media (min-width: 480px) {
-  .countdown-main {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-  }
 }
 
 .now-time {
@@ -218,7 +210,7 @@ body {
 
 .countdown-badge {
   display: inline-flex;
-  align-self: flex-start;
+  align-self: center;
   padding: 7px 14px;
   border-radius: 20px;
   background: linear-gradient(135deg, var(--accent), var(--accent2));

@@ -4,18 +4,6 @@ import { useEffect, useState } from 'react';
 import { NetworkDot } from './NetworkDot';
 import { LessonEntry } from '@/lib/timetable/types';
 
-const SCHEDULE = [
-  { period: 1, start: '08:30', end: '09:15' },
-  { period: 2, start: '09:15', end: '10:00' },
-  { period: 3, start: '10:20', end: '11:05' },
-  { period: 4, start: '11:05', end: '11:50' },
-  { period: 5, start: '12:00', end: '12:45' },
-  { period: 6, start: '12:45', end: '13:30' },
-  { period: 7, start: '14:15', end: '15:00' },
-  { period: 8, start: '15:00', end: '15:45' },
-  { period: 9, start: '15:45', end: '16:30' },
-  { period: 10, start: '16:30', end: '17:15' },
-];
 
 type CountdownSlot = {
   label: string;
@@ -59,6 +47,14 @@ function formatDuration(mins: number) {
   const h = Math.floor(mins / 60);
   const m = Math.ceil(mins % 60);
   return m > 0 ? `${h} Std ${m} Min` : `${h} Std`;
+}
+
+function formatIn(mins: number) {
+  return `in ${formatDuration(mins)}`;
+}
+
+function formatSince(mins: number) {
+  return `seit ${formatDuration(mins)}`;
 }
 
 function getIsoCalendarWeek(date: Date) {
@@ -130,42 +126,51 @@ export function Countdown({ lessons = [] }: { lessons?: LessonEntry[] }) {
     .map(lessonToSlot)
     .filter((slot): slot is CountdownSlot => slot !== null)
     .sort((a, b) => parseTime(a.start) - parseTime(b.start));
-  const slots = lessonSlots.length > 0
-    ? lessonSlots
-    : SCHEDULE.map((slot) => ({ label: `${slot.period}. Stunde`, start: slot.start, end: slot.end }));
-
   let countdownText = '';
 
   if (isWeekend) {
     countdownText = 'Wochenende!';
-  } else if (lessonSlots.length === 0 && lessons.length > 0) {
+  } else if (lessonSlots.length === 0) {
     countdownText = 'Heute kein Unterricht';
-  } else if (nowMins < parseTime(slots[0].start)) {
-    const diff = parseTime(slots[0].start) - nowMins;
-    countdownText = `Unterrichtsbeginn in ${formatDuration(diff)}`;
-  } else if (nowMins >= parseTime(slots[slots.length - 1].end)) {
-    countdownText = 'Schulschluss!';
   } else {
-    // Find current or next period
-    let found = false;
-    for (const slot of slots) {
-      const start = parseTime(slot.start);
-      const end = parseTime(slot.end);
-      if (nowMins >= start && nowMins < end) {
-        const remaining = end - nowMins;
-        countdownText = `${slot.label} endet in ${formatDuration(remaining)}`;
-        found = true;
-        break;
-      }
-    }
-    if (!found) {
-      // In a break
-      for (const slot of slots) {
+    const slots = lessonSlots;
+    const firstStart = parseTime(slots[0].start);
+    const lastEnd = parseTime(slots[slots.length - 1].end);
+
+    if (nowMins < firstStart) {
+      countdownText = `${slots[0].label} beginnt ${formatIn(firstStart - nowMins)}`;
+    } else if (nowMins >= lastEnd) {
+      countdownText = `Schulschluss ${formatSince(nowMins - lastEnd)}`;
+    } else {
+      let found = false;
+      for (const [index, slot] of slots.entries()) {
+        const nextSlot = slots[index + 1];
         const start = parseTime(slot.start);
-        if (start > nowMins) {
-          const diff = start - nowMins;
-          countdownText = `${slot.label} beginnt in ${formatDuration(diff)}`;
+        const end = parseTime(slot.end);
+
+        if (nowMins >= start && nowMins < end) {
+          const remaining = end - nowMins;
+          if (!nextSlot) {
+            countdownText = `Schulschluss ${formatIn(remaining)}`;
+          } else {
+            const nextStart = parseTime(nextSlot.start);
+            countdownText = nextStart > end
+              ? `Pause beginnt ${formatIn(remaining)}`
+              : `${nextSlot.label} beginnt ${formatIn(remaining)}`;
+          }
+          found = true;
           break;
+        }
+      }
+
+      if (!found) {
+        // In einer Pause
+        for (const slot of slots) {
+          const start = parseTime(slot.start);
+          if (start > nowMins) {
+            countdownText = `${slot.label} beginnt ${formatIn(start - nowMins)}`;
+            break;
+          }
         }
       }
     }
