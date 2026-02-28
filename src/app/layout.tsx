@@ -42,7 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeScript />
         <ServiceWorkerRegister />
         <TimetableAutoRefresh />
-        <div className="mx-auto max-w-3xl px-4">
+        <div className="app-shell mx-auto w-full max-w-5xl px-4">
           <Topbar />
           <main className="main-content">
             {children}
