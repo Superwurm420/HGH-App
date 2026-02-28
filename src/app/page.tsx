@@ -47,53 +47,63 @@ export default async function HomePage({ searchParams }: { searchParams: { klass
     <>
       <ClassFromStorage classes={plan.availableClasses} />
 
-      <div className="card surface">
-        <div className="mb-1">
-          <ClassSelector classes={plan.availableClasses} />
-        </div>
-
-        <div className="flex flex-col gap-3">
-          <Countdown lessons={plan.week[plan.todayKey]} />
-
-          <DailyMessage
-            messages={messagesData as Record<string, unknown>}
-            schoolClass={plan.schoolClass}
-            lessons={plan.week[plan.todayKey]}
-          />
-
-          <TodaySchedule
-            day={plan.todayKey}
-            lessons={plan.week[plan.todayKey]}
-            events={events}
-          />
-        </div>
-
-        {plan.updatedAt && (
-          <p className="meta-note">Aktualisiert am: {plan.updatedAt}</p>
-        )}
-      </div>
-
-      {previewAnnouncements.length > 0 && (
-        <div className="card surface mt-3">
-          <div className="section-header">
-            <h2 className="section-title">Ankündigungen</h2>
-            {hasMore && (
-              <Link href="/pinnwand" className="text-sm font-semibold" style={{ color: 'var(--accent)' }}>
-                Alle anzeigen
-              </Link>
-            )}
+      <div className="home-dashboard">
+        <div className="card surface">
+          <div className="mb-1">
+            <ClassSelector classes={plan.availableClasses} />
           </div>
-          <AnnouncementList items={previewAnnouncements} />
-        </div>
-      )}
 
-      {calendarUrls.length > 0 ? (
-        <GoogleCalendar urls={calendarUrls} />
-      ) : (
-        <div className="mt-3">
-          <MiniCalendar />
+          <div className="home-landscape-grid">
+            <div className="home-landscape-info">
+              <Countdown lessons={plan.week[plan.todayKey]} />
+
+              <DailyMessage
+                messages={messagesData as Record<string, unknown>}
+                schoolClass={plan.schoolClass}
+                lessons={plan.week[plan.todayKey]}
+              />
+            </div>
+
+            <div>
+              <TodaySchedule
+                day={plan.todayKey}
+                lessons={plan.week[plan.todayKey]}
+                events={events}
+              />
+            </div>
+          </div>
+
+          {plan.updatedAt && (
+            <p className="meta-note">Aktualisiert am: {plan.updatedAt}</p>
+          )}
         </div>
-      )}
+
+        <div className="home-secondary-grid">
+          {previewAnnouncements.length > 0 && (
+            <div className="card surface home-secondary-card">
+              <div className="section-header">
+                <h2 className="section-title">Ankündigungen</h2>
+                {hasMore && (
+                  <Link href="/pinnwand" className="text-sm font-semibold" style={{ color: 'var(--accent)' }}>
+                    Alle anzeigen
+                  </Link>
+                )}
+              </div>
+              <AnnouncementList items={previewAnnouncements} />
+            </div>
+          )}
+
+          {calendarUrls.length > 0 ? (
+            <div className="home-secondary-card">
+              <GoogleCalendar urls={calendarUrls} />
+            </div>
+          ) : (
+            <div className="home-secondary-card">
+              <MiniCalendar />
+            </div>
+          )}
+        </div>
+      </div>
     </>
   );
 }
