@@ -13,5 +13,6 @@ export function weekdayForToday(now = new Date()): Weekday {
   if (day.startsWith('Di')) return 'DI';
   if (day.startsWith('Mi')) return 'MI';
   if (day.startsWith('Do')) return 'DO';
-  return 'FR'; // Fr., Sa., So. → fall back to Friday
+  if (day.startsWith('Fr')) return 'FR';
+  return 'MO'; // Sa., So. → am Wochenende bereits den Montag zeigen
 }
