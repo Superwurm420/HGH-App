@@ -1154,6 +1154,24 @@ body {
   font-size: clamp(20px, 2vw, 28px);
 }
 
+.tv-clock {
+  display: grid;
+  gap: 2px;
+}
+
+.tv-clock-time {
+  margin: 0;
+  font-size: clamp(44px, 6vw, 72px);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.tv-clock-date {
+  margin: 0;
+  font-size: clamp(15px, 1.5vw, 20px);
+  text-transform: capitalize;
+}
+
 .tv-main-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1306,4 +1324,8 @@ body {
   .tv-main-grid {
     grid-template-columns: 1fr;
   }
+}
+
+body.tv-mode .topbar {
+  display: none;
 }

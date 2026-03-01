@@ -2,16 +2,9 @@ import { getAnnouncements, getSpecialEventsForAllClasses } from '@/lib/announcem
 import { getWeeklyPlanForAllClasses } from '@/lib/timetable/server';
 import { Clock } from '@/components/ui/Clock';
 import { TvTimetableGrid } from '@/components/schedule/TvTimetableGrid';
-import { Weekday, eventAppliesToDay } from '@/lib/timetable/types';
+import { eventAppliesToDay } from '@/lib/timetable/types';
 import { parseBerlinDate } from '@/lib/announcements/parser';
-
-const WEEKDAY_LABEL: Record<Weekday, string> = {
-  MO: 'Montag',
-  DI: 'Dienstag',
-  MI: 'Mittwoch',
-  DO: 'Donnerstag',
-  FR: 'Freitag',
-};
+import { TvPageController } from '@/components/tv/TvPageController';
 
 export default async function TvPage() {
   const plan = await getWeeklyPlanForAllClasses();
@@ -45,19 +38,17 @@ export default async function TvPage() {
 
   return (
     <div className="tv-view">
+      <TvPageController />
       <header className="tv-header">
         <div className="tv-branding">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/content/branding/school-logo.svg" alt="HGH Logo" width={72} height={72} />
           <div>
-            <h1>TV-Ansicht Eingangsbereich</h1>
-            <p>Live-Übersicht für Uhrzeit, Pinnwand und Stundenplan</p>
+            <h1>HGH - Holztechnik und Gestaltung</h1>
+            <p>am Dammtor, Hildesheim</p>
           </div>
         </div>
 
         <div className="tv-header-right">
-          <Clock />
-          <p className="text-sm text-muted">Heute: {WEEKDAY_LABEL[plan.todayKey]}</p>
+          <Clock variant="tv" />
           {plan.updatedAt && <p className="text-sm text-muted">Stand Stundenplan: {plan.updatedAt}</p>}
         </div>
       </header>
