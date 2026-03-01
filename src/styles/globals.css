@@ -1120,9 +1120,6 @@ body {
 }
 
 .tv-header {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
   padding: 14px;
   border-radius: var(--radius);
   border: 1px solid var(--line);
@@ -1168,14 +1165,6 @@ body {
   color: var(--muted);
 }
 
-.tv-header-right {
-  text-align: right;
-}
-
-.tv-header-right .text-xl {
-  font-size: clamp(20px, 2vw, 28px);
-}
-
 .tv-clock {
   display: grid;
   gap: 2px;
@@ -1210,6 +1199,12 @@ body {
 .tv-panel h2 {
   margin: 0 0 10px;
   font-size: 20px;
+}
+
+.tv-clock-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .tv-list {
@@ -1363,14 +1358,6 @@ body {
 }
 
 @media (max-width: 900px) {
-  .tv-header {
-    flex-direction: column;
-  }
-
-  .tv-header-right {
-    text-align: left;
-  }
-
   .tv-main-grid {
     grid-template-columns: 1fr;
   }

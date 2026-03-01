@@ -38,14 +38,14 @@ export default async function TvPage() {
             <p>am Dammtor, Hildesheim</p>
           </div>
         </div>
-
-        <div className="tv-header-right">
-          <Clock variant="tv" />
-          {plan.updatedAt && <p className="text-sm text-muted">Stand Stundenplan: {plan.updatedAt}</p>}
-        </div>
       </header>
 
       <section className="tv-main-grid" aria-label="TV-Übersicht">
+        <article className="tv-panel tv-clock-panel">
+          <Clock variant="tv" />
+          {plan.updatedAt && <p className="text-sm text-muted">Stand Stundenplan: {plan.updatedAt}</p>}
+        </article>
+
         <article className="tv-panel">
           <h2>Pinnwand</h2>
           {sortedAnnouncements.length === 0 ? (
