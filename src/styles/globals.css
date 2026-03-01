@@ -1161,12 +1161,6 @@ body {
   object-fit: contain;
 }
 
-.tv-branding p {
-  margin: 0;
-  font-size: clamp(20px, 2.2vw, 32px);
-  font-weight: 800;
-}
-
 .tv-clock {
   display: grid;
   gap: 2px;

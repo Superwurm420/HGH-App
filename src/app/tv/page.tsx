@@ -39,7 +39,6 @@ export default async function TvPage() {
               <div className="tv-logo-wrap" aria-hidden="true">
                 <img src="/content/branding/school-logo.svg" alt="" className="tv-logo" />
               </div>
-              <p>Holztechnik und Gestaltung</p>
             </div>
 
             <Clock variant="tv" />
