@@ -60,10 +60,7 @@ function findCurrentPeriod(entries: LessonEntry[], nowMinutes: number): number |
 }
 
 function formatLesson(entry: LessonEntry): string {
-  const subject = entry.subject ?? '—';
-  const room = entry.room ? ` · R${entry.room}` : '';
-  const detail = entry.detail ? ` · ${entry.detail}` : '';
-  return `${subject}${room}${detail}`;
+  return entry.subject ?? '—';
 }
 
 export function TvTimetableGrid({ schedulesByClass, day }: TvTimetableGridProps) {
@@ -111,6 +108,44 @@ export function TvTimetableGrid({ schedulesByClass, day }: TvTimetableGridProps)
     return map;
   }, [classes, day, schedulesByClass]);
 
+  const rowSpanByClassAndPeriod = useMemo(() => {
+    const map = new Map<string, number>();
+
+    for (const schoolClass of classes) {
+      const entries = schedulesByClass[schoolClass]?.[day] ?? [];
+
+      for (const entry of entries) {
+        const start = entry.period;
+        const end = entry.periodEnd ?? entry.period;
+
+        map.set(`${schoolClass}-${start}`, Math.max(1, end - start + 1));
+        for (let period = start + 1; period <= end; period += 1) {
+          map.set(`${schoolClass}-${period}`, 0);
+        }
+      }
+    }
+
+    return map;
+  }, [classes, day, schedulesByClass]);
+
+  const periodTimeByPeriod = useMemo(() => {
+    const map = new Map<number, string>();
+
+    for (const schoolClass of classes) {
+      const entries = schedulesByClass[schoolClass]?.[day] ?? [];
+      for (const entry of entries) {
+        const end = entry.periodEnd ?? entry.period;
+        for (let period = entry.period; period <= end; period += 1) {
+          if (!map.has(period) && entry.time) {
+            map.set(period, entry.time);
+          }
+        }
+      }
+    }
+
+    return map;
+  }, [classes, day, schedulesByClass]);
+
   const currentPeriods = useMemo(() => {
     const allEntries = classes.flatMap((schoolClass) => schedulesByClass[schoolClass]?.[day] ?? []);
     const active = new Set<number>();
@@ -145,22 +180,29 @@ export function TvTimetableGrid({ schedulesByClass, day }: TvTimetableGridProps)
         <tbody>
           {periods.map((period) => {
             const isCurrent = currentPeriods.has(period);
+            const periodTime = periodTimeByPeriod.get(period) ?? '—';
 
             return (
               <tr key={period} data-current={isCurrent ? 'true' : 'false'}>
-                <th scope="row">{period}.</th>
+                <th scope="row" className="tv-period-cell">
+                  <span className="tv-period">{period}.</span>
+                  <span className="tv-period-time">{periodTime}</span>
+                </th>
                 {classes.map((schoolClass) => {
                   const lesson = lessonByClassAndPeriod.get(`${schoolClass}-${period}`);
-                  const isContinuation = lesson && (lesson.periodEnd ?? lesson.period) > lesson.period && period > lesson.period;
+                  const rowSpan = rowSpanByClassAndPeriod.get(`${schoolClass}-${period}`) ?? 1;
+
+                  if (rowSpan === 0) {
+                    return null;
+                  }
 
                   return (
-                    <td key={`${schoolClass}-${period}`}>
+                    <td key={`${schoolClass}-${period}`} rowSpan={rowSpan} data-double={rowSpan > 1 ? 'true' : 'false'}>
                       {lesson ? (
-                        <>
-                          {isContinuation ? <span className="tv-continued">↳</span> : null}
-                          {formatLesson(lesson)}
-                          <div className="tv-time">{lesson.time}</div>
-                        </>
+                        <div className="tv-cell-content">
+                          <span className="tv-subject">{formatLesson(lesson)}</span>
+                          {lesson.room ? <span className="tv-room">Raum {lesson.room}</span> : null}
+                        </div>
                       ) : (
                         <span className="text-muted">—</span>
                       )}
