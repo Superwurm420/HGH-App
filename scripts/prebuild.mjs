@@ -678,19 +678,7 @@ function mergePeriodPairs(lessons) {
     }
   }
 
-  // Verwaiste Lehrerkürzel entfernen: gerade Stunde mit Lehrer-Subject,
-  // ohne Detail/Room, wenn die vorangehende ungerade Stunde fehlt.
-  // Entsteht z.B. wenn im PDF Std.7 leer ist aber Std.8 nur "WEN" enthält.
-  const TEACHER_RE = /^[A-ZÄÖÜ]{2,6}(\/[A-ZÄÖÜ]{2,6})*$/;
-  return result.filter((entry, idx) => {
-    if (entry.period % 2 !== 0) return true;
-    if (!TEACHER_RE.test((entry.subject ?? '').trim())) return true;
-    if (entry.detail || entry.room || entry.periodEnd) return true;
-    // Prüfe ob die vorangehende ungerade Stunde existiert
-    const prev = result[idx - 1];
-    if (prev && prev.period === entry.period - 1) return true;
-    return false; // verwaist → entfernen
-  });
+  return result;
 }
 
 /** Verbindet den Start von time1 mit dem Ende von time2: "8.30 - 9.15" + "9.15 - 10.00" → "8.30 - 10.00" */
