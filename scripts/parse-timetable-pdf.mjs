@@ -238,8 +238,15 @@ for (const row of rows) {
     const period = Number(lessonMatch[1]);
     const time = lessonMatch[2];
     for (const cls of classes) {
-      const subject = cellText(row, cls);
-      const entry = { period, time, subject: subject || undefined };
+      let subject = cellText(row, cls);
+      let room;
+      // Raumnummer am Anfang des Fachtexts extrahieren (z.B. "5 Buchführung")
+      const leadingRoom = subject.match(/^(\d{1,2})\s+(\S.*)$/);
+      if (leadingRoom) {
+        room = leadingRoom[1];
+        subject = leadingRoom[2];
+      }
+      const entry = { period, time, subject: subject || undefined, ...(room ? { room } : {}) };
       out[cls][day].push(entry);
       lastByClass[`${cls}:${day}`] = entry;
     }
