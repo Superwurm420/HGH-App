@@ -8,7 +8,7 @@
       "yearEndShort": 26,
       "href": "/content/timetables/Stundenplan_kw_10_Hj2_2025_26.pdf",
       "source": "name-pattern",
-      "lastModifiedMs": 1772197114000
+      "lastModifiedMs": 1772327359502.6023
     },
     {
       "filename": "Stundenplan_kw_09_Hj2_2025_26.pdf",
@@ -18,7 +18,7 @@
       "yearEndShort": 26,
       "href": "/content/timetables/Stundenplan_kw_09_Hj2_2025_26.pdf",
       "source": "name-pattern",
-      "lastModifiedMs": 1772197114000
+      "lastModifiedMs": 1772327359502.6023
     },
     {
       "filename": "Stundenplan_kw_08_Hj2_2025_26.pdf",
@@ -28,7 +28,7 @@
       "yearEndShort": 26,
       "href": "/content/timetables/Stundenplan_kw_08_Hj2_2025_26.pdf",
       "source": "name-pattern",
-      "lastModifiedMs": 1772197114000
+      "lastModifiedMs": 1772327359498.6023
     },
     {
       "filename": "Stundenplan_kw_07_Hj2_2025_26.pdf",
@@ -38,7 +38,7 @@
       "yearEndShort": 26,
       "href": "/content/timetables/Stundenplan_kw_07_Hj2_2025_26.pdf",
       "source": "name-pattern",
-      "lastModifiedMs": 1772197114000
+      "lastModifiedMs": 1772327359490.6023
     },
     {
       "filename": "Stundenplan_kw_45_Hj1_2025_26.pdf",
@@ -48,7 +48,7 @@
       "yearEndShort": 26,
       "href": "/content/timetables/Stundenplan_kw_45_Hj1_2025_26.pdf",
       "source": "name-pattern",
-      "lastModifiedMs": 1772197114000
+      "lastModifiedMs": 1772327359510.6023
     },
     {
       "filename": "Stundenplan_kw_25_Hj2_2024_25.pdf",
@@ -58,7 +58,7 @@
       "yearEndShort": 25,
       "href": "/content/timetables/Stundenplan_kw_25_Hj2_2024_25.pdf",
       "source": "name-pattern",
-      "lastModifiedMs": 1772197114000
+      "lastModifiedMs": 1772327359506.6023
     }
   ],
   "schedules": {
@@ -939,7 +939,13 @@
             "room": "BS"
           }
         ],
-        "FR": []
+        "FR": [
+          {
+            "period": 6,
+            "time": "12.25- 13.10",
+            "subject": "#NV 27.02.2026"
+          }
+        ]
       }
     },
     "Stundenplan_kw_09_Hj2_2025_26.pdf": {
@@ -1748,7 +1754,13 @@
             "room": "BS"
           }
         ],
-        "FR": []
+        "FR": [
+          {
+            "period": 6,
+            "time": "12.25- 13.10",
+            "subject": "#NV 20.02.2026"
+          }
+        ]
       }
     },
     "Stundenplan_kw_08_Hj2_2025_26.pdf": {
@@ -2515,7 +2527,13 @@
             "room": "BS"
           }
         ],
-        "FR": []
+        "FR": [
+          {
+            "period": 6,
+            "time": "12.25- 13.10",
+            "subject": "#NV 12.02.2026"
+          }
+        ]
       }
     },
     "Stundenplan_kw_07_Hj2_2025_26.pdf": {
@@ -3299,7 +3317,13 @@
             "room": "BS"
           }
         ],
-        "FR": []
+        "FR": [
+          {
+            "period": 6,
+            "time": "12.25- 13.10",
+            "subject": "#NV 06.02.2026"
+          }
+        ]
       }
     },
     "Stundenplan_kw_45_Hj1_2025_26.pdf": {
@@ -3309,8 +3333,8 @@
             "period": 1,
             "periodEnd": 2,
             "time": "8.00 - 9.30",
-            "subject": "Fertigungstechnik W1/W2",
-            "detail": "GRO · T1"
+            "subject": "Fertigungstechnik W1/W2 T1",
+            "detail": "GRO"
           },
           {
             "period": 3,
@@ -3342,8 +3366,8 @@
             "period": 3,
             "periodEnd": 4,
             "time": "9.50 - 11.20",
-            "subject": "Fertigungstechnik W1/W2",
-            "detail": "GRO · T1"
+            "subject": "Fertigungstechnik W1/W2 T1",
+            "detail": "GRO"
           },
           {
             "period": 5,
@@ -3468,8 +3492,8 @@
             "period": 5,
             "periodEnd": 6,
             "time": "11.40 - 13.10",
-            "subject": "Fertigungstechnik W1/W2",
-            "detail": "GRO · T1"
+            "subject": "Fertigungstechnik W1/W2 T1",
+            "detail": "GRO"
           },
           {
             "period": 7,
@@ -3485,8 +3509,8 @@
             "period": 1,
             "periodEnd": 2,
             "time": "8.00 - 9.30",
-            "subject": "Fertigungstechnik W1/W2",
-            "detail": "GRO · T1"
+            "subject": "Fertigungstechnik W1/W2 T1",
+            "detail": "GRO"
           },
           {
             "period": 3,
@@ -3901,8 +3925,8 @@
             "period": 1,
             "periodEnd": 2,
             "time": "8.00 - 9.30",
-            "subject": "Fertigungstechnik W2",
-            "detail": "GRO · T1"
+            "subject": "Fertigungstechnik W2 T1",
+            "detail": "GRO"
           },
           {
             "period": 3,
@@ -4214,7 +4238,13 @@
             "room": "4"
           }
         ],
-        "FR": []
+        "FR": [
+          {
+            "period": 6,
+            "time": "12.25- 13.10",
+            "subject": "#NV 30.10.2025"
+          }
+        ]
       }
     },
     "Stundenplan_kw_25_Hj2_2024_25.pdf": {
@@ -4340,8 +4370,8 @@
             "period": 7,
             "periodEnd": 8,
             "time": "14.10 - 15.40",
-            "subject": "Modul6/KuSti",
-            "detail": "MEL · Fagus-Werk"
+            "subject": "Modul6/KuSti Fagus-Werk",
+            "detail": "MEL"
           }
         ],
         "FR": [
@@ -5004,7 +5034,13 @@
             "room": "9"
           }
         ],
-        "FR": []
+        "FR": [
+          {
+            "period": 6,
+            "time": "12.25- 13.10",
+            "subject": "#NV 13.06.2025"
+          }
+        ]
       }
     }
   }
