@@ -25,34 +25,54 @@ Beispiel: `Stundenplan_kw_09_Hj2_2025_26.pdf`
 - Alte PDFs dürfen liegen bleiben (werden als Archiv behalten)
 - Nutzer können jederzeit die Original-PDF öffnen (Button "PDF-Stundenplan")
 
-### Prüfen ob es funktioniert hat
-Nach dem Push zeigt das Vercel Build-Log:
-```
-═══ Stundenplan-PDFs ═══
-  5 PDF(s) gefunden: ...
-  Neueste nach Sortierung: Stundenplan_kw_09_Hj2_2025_26.pdf
-  Parsing Stundenplan_kw_09_Hj2_2025_26.pdf...
-    Klassen: HT11, HT12, HT21, HT22, G11, G12, GT01
-    Stunden gesamt: 142
-```
+## 2) Pinnwand über Admin-Seite pflegen (`/admin`)
 
-Wenn eine Klasse `0 Stunden` hat oder `Keine Klassen erkannt` erscheint, stimmt etwas mit der PDF-Struktur nicht.
+### Zugang einrichten (einmalig)
 
-## 2) Pinnwand aktualisieren
-1. Neue `.txt` in `public/content/announcements/` anlegen.
-2. Vorlage aus `docs/templates/announcement-template.txt` verwenden.
-3. Formatfelder ausfüllen (`title`, `date`; optional `audience`, `classes`, `expires`, `highlight`).
-4. Commit + Push.
+#### Lokal testen
+1. `.env.local` anlegen (Vorlage: `.env.example`).
+2. Werte setzen:
+   - `ADMIN_USER=redaktion`
+   - `ADMIN_PASSWORD=<dein-sicheres-passwort>`
+3. `npm run dev` neu starten.
+4. `/admin` öffnen und mit den Daten anmelden.
 
+#### Produktion (Vercel)
+1. In Vercel: **Project → Settings → Environment Variables**.
+2. `ADMIN_USER` und `ADMIN_PASSWORD` eintragen.
+3. Neu deployen.
+4. `/admin` aufrufen und Browser-Anmeldedialog mit den Zugangsdaten ausfüllen.
 
-### Einheitliches Termin-System (neu)
-- Für **normale Pinnwand-Beiträge** und **dringende Sondertermine** wird dieselbe TXT-Struktur genutzt.
-- Über `classes` steuerst du, **welche Klassen den Beitrag überhaupt sehen**.
-- Entscheidung über Sichtbarkeit vor dem Stundenplan nur über ein Feld:
-  - `highlight: true` (oder `ja`/`1`) => zusätzlich hervorgehoben beim Stundenplan
-  - `highlight: false` (oder `nein`/`0`, Standard) => nur Pinnwand
-- `audience` bleibt ein erklärender Text, die technische Sichtbarkeit kommt über `classes`.
-- Kommentare im Header sind erlaubt (`#`, `//`, `;`), damit Vorlagen direkt erklärt werden können.
+### Schritt-für-Schritt: neuen Beitrag erstellen
+
+![Screenshot Adminbereich](browser:/tmp/codex_browser_invocations/6b00fb57a87b4048/artifacts/artifacts/admin-editor-v2.png)
+
+1. `/admin` öffnen.
+2. Vereinfachtes Formular ausfüllen:
+   - Pflicht: `title`
+   - `Start` und `Ablauf` bequem per Kalender + Uhrzeit-Auswahl
+   - `Zielgruppe` per Dropdown
+   - `Sondertermin` per einfachem Schalter (anstatt Textwert `anzeige`)
+   - Text im Feld `body`
+3. Live-Validierung beobachten:
+   - Fehler blockieren „Auf Server speichern“
+   - Warnungen zeigen sofort, was später ignoriert wird
+4. „Auf Server speichern“ klicken.
+5. Die Datei landet als `.txt` in `public/content/announcements/`.
+
+### Export/Import (kompatibel zum bestehenden TXT-Betrieb)
+- **TXT exportieren:** erstellt eine klassische `.txt`-Datei im bestehenden Header+`---`+Body-Format.
+- **TXT importieren:** vorhandene TXT-Dateien per Datei-Upload oder Einfügen laden, bearbeiten und wieder speichern.
+- Damit bleibt der gesamte bisherige Content-Workflow kompatibel.
+
+### Feldregeln (wie im Parser/Validator)
+- `title`: Pflichtfeld
+- `date`: wird intern im TXT-Format `TT.MM.JJJJ HH:mm` gespeichert
+- `expires`: wird intern im TXT-Format `TT.MM.JJJJ HH:mm` gespeichert
+- `body`: sollte Text enthalten
+- Schalter „Sondertermin anzeigen“ setzt intern `anzeige: ja/nein`
+
+> Hinweis: Das alte TXT-Format bleibt vollständig kompatibel (Import/Export), aber der empfohlene Workflow ist jetzt der Adminbereich.
 
 ## 3) Branding austauschen
 1. Logos/Bilder in `public/content/branding/` ersetzen.

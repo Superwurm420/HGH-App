@@ -7,8 +7,39 @@ Die App liest automatisch die neueste Stundenplan-PDF ein, erkennt verfügbare K
 - **Wochenplan (`/woche`)**: komplette Wochenansicht als scrollbare Tabelle (ca. 3 Tage sichtbar) + Hervorhebung des aktuellen Tages + Datum der letzten Kalender-Aktualisierung
 - **Pinnwand (`/pinnwand`)**: TXT-basierte Meldungen inkl. Warnungen bei Teilfehlern
 - **TV-Ansicht (`/tv`)**: Großformatige Eingangsbereich-Ansicht mit Uhrzeit, Logo, Pinnwand, Sonderterminen und klassenübergreifender Tages-Tabelle (aktuelle Stunde hervorgehoben)
-- **Einheitliche Terminpflege**: Ein gemeinsames TXT-Format für Pinnwand + hervorgehobene Sondertermine (`highlight`) inkl. klassengenauer Sichtbarkeit (`classes`)
+- **Admin (`/admin`)**: geschützter Redaktionsbereich mit vereinfachtem Formular (Kalender/Uhrzeit-Picker), Live-Validierung sowie TXT-Import/Export
+- **Einheitliche Terminpflege**: Ein gemeinsames TXT-Format für Pinnwand + hervorgehobene Sondertermine (`anzeige: ja`) inkl. klassengenauer Sichtbarkeit (`classes`)
 - **Einstellungen (`/einstellungen`)**: Weiterleitung auf „Weiteres“ (`/weiteres`)
+
+## Adminbereich aktivieren (Passwort setzen)
+Der Adminbereich ist per HTTP Basic Auth geschützt.
+
+### Lokal
+1. Datei `.env.local` im Projekt anlegen (Vorlage: `.env.example`).
+2. Zugangsdaten eintragen:
+   - `ADMIN_USER=redaktion`
+   - `ADMIN_PASSWORD=<dein-sicheres-passwort>`
+3. App neu starten (`npm run dev`).
+4. `/admin` öffnen und im Browser-Dialog anmelden.
+
+### Vercel (Produktion)
+1. **Project → Settings → Environment Variables** öffnen.
+2. `ADMIN_USER` und `ADMIN_PASSWORD` anlegen.
+3. Neu deployen.
+4. `/admin` aufrufen und mit diesen Daten einloggen.
+
+Wenn die Variablen nicht gesetzt sind, bleibt `/admin` bewusst gesperrt.
+
+## Redaktions-Workflow für Nicht-Techniker
+1. `/admin` öffnen.
+2. Formular ausfüllen (`title`, Start-/Ablaufzeit per Kalender+Uhrzeit, Zielgruppe, Klassen, Schalter für Sondertermin, `body`).
+3. Live-Hinweise beachten (Fehler/Warnungen werden sofort angezeigt).
+4. Optional per „TXT exportieren“ eine Datei lokal sichern.
+5. „Auf Server speichern“ speichert kompatibel ins bestehende TXT-Format unter `public/content/announcements/`.
+
+Ausführliche Schritt-für-Schritt-Anleitung: [docs/CONTENT_GUIDE.md](docs/CONTENT_GUIDE.md)
+
+![Screenshot Adminbereich](browser:/tmp/codex_browser_invocations/6b00fb57a87b4048/artifacts/artifacts/admin-editor-v2.png)
 
 ## Neuen Stundenplan hinzufügen
 1. PDF in `public/content/timetables/` ablegen (Name: `Stundenplan_kw_XX_HjY_YYYY_YY.pdf`)
@@ -65,7 +96,7 @@ Alle wichtigen Bilddateien liegen damit an einem Ort: `public/content/branding/`
 - **Fallback**: Auch PDFs mit abweichenden Namen werden erkannt, wenn eine Jahreszahl im Namen steht.
 - **Neuester Plan robust**: Reihenfolge ist deterministisch über das echte Startdatum der ISO-Kalenderwoche (Montag). So wird ein bereits hochgeladener Plan für die kommende Woche sofort aktiv; `lastModified` und Dateiname bleiben Tie-Breaker.
 - **Auto-Update ohne Handarbeit**: Client prüft regelmäßig per ETag auf neue Stundenplan-Version und aktualisiert die UI per `router.refresh()` ohne harten Full-Reload.
-- **Sondertermine**: Kommen aus denselben TXT-Dateien wie Pinnwand-Beiträge und werden über `highlight: true` priorisiert angezeigt.
+- **Sondertermine**: Kommen aus denselben TXT-Dateien wie Pinnwand-Beiträge und werden über `anzeige: ja` priorisiert angezeigt.
 - **Sichtbarkeit je Klasse**: Beiträge können über `classes` gezielt auf Klassen begrenzt werden.
 - **Tagesmeldungen**: Zeitlogik orientiert sich am aktuell ausgewählten Stundenplan (`vorUnterricht`, `inPause`, `nachUnterricht`) mit optionalen Klassen-Overrides in `public/content/messages.json` unter `klassen.<KLASSE>`.
 - **Ferienlogik**: Schulfreie Tage/Ferien kommen aus `public/content/schulferien-nds.json`; gesetzliche Feiertage werden separat erkannt.
