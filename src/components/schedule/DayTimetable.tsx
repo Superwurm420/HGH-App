@@ -59,13 +59,16 @@ export function DayTimetable({
           <div className="tt-header">
             <div className="tt-cell">Stunde</div>
             <div className="tt-cell">Fach</div>
-            <div className="tt-cell tt-cell-end">Raum</div>
+            <div className="tt-cell tt-info-header">
+              <span className="tt-info-header-main">Raum</span>
+              <span className="tt-info-header-sub">Lehrer</span>
+            </div>
           </div>
           {lessons.map((lesson: LessonEntry) => (
             <div key={`${activeDay}-${lesson.period}-${lesson.time}`} className="tt-row">
               <div className="tt-cell tt-period-cell">
                 <span className="tt-period-num">
-                  {lesson.periodEnd ? `${lesson.period}+${lesson.periodEnd}.` : `${lesson.period}.`}
+                  {lesson.periodEnd ? `Std. ${lesson.period}/${lesson.periodEnd}` : `Std. ${lesson.period}`}
                 </span>
                 <span className="tt-period-time">{lesson.time}</span>
               </div>
