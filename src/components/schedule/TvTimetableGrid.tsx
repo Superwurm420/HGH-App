@@ -34,13 +34,15 @@ function parseTimeRange(time: string): LessonRange | null {
   };
 }
 
+const berlinTimeFormatter = new Intl.DateTimeFormat('de-DE', {
+  timeZone: 'Europe/Berlin',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+});
+
 function getBerlinMinutesNow(): number {
-  const parts = new Intl.DateTimeFormat('de-DE', {
-    timeZone: 'Europe/Berlin',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  }).formatToParts(new Date());
+  const parts = berlinTimeFormatter.formatToParts(new Date());
 
   const hour = Number(parts.find((part) => part.type === 'hour')?.value ?? '0');
   const minute = Number(parts.find((part) => part.type === 'minute')?.value ?? '0');

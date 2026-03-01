@@ -57,13 +57,35 @@ function formatSince(mins: number) {
   return `seit ${formatDuration(mins)}`;
 }
 
+const berlinTimeFormatter = new Intl.DateTimeFormat('de-DE', {
+  timeZone: 'Europe/Berlin',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+});
+
+const berlinDateFormatter = new Intl.DateTimeFormat('de-DE', {
+  timeZone: 'Europe/Berlin',
+  weekday: 'long',
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+});
+
+const berlinCalendarWeekFormatter = new Intl.DateTimeFormat('de-DE', {
+  timeZone: 'Europe/Berlin',
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+});
+
+const berlinWeekdayFormatter = new Intl.DateTimeFormat('de-DE', {
+  timeZone: 'Europe/Berlin',
+  weekday: 'short',
+});
+
 function getIsoCalendarWeek(date: Date) {
-  const parts = new Intl.DateTimeFormat('de-DE', {
-    timeZone: 'Europe/Berlin',
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  }).formatToParts(date);
+  const parts = berlinCalendarWeekFormatter.formatToParts(date);
 
   const day = Number(parts.find((part) => part.type === 'day')?.value ?? 1);
   const month = Number(parts.find((part) => part.type === 'month')?.value ?? 1);
@@ -85,41 +107,18 @@ export function Countdown({ lessons = [] }: { lessons?: LessonEntry[] }) {
     return () => clearInterval(id);
   }, []);
 
-  const berlinFormatter = new Intl.DateTimeFormat('de-DE', {
-    timeZone: 'Europe/Berlin',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  });
-
-  const dateFormatter = new Intl.DateTimeFormat('de-DE', {
-    timeZone: 'Europe/Berlin',
-    weekday: 'long',
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  });
-
-  const timeStr = berlinFormatter.format(now);
-  const dateStr = dateFormatter.format(now);
+  const timeStr = berlinTimeFormatter.format(now);
+  const dateStr = berlinDateFormatter.format(now);
   const calendarWeek = getIsoCalendarWeek(now);
 
   // Get Berlin-local hours/minutes for countdown calculation
-  const berlinParts = new Intl.DateTimeFormat('de-DE', {
-    timeZone: 'Europe/Berlin',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  }).formatToParts(now);
+  const berlinParts = berlinTimeFormatter.formatToParts(now);
   const berlinH = Number(berlinParts.find(p => p.type === 'hour')?.value ?? 0);
   const berlinM = Number(berlinParts.find(p => p.type === 'minute')?.value ?? 0);
   const nowMins = timeToMinutes(berlinH, berlinM);
 
   // Use Berlin timezone for the weekend check (consistent with Berlin hours above)
-  const berlinDayParts = new Intl.DateTimeFormat('de-DE', {
-    timeZone: 'Europe/Berlin',
-    weekday: 'short',
-  }).formatToParts(now);
+  const berlinDayParts = berlinWeekdayFormatter.formatToParts(now);
   const berlinDayStr = berlinDayParts.find((p) => p.type === 'weekday')?.value ?? '';
   const isWeekend = berlinDayStr.startsWith('Sa') || berlinDayStr.startsWith('So');
   const lessonSlots = lessons

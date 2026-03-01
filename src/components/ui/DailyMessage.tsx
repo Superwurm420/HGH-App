@@ -56,17 +56,19 @@ function parseTime(value: string): number {
   return timeToMinutes(h, m);
 }
 
+const berlinFullFormatter = new Intl.DateTimeFormat('de-DE', {
+  timeZone: 'Europe/Berlin',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  weekday: 'short',
+  hour12: false,
+});
+
 function getBerlinNowParts(): BerlinDateParts & { hour: number; minute: number; weekdayShort: string } {
-  const parts = new Intl.DateTimeFormat('de-DE', {
-    timeZone: 'Europe/Berlin',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    weekday: 'short',
-    hour12: false,
-  }).formatToParts(new Date());
+  const parts = berlinFullFormatter.formatToParts(new Date());
 
   return {
     year: Number(parts.find((p) => p.type === 'year')?.value ?? 0),
