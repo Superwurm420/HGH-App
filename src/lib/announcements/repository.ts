@@ -42,6 +42,44 @@ function normalizeAnzeige(value: string): 'ja' | 'nein' {
   return value.trim().toLowerCase() === 'ja' ? 'ja' : 'nein';
 }
 
+function sanitizeString(value: unknown, fallback = ''): string {
+  return typeof value === 'string' ? value : fallback;
+}
+
+function sanitizeClasses(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return [...new Set(value.map((item) => (typeof item === 'string' ? item.trim() : '')).filter(Boolean))];
+  }
+  if (typeof value === 'string') {
+    return parseClasses(value);
+  }
+  return [];
+}
+
+function normalizeRecord(entry: unknown): AnnouncementRecord | null {
+  if (!entry || typeof entry !== 'object') return null;
+
+  const raw = entry as Partial<AnnouncementRecord>;
+  const id = sanitizeString(raw.id).trim();
+  if (!id) return null;
+
+  const anzeige = normalizeAnzeige(sanitizeString(raw.anzeige, raw.highlight ? 'ja' : 'nein'));
+
+  return {
+    id,
+    title: sanitizeString(raw.title),
+    date: sanitizeString(raw.date),
+    audience: sanitizeString(raw.audience, 'alle'),
+    classes: sanitizeClasses(raw.classes),
+    expires: sanitizeString(raw.expires),
+    anzeige,
+    highlight: anzeige === 'ja',
+    body: sanitizeString(raw.body),
+    createdAt: sanitizeString(raw.createdAt),
+    updatedAt: sanitizeString(raw.updatedAt),
+  };
+}
+
 function parseClasses(value: string): string[] {
   return [...new Set(value.split(/[;,/|\s]+/).map((item) => item.trim()).filter(Boolean))];
 }
@@ -59,9 +97,14 @@ function readStore(): AnnouncementStorePayload {
     if (parsed.version !== 1 || !Array.isArray(parsed.announcements)) {
       throw new Error('Ungültiges Store-Format.');
     }
+
+    const announcements = parsed.announcements
+      .map((entry) => normalizeRecord(entry))
+      .filter((entry): entry is AnnouncementRecord => entry !== null);
+
     return {
       version: 1,
-      announcements: parsed.announcements.filter((entry): entry is AnnouncementRecord => Boolean(entry && entry.id)),
+      announcements,
     };
   } catch {
     return { version: 1, announcements: [] };
