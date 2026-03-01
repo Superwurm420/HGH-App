@@ -33,16 +33,11 @@ export function TodaySchedule({
         <p className="text-sm text-muted">Kein Unterricht erkannt.</p>
       ) : (
         <div className="overflow-hidden rounded-xl border border-[var(--line)]">
-          <div className="tt-header">
-            <div className="tt-cell">Stunde</div>
-            <div className="tt-cell">Fach</div>
-            <div className="tt-cell tt-cell-end">Raum</div>
-          </div>
           {lessons.map((lesson) => (
             <div key={`${lesson.period}-${lesson.time}`} className="tt-row">
               <div className="tt-cell tt-period-cell">
                 <span className="tt-period-num">
-                  {lesson.periodEnd ? `${lesson.period}+${lesson.periodEnd}.` : `${lesson.period}.`}
+                  {lesson.periodEnd ? `Std. ${lesson.period}/${lesson.periodEnd}` : `Std. ${lesson.period}`}
                 </span>
                 <span className="tt-period-time">{lesson.time}</span>
               </div>
