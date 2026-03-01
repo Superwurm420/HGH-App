@@ -197,7 +197,12 @@ export function TvTimetableGrid({ schedulesByClass, day }: TvTimetableGridProps)
                   }
 
                   return (
-                    <td key={`${schoolClass}-${period}`} rowSpan={rowSpan} data-double={rowSpan > 1 ? 'true' : 'false'}>
+                    <td
+                      key={`${schoolClass}-${period}`}
+                      rowSpan={rowSpan}
+                      data-double={rowSpan > 1 ? 'true' : 'false'}
+                      className={lesson ? 'tv-lesson-cell' : undefined}
+                    >
                       {lesson ? (
                         <div className="tv-cell-content">
                           <span className="tv-subject">{formatLesson(lesson)}</span>
