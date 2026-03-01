@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { ExpiryCountdown } from './ExpiryCountdown';
 import { parseBerlinDate } from '@/lib/announcements/parser';
+import styles from './AnnouncementItem.module.css';
 
 type AnnouncementItemProps = {
   file: string;
@@ -32,7 +33,7 @@ export function AnnouncementItem({ file, title, date, expires, body, warnings }:
   if (hidden) return null;
 
   return (
-    <article key={file} className="announcement-card">
+    <article key={file} className={styles.card}>
       <div className="flex items-start justify-between gap-2 mb-1">
         <h3 className="text-sm font-bold">{title ?? 'Ohne Titel'}</h3>
         {date && <span className="text-xs text-muted whitespace-nowrap">{date}</span>}
@@ -48,7 +49,7 @@ export function AnnouncementItem({ file, title, date, expires, body, warnings }:
       )}
 
       {warnings.length > 0 && (
-        <div className="announcement-card highlight mt-2 text-xs">
+        <div className={`mt-2 text-xs ${styles.card} ${styles.warningBox}`}>
           {warnings.join(' ')}
         </div>
       )}

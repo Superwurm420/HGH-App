@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { parseBerlinDate } from '@/lib/announcements/parser';
+import styles from './ExpiryCountdown.module.css';
 
 function formatRemaining(seconds: number): string {
   if (seconds <= 0) return 'abgelaufen';
@@ -35,7 +36,7 @@ export function ExpiryCountdown({ expires }: { expires: string }) {
 
   return (
     <span
-      className={`expiry-countdown ${isExpired ? 'expired' : ''} ${urgency && !isExpired ? 'urgent' : ''}`}
+      className={`${styles.badge} ${isExpired ? styles.badgeExpired : ''} ${urgency && !isExpired ? styles.badgeUrgent : ''}`}
     >
       {isExpired ? 'abgelaufen' : `endet in ${formatRemaining(remaining)}`}
     </span>

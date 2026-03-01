@@ -117,34 +117,6 @@
   outline-offset: 2px;
 }
 
-.day-btn {
-  padding: 8px 14px;
-  border-radius: 12px;
-  border: 1px solid var(--line);
-  background: transparent;
-  color: var(--muted);
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 120ms ease;
-}
-
-.day-btn:hover {
-  background: rgba(0, 122, 255, 0.1);
-  color: var(--text);
-}
-
-.day-btn[data-active="true"] {
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  color: white;
-  border-color: transparent;
-  box-shadow: 0 4px 14px rgba(0, 122, 255, 0.35);
-}
-
-.day-btn.today-hint {
-  border-color: var(--accent);
-  color: var(--accent);
-}
 
 .countdown {
   margin: 10px 0 12px;
@@ -314,74 +286,8 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
-.announcement-card {
-  padding: 14px;
-  border-radius: var(--radius2);
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.06);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
 
-.light .announcement-card {
-  background: rgba(255, 255, 255, 0.5);
-}
 
-.announcement-card.highlight {
-  border-left: 3px solid #f5a623;
-  background: rgba(245, 166, 35, 0.08);
-}
-
-.nav-item {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  padding: 8px 12px;
-  border-radius: 18px;
-  border: none;
-  background: transparent;
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 120ms ease;
-  text-decoration: none;
-}
-
-.nav-item:hover {
-  color: var(--text);
-}
-
-.nav-item.active {
-  background: rgba(0, 122, 255, 0.22);
-  color: var(--accent);
-}
-
-.nav-item.active::after {
-  content: '';
-  position: absolute;
-  top: 3px;
-  width: 16px;
-  height: 2px;
-  background: var(--accent);
-  border-radius: 2px;
-}
-
-.logo-box {
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.logo-box img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
 
 .text-muted {
   color: var(--muted);
@@ -397,58 +303,7 @@
   font-weight: 600;
 }
 
-.countdown + .daily-message {
-  margin-top: 0;
-}
 
-.daily-message {
-  margin-top: 0;
-  padding: 14px 18px;
-  border-radius: var(--radius2);
-  border: 1px solid var(--line);
-  border-left: 3px solid rgba(0, 122, 255, 0.6);
-  background: linear-gradient(135deg, rgba(0, 122, 255, 0.11), rgba(52, 170, 220, 0.08));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  min-height: 68px;
-  display: flex;
-  align-items: center;
-}
-
-.light .daily-message {
-  background: linear-gradient(135deg, rgba(0, 122, 255, 0.08), rgba(52, 170, 220, 0.05));
-}
-
-.daily-message-text {
-  font-size: 15px;
-  color: var(--text);
-  line-height: 1.6;
-  font-weight: 520;
-  letter-spacing: 0.01em;
-}
-
-.expiry-countdown {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 8px;
-  background: rgba(0, 122, 255, 0.12);
-  color: var(--accent);
-  white-space: nowrap;
-}
-
-.expiry-countdown.urgent {
-  background: rgba(245, 166, 35, 0.15);
-  color: #d4840a;
-}
-
-.light .expiry-countdown.urgent {
-  color: #a0660a;
-}
-
-.expiry-countdown.expired {
-  background: rgba(255, 92, 92, 0.12);
-  color: rgba(255, 92, 92, 0.85);
-}
 
 .google-cal-wrapper {
   border-radius: var(--radius2);
@@ -634,13 +489,4 @@
     margin: 4px 0 0;
   }
 
-  .daily-message {
-    min-height: 78px;
-  }
-
-  .nav-item {
-    min-width: 110px;
-    padding: 9px 12px;
-    font-size: 12px;
-  }
 }

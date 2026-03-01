@@ -1,0 +1,242 @@
+
+.subjectPart {
+  hyphens: auto;
+}
+
+.scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.grid {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  table-layout: fixed;
+}
+
+.corner,
+.periodCell {
+  box-shadow: 1px 0 0 var(--line);
+}
+
+.dayHead {
+  width: 28vw;
+  min-width: 104px;
+  padding: 10px 8px;
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--line);
+  border-left: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+:global(.light) .dayHead {
+  background: rgba(0, 0, 0, 0.04);
+  border-left: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.dayHead:first-of-type {
+  border-left: none;
+}
+
+.dayHeadToday {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: white;
+}
+
+.todayDot {
+  display: block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  margin: 3px auto 0;
+}
+
+.corner {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  width: 56px;
+  min-width: 56px;
+  padding: 10px 8px;
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  text-align: center;
+}
+
+:global(.light) .corner {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.periodCell {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  width: 56px;
+  min-width: 56px;
+  padding: 8px 6px;
+  text-align: center;
+  border-bottom: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  background: var(--bg1);
+}
+
+:global(.light) .periodCell {
+  background: var(--surface);
+}
+
+.periodNum {
+  display: block;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.periodTime {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+
+.cell {
+  padding: 6px;
+  border-bottom: 1px solid var(--line);
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  text-align: center;
+  vertical-align: middle;
+}
+
+:global(.light) .cell {
+  border-left: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.rowAfterBreak .cell,
+.rowAfterBreak .periodCell {
+  border-top: 6px solid transparent;
+}
+
+.cellToday {
+  background: rgba(0, 122, 255, 0.06);
+}
+
+.row:nth-child(even) .cell:not(.cellToday) {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+:global(.light) .row:nth-child(even) .cell:not(.cellToday) {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.row:last-child .cell,
+.row:last-child .periodCell {
+  border-bottom: none;
+}
+
+.cellContent {
+  min-height: 56px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.subject {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  hyphens: auto;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.meta {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.room {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  text-align: left;
+}
+
+.detail {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  text-align: right;
+}
+
+.empty {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+@media (min-width: 740px) {
+  .grid {
+    min-width: 760px;
+  }
+
+  .dayHead {
+    width: 180px;
+    min-width: 180px;
+    font-size: 14px;
+    padding: 12px 10px;
+  }
+
+  .periodCell {
+    min-width: 70px;
+    padding: 10px 8px;
+  }
+
+  .cell {
+    padding: 8px;
+  }
+
+  .cellContent {
+    min-height: 64px;
+  }
+
+  .subject {
+    font-size: 13px;
+  }
+
+  .room,
+  .detail,
+  .periodTime {
+    font-size: 11px;
+  }
+
+  .corner {
+    font-size: 12px;
+    padding: 12px 10px;
+  }
+
+  .periodNum {
+    font-size: 14px;
+  }
+
+  .periodTime {
+    margin-top: 2px;
+  }
+}

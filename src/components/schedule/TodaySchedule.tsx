@@ -1,4 +1,5 @@
 import { LessonEntry, SpecialEvent, Weekday, eventAppliesToDay } from '@/lib/timetable/types';
+import styles from './TodaySchedule.module.css';
 
 function formatSubject(subject: string) {
   return subject.split('/').map((part, i, arr) => (
@@ -22,7 +23,7 @@ export function TodaySchedule({
   return (
     <div>
       {todaysEvents.length > 0 && (
-        <div className="announcement-card highlight mb-3">
+        <div className={styles.specialEvent}>
           {todaysEvents.map((event) => (
             <p key={event.id} className="text-sm font-bold mb-1">{event.title}</p>
           ))}
