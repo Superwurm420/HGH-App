@@ -407,12 +407,23 @@ async function parsePdf(filePath, getDocument) {
       const prev = lastByClass[key];
       const canReusePreviousSlot = !prev.subject && !prev.detail && !prev.room;
       const isSpecialCell = !isRoomValue(val) && !isTeacherToken(val);
+      const previousSubject = (prev.subject ?? '').trim();
+      const hasOnlySubjectSoFar = previousSubject && !prev.detail && !prev.room;
+      const canExtendSpecialSubject = hasOnlySubjectSoFar && !isTeacherToken(previousSubject);
 
       // Sondertermine stehen oft in einer Zeile ohne Stundenindex/-zeit links.
       // Wenn der vorherige Slot für diese Klasse leer ist, wird dessen Fach direkt
       // mit dem Text aus der Zelle belegt (ohne Schlüsselwortlisten).
       if (canReusePreviousSlot && isSpecialCell) {
         prev.subject = val;
+        continue;
+      }
+
+      // Sondertermin-Texte können im PDF über mehrere Zeilen laufen
+      // (z.B. "BBS ...", "USF Fertigung"). Solange es keinen Raum/Detail-Teil gibt,
+      // erweitern wir den Fachtext statt ihn als Detail zu speichern.
+      if (canExtendSpecialSubject && isSpecialCell) {
+        prev.subject = `${previousSubject} ${val}`.replace(/\s+/g, ' ').trim();
         continue;
       }
 
