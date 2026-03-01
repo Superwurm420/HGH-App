@@ -6,6 +6,7 @@ Die App liest automatisch die neueste Stundenplan-PDF ein, erkennt verfügbare K
 - **Heute (`/`)**: Uhrzeit, Klassenauswahl, heutiger Unterricht, Sondertermine
 - **Wochenplan (`/woche`)**: komplette Wochenansicht als scrollbare Tabelle (ca. 3 Tage sichtbar) + Hervorhebung des aktuellen Tages + Datum der letzten Kalender-Aktualisierung
 - **Pinnwand (`/pinnwand`)**: TXT-basierte Meldungen inkl. Warnungen bei Teilfehlern
+- **TV-Ansicht (`/tv`)**: Großformatige Eingangsbereich-Ansicht mit Uhrzeit, Logo, Pinnwand, Sonderterminen und klassenübergreifender Tages-Tabelle (aktuelle Stunde hervorgehoben)
 - **Einheitliche Terminpflege**: Ein gemeinsames TXT-Format für Pinnwand + hervorgehobene Sondertermine (`highlight`) inkl. klassengenauer Sichtbarkeit (`classes`)
 - **Einstellungen (`/einstellungen`)**: Weiterleitung auf „Weiteres“ (`/weiteres`)
 

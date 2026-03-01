@@ -1,5 +1,16 @@
 const LINKS = [
   {
+    title: 'TV-Ansicht Eingangsbereich',
+    url: '/tv',
+    subtitle: 'Interne Vollbild-Ansicht',
+    icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="4" width="20" height="14" rx="2" />
+        <path d="M8 20h8" />
+      </svg>
+    ),
+  },
+  {
     title: 'Schul-Website',
     url: 'https://holztechnik-hildesheim.de/',
     subtitle: 'holztechnik-hildesheim.de',
@@ -50,8 +61,8 @@ export default function WeiteresPage() {
               key={link.url}
               className="link-card"
               href={link.url}
-              target="_blank"
-              rel="noopener noreferrer"
+              target={link.url.startsWith('http') ? '_blank' : undefined}
+              rel={link.url.startsWith('http') ? 'noopener noreferrer' : undefined}
             >
               <span className="link-icon" aria-hidden="true">{link.icon}</span>
               <div>
