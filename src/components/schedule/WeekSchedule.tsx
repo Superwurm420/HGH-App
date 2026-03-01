@@ -1,4 +1,5 @@
 import { LessonEntry, WeekPlan, WEEKDAYS, Weekday } from '@/lib/timetable/types';
+import styles from './WeekSchedule.module.css';
 
 const DAY_LABELS: Record<Weekday, string> = {
   MO: 'Mo', DI: 'Di', MI: 'Mi', DO: 'Do', FR: 'Fr',
@@ -15,7 +16,7 @@ function timeStart(time: string): string {
 
 function formatSubject(subject: string) {
   return subject.split('/').map((part, i, arr) => (
-    <span key={i} className="wk-subject-part">
+    <span key={i} className={styles.subjectPart}>
       {part}{i < arr.length - 1 && <>{'/\u200B'}</>}
     </span>
   ));
@@ -84,21 +85,21 @@ export function WeekSchedule({
   const slots = collectPeriodSlots(week);
 
   return (
-    <div className="wk-scroll" role="region" aria-label="Wochenstundenplan mit horizontalem Scrollen">
-      <table className="wk-grid">
+    <div className={styles.scroll} role="region" aria-label="Wochenstundenplan mit horizontalem Scrollen">
+      <table className={styles.grid}>
         <thead>
           <tr>
-            <th className="wk-corner">Std.</th>
+            <th className={styles.corner}>Std.</th>
             {WEEKDAYS.map((day) => {
               const isToday = day === todayKey;
               return (
                 <th
                   key={day}
-                  className={`wk-day-head ${isToday ? 'today' : ''}`}
+                  className={isToday ? `${styles.dayHead} ${styles.dayHeadToday}` : styles.dayHead}
                   title={DAY_FULL[day]}
                 >
                   {DAY_LABELS[day]}
-                  {isToday && <span className="wk-today-dot" aria-label="heute" />}
+                  {isToday && <span className={styles.todayDot} aria-label="heute" />}
                 </th>
               );
             })}
@@ -108,11 +109,11 @@ export function WeekSchedule({
           {slots.map((slot) => (
             <tr
               key={slot.period}
-              className={`wk-row ${hasBreakBeforePeriod(slot.period) ? 'wk-row-after-break' : ''}`}
+              className={hasBreakBeforePeriod(slot.period) ? `${styles.row} ${styles.rowAfterBreak}` : styles.row}
             >
-              <td className="wk-period-cell">
-                <span className="wk-period-num">{slot.period}</span>
-                <span className="wk-period-time">{timeStart(slot.time)}</span>
+              <td className={styles.periodCell}>
+                <span className={styles.periodNum}>{slot.period}</span>
+                <span className={styles.periodTime}>{timeStart(slot.time)}</span>
               </td>
               {WEEKDAYS.map((day) => {
                 const isToday = day === todayKey;
@@ -134,16 +135,16 @@ export function WeekSchedule({
                     <td
                       key={day}
                       rowSpan={rowSpan}
-                      className={`wk-cell ${isToday ? 'wk-cell-today' : ''}`}
+                      className={isToday ? `${styles.cell} ${styles.cellToday}` : styles.cell}
                     >
-                      <div className="wk-cell-content">
-                        <span className="wk-subject">
+                      <div className={styles.cellContent}>
+                        <span className={styles.subject}>
                           {formatSubject(lesson.subject ?? '–')}
                         </span>
                         {(lesson.room || lesson.detail) && (
-                          <span className="wk-meta">
-                            {lesson.room && <span className="wk-room">{lesson.room}</span>}
-                            {lesson.detail && <span className="wk-detail">{lesson.detail}</span>}
+                          <span className={styles.meta}>
+                            {lesson.room && <span className={styles.room}>{lesson.room}</span>}
+                            {lesson.detail && <span className={styles.detail}>{lesson.detail}</span>}
                           </span>
                         )}
                       </div>
@@ -154,9 +155,9 @@ export function WeekSchedule({
                 return (
                   <td
                     key={day}
-                    className={`wk-cell ${isToday ? 'wk-cell-today' : ''}`}
+                    className={isToday ? `${styles.cell} ${styles.cellToday}` : styles.cell}
                   >
-                    <span className="wk-empty">–</span>
+                    <span className={styles.empty}>–</span>
                   </td>
                 );
               })}

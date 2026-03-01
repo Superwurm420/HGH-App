@@ -1,0 +1,87 @@
+.bottomNav {
+  position: fixed;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  left: 16px;
+  right: 16px;
+  z-index: 100;
+  display: flex;
+  justify-content: space-around;
+  padding: 8px;
+  border-radius: 28px;
+  background: rgba(10, 14, 26, 0.82);
+  backdrop-filter: blur(48px) saturate(200%);
+  -webkit-backdrop-filter: blur(48px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+:global(.light) .bottomNav {
+  background: rgba(255, 255, 255, 0.82);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.navItem {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 12px;
+  border-radius: 18px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 120ms ease;
+  text-decoration: none;
+}
+
+.navItem:hover {
+  color: var(--text);
+}
+
+.navItemActive {
+  background: rgba(0, 122, 255, 0.22);
+  color: var(--accent);
+}
+
+.navItemActive::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  width: 16px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+@media (min-width: 1024px) {
+  .bottomNav {
+    position: static;
+    max-width: 480px;
+    margin: 0 auto 16px;
+    border-radius: var(--radius);
+  }
+}
+
+@media (min-width: 900px) and (orientation: landscape) {
+  .bottomNav {
+    position: fixed;
+    left: max(22px, env(safe-area-inset-left, 0px) + 10px);
+    right: max(22px, env(safe-area-inset-right, 0px) + 10px);
+    bottom: max(16px, env(safe-area-inset-bottom, 0px) + 8px);
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 10px 12px;
+    justify-content: space-between;
+  }
+
+  .navItem {
+    min-width: 110px;
+    padding: 9px 12px;
+    font-size: 12px;
+  }
+}

@@ -14,6 +14,7 @@ import {
   isWeekend as checkWeekend,
 } from '@/lib/berlin-time';
 import schoolHolidaysData from '@/generated/school-holidays-data.json';
+import styles from './DailyMessage.module.css';
 
 type MessagesData = {
   _hinweis?: string;
@@ -188,8 +189,8 @@ export function DailyMessage({
   if (!text) return null;
 
   return (
-    <div className="daily-message">
-      <p className="daily-message-text">{text}</p>
+    <div className={styles.dailyMessage}>
+      <p className={styles.dailyMessageText}>{text}</p>
     </div>
   );
 }

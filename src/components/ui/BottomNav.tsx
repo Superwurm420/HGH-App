@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import styles from './BottomNav.module.css';
 
 const NAV_ITEMS = [
   {
@@ -51,14 +52,15 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="bottom-nav" role="navigation" aria-label="Hauptnavigation">
+    <nav className={styles.bottomNav} role="navigation" aria-label="Hauptnavigation">
       {NAV_ITEMS.map((item) => {
         const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
+        const classes = isActive ? `${styles.navItem} ${styles.navItemActive}` : styles.navItem;
         return (
           <Link
             key={item.href}
             href={item.href}
-            className={`nav-item ${isActive ? 'active' : ''}`}
+            className={classes}
             aria-current={isActive ? 'page' : undefined}
           >
             <span aria-hidden="true">{item.icon}</span>

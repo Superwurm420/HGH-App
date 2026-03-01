@@ -1,0 +1,34 @@
+.dailyMessage {
+  margin-top: 0;
+  padding: 14px 18px;
+  border-radius: var(--radius2);
+  border: 1px solid var(--line);
+  border-left: 3px solid rgba(0, 122, 255, 0.6);
+  background: linear-gradient(135deg, rgba(0, 122, 255, 0.11), rgba(52, 170, 220, 0.08));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  min-height: 68px;
+  display: flex;
+  align-items: center;
+}
+
+:global(.countdown) + .dailyMessage {
+  margin-top: 0;
+}
+
+:global(.light) .dailyMessage {
+  background: linear-gradient(135deg, rgba(0, 122, 255, 0.08), rgba(52, 170, 220, 0.05));
+}
+
+.dailyMessageText {
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.6;
+  font-weight: 520;
+  letter-spacing: 0.01em;
+}
+
+@media (min-width: 900px) and (orientation: landscape) {
+  .dailyMessage {
+    min-height: 78px;
+  }
+}

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { LessonEntry, SpecialEvent, WeekPlan, WEEKDAYS, Weekday, eventAppliesToDay } from '@/lib/timetable/types';
+import styles from './DayTimetable.module.css';
 
 const DAY_SHORT: Record<Weekday, string> = {
   MO: 'Mo', DI: 'Di', MI: 'Mi', DO: 'Do', FR: 'Fr',
@@ -30,12 +31,12 @@ export function DayTimetable({
 
   return (
     <div>
-      <div className="flex gap-2 mb-4" role="group" aria-label="Tag auswählen">
+      <div className={styles.daySelector} role="group" aria-label="Tag auswählen">
         {WEEKDAYS.map((day) => (
           <button
             key={day}
             type="button"
-            className={`day-btn ${day === todayKey && activeDay !== day ? 'today-hint' : ''}`}
+            className={day === todayKey && activeDay !== day ? `${styles.dayButton} ${styles.dayButtonTodayHint}` : styles.dayButton}
             data-active={activeDay === day ? 'true' : 'false'}
             onClick={() => setActiveDay(day)}
           >
@@ -45,7 +46,7 @@ export function DayTimetable({
       </div>
 
       {dayEvents.length > 0 && (
-        <div className="announcement-card highlight mb-3">
+        <div className={styles.specialEvent}>
           {dayEvents.map((event) => (
             <p key={event.id} className="text-sm font-bold mb-1">{event.title}</p>
           ))}
