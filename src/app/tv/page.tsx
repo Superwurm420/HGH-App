@@ -41,6 +41,9 @@ export default async function TvPage() {
       <TvPageController />
       <header className="tv-header">
         <div className="tv-branding">
+          <div className="tv-logo-wrap" aria-hidden="true">
+            <img src="/content/branding/school-logo.svg" alt="" className="tv-logo" />
+          </div>
           <div>
             <h1>HGH - Holztechnik und Gestaltung</h1>
             <p>am Dammtor, Hildesheim</p>
@@ -91,12 +94,6 @@ export default async function TvPage() {
       </section>
 
       <section className="tv-panel tv-timetable-panel">
-        <div className="tv-panel-heading">
-          <h2>Stundenplan (alle Klassen)</h2>
-          <a className="btn secondary text-sm" href={plan.latest.href} target="_blank" rel="noreferrer">
-            Original-PDF öffnen
-          </a>
-        </div>
         <TvTimetableGrid schedulesByClass={plan.schedulesByClass} day={plan.todayKey} />
       </section>
     </div>
