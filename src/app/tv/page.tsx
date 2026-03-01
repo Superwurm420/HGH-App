@@ -28,20 +28,18 @@ export default async function TvPage() {
   return (
     <div className="tv-view">
       <TvPageController />
-      <header className="tv-header">
-        <div className="tv-branding">
-          <div className="tv-logo-wrap" aria-hidden="true">
-            <img src="/content/branding/school-logo.svg" alt="" className="tv-logo" />
-          </div>
-          <div>
-            <h1>HGH - Holztechnik und Gestaltung</h1>
-            <p>am Dammtor, Hildesheim</p>
-          </div>
-        </div>
-      </header>
-
       <section className="tv-main-grid" aria-label="TV-Übersicht">
         <article className="tv-panel tv-clock-panel">
+          <div className="tv-branding">
+            <div className="tv-logo-wrap" aria-hidden="true">
+              <img src="/content/branding/school-logo.svg" alt="" className="tv-logo" />
+            </div>
+            <div>
+              <h1>HGH - Holztechnik und Gestaltung</h1>
+              <p>am Dammtor, Hildesheim</p>
+            </div>
+          </div>
+
           <Clock variant="tv" />
           {plan.updatedAt && <p className="text-sm text-muted">Stand Stundenplan: {plan.updatedAt}</p>}
         </article>

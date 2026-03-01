@@ -1119,12 +1119,6 @@ body {
   gap: 14px;
 }
 
-.tv-header {
-  padding: 14px;
-  border-radius: var(--radius);
-  border: 1px solid var(--line);
-  background: var(--surface);
-}
 
 .tv-branding {
   display: flex;
@@ -1205,6 +1199,11 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  gap: 14px;
+}
+
+.tv-clock-panel .tv-branding {
+  margin-bottom: 4px;
 }
 
 .tv-list {
