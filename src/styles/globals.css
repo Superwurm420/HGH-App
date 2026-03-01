@@ -686,6 +686,11 @@ body {
   gap: 12px;
 }
 
+.home-landscape-grid {
+  display: grid;
+  gap: 12px;
+}
+
 .home-secondary-card {
   min-width: 0;
 }
