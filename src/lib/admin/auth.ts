@@ -1,25 +1,28 @@
-const ADMIN_USER = process.env.ADMIN_USER;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+import crypto from 'node:crypto';
 
-export function isAdminAuthConfigured(): boolean {
-  return Boolean(ADMIN_USER && ADMIN_PASSWORD);
+export const ADMIN_PASSWORD = 'hgh-admin-2026';
+export const ADMIN_COOKIE_NAME = 'hgh_admin_session';
+
+function secureCompare(a: string, b: string): boolean {
+  const aBuffer = Buffer.from(a);
+  const bBuffer = Buffer.from(b);
+  if (aBuffer.length !== bBuffer.length) return false;
+  return crypto.timingSafeEqual(aBuffer, bBuffer);
 }
 
-export function isValidBasicAuth(authHeader: string | null): boolean {
-  if (!isAdminAuthConfigured() || !authHeader?.startsWith('Basic ')) return false;
+function createSessionSignature(): string {
+  return crypto.createHash('sha256').update(`hgh-admin:${ADMIN_PASSWORD}`).digest('hex');
+}
 
-  const encoded = authHeader.slice('Basic '.length).trim();
+export function isValidAdminPassword(input: string): boolean {
+  return secureCompare(input, ADMIN_PASSWORD);
+}
 
-  try {
-    const decoded = Buffer.from(encoded, 'base64').toString('utf8');
-    const separator = decoded.indexOf(':');
-    if (separator === -1) return false;
+export function createAdminSessionToken(): string {
+  return createSessionSignature();
+}
 
-    const user = decoded.slice(0, separator);
-    const password = decoded.slice(separator + 1);
-
-    return user === ADMIN_USER && password === ADMIN_PASSWORD;
-  } catch {
-    return false;
-  }
+export function isValidAdminSessionToken(token: string | undefined): boolean {
+  if (!token) return false;
+  return secureCompare(token, createSessionSignature());
 }

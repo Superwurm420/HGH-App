@@ -54,9 +54,9 @@ scripts/
   parse-timetable-pdf.mjs           ← Parst einzelne PDF (Debugging)
 
 src/
-  data/
+  generated/
     timetable-data.json             ← Generiert durch prebuild (nicht manuell ändern)
-    announcements-data.json         ← Generiert durch prebuild
+    announcements-data.json         ← Generiert durch prebuild (Fallback/Build-Artefakt)
   app/
     page.tsx                        ← Heute: Uhrzeit + heutiger Unterricht
     tv/page.tsx                     ← TV-Ansicht für Eingangsbereich (alle Klassen parallel)
@@ -68,6 +68,11 @@ src/
     server.ts                       ← Daten-Zugriff für Seiten
     types.ts                        ← TypeScript-Typen
 ```
+
+## Pinnwand-Quelle zur Laufzeit
+- Pinnwand- und Sondertermin-Daten werden serverseitig direkt aus `public/content/announcements/*.txt` geladen.
+- Änderungen im Adminbereich sind dadurch sofort wirksam (ohne neuen Build).
+- Das TXT-Format bleibt das führende Inhaltsformat.
 
 ## Prioritäten
 1. Highlight-Termine aus Ankündigungen (`highlight: true`)

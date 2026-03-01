@@ -29,47 +29,35 @@ Beispiel: `Stundenplan_kw_09_Hj2_2025_26.pdf`
 
 ### Zugang einrichten (einmalig)
 
-#### Lokal testen
-1. `.env.local` anlegen (Vorlage: `.env.example`).
-2. Werte setzen:
-   - `ADMIN_USER=redaktion`
-   - `ADMIN_PASSWORD=<dein-sicheres-passwort>`
-3. `npm run dev` neu starten.
-4. `/admin` öffnen und mit den Daten anmelden.
+1. In `src/lib/admin/auth.ts` den Wert `ADMIN_PASSWORD` setzen.
+2. App neu starten bzw. neu deployen.
+3. `/admin` öffnen und mit dem Passwort anmelden.
 
-#### Produktion (Vercel)
-1. In Vercel: **Project → Settings → Environment Variables**.
-2. `ADMIN_USER` und `ADMIN_PASSWORD` eintragen.
-3. Neu deployen.
-4. `/admin` aufrufen und Browser-Anmeldedialog mit den Zugangsdaten ausfüllen.
+> Hinweis: Das Login ist bewusst einfach gehalten und dient nur als Zugangshürde.
 
 ### Schritt-für-Schritt: neuen Beitrag erstellen
 
 ![Screenshot Adminbereich](browser:/tmp/codex_browser_invocations/6b00fb57a87b4048/artifacts/artifacts/admin-editor-v2.png)
 
 1. `/admin` öffnen.
-2. Vereinfachtes Formular ausfüllen:
-   - Pflicht: `title`
-   - `Start` und `Ablauf` bequem per Kalender + Uhrzeit-Auswahl
+2. Formular ausfüllen:
+   - Pflicht: `title` und `date`
+   - `Start` und `Ablauf` per Kalender + Uhrzeit-Auswahl
    - `Zielgruppe` per Dropdown
-   - `Sondertermin` per einfachem Schalter (anstatt Textwert `anzeige`)
+   - `Sondertermin` per Schalter
    - Text im Feld `body`
 3. Live-Validierung beobachten:
-   - Fehler blockieren „Auf Server speichern“
-   - Warnungen zeigen sofort, was später ignoriert wird
-4. „Auf Server speichern“ klicken.
-5. Die Datei landet als `.txt` in `public/content/announcements/`.
-
-### Export/Import (kompatibel zum bestehenden TXT-Betrieb)
-- **TXT exportieren:** erstellt eine klassische `.txt`-Datei im bestehenden Header+`---`+Body-Format.
-- **TXT importieren:** vorhandene TXT-Dateien per Datei-Upload oder Einfügen laden, bearbeiten und wieder speichern.
-- Damit bleibt der gesamte bisherige Content-Workflow kompatibel.
+   - Fehler blockieren das Speichern
+   - Hinweise zeigen Verbesserungen an
+4. „Neuer Termin speichern“ klicken.
+5. Der Eintrag landet als `.txt` in `public/content/announcements/`.
+6. Bestehende Termine können aus der rechten Liste geladen, aktualisiert oder gelöscht werden.
 
 ### Feldregeln (wie im Parser/Validator)
 - `title`: Pflichtfeld
-- `date`: wird intern im TXT-Format `TT.MM.JJJJ HH:mm` gespeichert
-- `expires`: wird intern im TXT-Format `TT.MM.JJJJ HH:mm` gespeichert
-- `body`: sollte Text enthalten
+- `date`: Pflichtfeld im Format `TT.MM.JJJJ HH:mm`
+- `expires`: optional im Format `TT.MM.JJJJ HH:mm`
+- `body`: optional, aber empfohlen
 - Schalter „Sondertermin anzeigen“ setzt intern `anzeige: ja/nein`
 
 > Hinweis: Das alte TXT-Format bleibt vollständig kompatibel (Import/Export), aber der empfohlene Workflow ist jetzt der Adminbereich.

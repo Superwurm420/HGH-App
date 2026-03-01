@@ -13,6 +13,7 @@ import { GoogleCalendar } from '@/components/ui/GoogleCalendar';
 import messagesData from '@/generated/messages-data.json';
 import calendarData from '@/generated/calendar-data.json';
 
+export const dynamic = 'force-dynamic';
 const MAX_HOME_ANNOUNCEMENTS = 2;
 
 export default async function HomePage({ searchParams }: { searchParams: { klasse?: string } }) {

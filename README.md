@@ -7,35 +7,25 @@ Die App liest automatisch die neueste Stundenplan-PDF ein, erkennt verfügbare K
 - **Wochenplan (`/woche`)**: komplette Wochenansicht als scrollbare Tabelle (ca. 3 Tage sichtbar) + Hervorhebung des aktuellen Tages + Datum der letzten Kalender-Aktualisierung
 - **Pinnwand (`/pinnwand`)**: TXT-basierte Meldungen inkl. Warnungen bei Teilfehlern
 - **TV-Ansicht (`/tv`)**: Großformatige Eingangsbereich-Ansicht mit Uhrzeit, Logo, Pinnwand, Sonderterminen und klassenübergreifender Tages-Tabelle (aktuelle Stunde hervorgehoben)
-- **Admin (`/admin`)**: geschützter Redaktionsbereich mit vereinfachtem Formular (Kalender/Uhrzeit-Picker), Live-Validierung sowie TXT-Import/Export
+- **Admin (`/admin`)**: geschützter Redaktionsbereich mit Passwort-Login, einfacher Terminverwaltung (Erstellen/Bearbeiten/Löschen) und Live-Validierung
 - **Einheitliche Terminpflege**: Ein gemeinsames TXT-Format für Pinnwand + hervorgehobene Sondertermine (`anzeige: ja`) inkl. klassengenauer Sichtbarkeit (`classes`)
 - **Einstellungen (`/einstellungen`)**: Weiterleitung auf „Weiteres“ (`/weiteres`)
 
-## Adminbereich aktivieren (Passwort setzen)
-Der Adminbereich ist per HTTP Basic Auth geschützt.
+## Adminbereich nutzen (einfaches Passwort)
+Der Adminbereich nutzt ein bewusst einfaches Passwort-Login ohne komplexe Benutzerverwaltung.
 
-### Lokal
-1. Datei `.env.local` im Projekt anlegen (Vorlage: `.env.example`).
-2. Zugangsdaten eintragen:
-   - `ADMIN_USER=redaktion`
-   - `ADMIN_PASSWORD=<dein-sicheres-passwort>`
-3. App neu starten (`npm run dev`).
-4. `/admin` öffnen und im Browser-Dialog anmelden.
+1. Passwort in `src/lib/admin/auth.ts` bei `ADMIN_PASSWORD` setzen.
+2. App neu starten (`npm run dev` oder neuer Deploy).
+3. `/admin` öffnen und das Passwort eingeben.
 
-### Vercel (Produktion)
-1. **Project → Settings → Environment Variables** öffnen.
-2. `ADMIN_USER` und `ADMIN_PASSWORD` anlegen.
-3. Neu deployen.
-4. `/admin` aufrufen und mit diesen Daten einloggen.
-
-Wenn die Variablen nicht gesetzt sind, bleibt `/admin` bewusst gesperrt.
+Hinweis: Das ist absichtlich eine einfache Zugangshürde und keine vollwertige Sicherheitslösung.
 
 ## Redaktions-Workflow für Nicht-Techniker
 1. `/admin` öffnen.
 2. Formular ausfüllen (`title`, Start-/Ablaufzeit per Kalender+Uhrzeit, Zielgruppe, Klassen, Schalter für Sondertermin, `body`).
 3. Live-Hinweise beachten (Fehler/Warnungen werden sofort angezeigt).
-4. Optional per „TXT exportieren“ eine Datei lokal sichern.
-5. „Auf Server speichern“ speichert kompatibel ins bestehende TXT-Format unter `public/content/announcements/`.
+4. „Neuer Termin speichern“ legt den Eintrag direkt als TXT-Datei unter `public/content/announcements/` an.
+5. Bestehende Termine können aus der Liste geladen, bearbeitet und gelöscht werden.
 
 Ausführliche Schritt-für-Schritt-Anleitung: [docs/CONTENT_GUIDE.md](docs/CONTENT_GUIDE.md)
 
