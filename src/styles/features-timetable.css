@@ -1,0 +1,138 @@
+.tt-header,
+.tt-row {
+  display: grid;
+  grid-template-columns: 90px 1fr auto;
+}
+
+.tt-header {
+  background: rgba(255, 255, 255, 0.08);
+  font-weight: 750;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-radius: 12px 12px 0 0;
+}
+
+.light .tt-header {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.tt-cell {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.tt-cell-end {
+  text-align: right;
+}
+
+.tt-period-cell {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: 1px;
+}
+
+.tt-period-num {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.tt-period-time {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.2;
+}
+
+.tt-subject-cell {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.35;
+  word-break: break-word;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+}
+
+.tt-info-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 1px;
+  min-width: 56px;
+}
+
+.tt-room {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.tt-detail {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.2;
+}
+
+.tt-row:nth-child(even) {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.light .tt-row:nth-child(even) {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.tt-row.current {
+  background: rgba(0, 122, 255, 0.16);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.tt-row:last-child .tt-cell {
+  border-bottom: none;
+}
+
+@media (max-width: 739px) {
+  .tt-header,
+  .tt-row {
+    grid-template-columns: 78px 1fr auto;
+  }
+
+  .tt-cell {
+    padding: 9px 8px;
+  }
+
+  .tt-period-num {
+    font-size: 13px;
+  }
+
+  .tt-period-time {
+    font-size: 10px;
+  }
+
+  .tt-info-cell {
+    min-width: 48px;
+  }
+}
+
+@media (max-width: 360px) {
+  .tt-header,
+  .tt-row {
+    grid-template-columns: 68px 1fr auto;
+  }
+
+  .tt-info-cell {
+    min-width: 42px;
+  }
+}
+
+@media (min-width: 900px) and (orientation: landscape) {
+  .tt-cell {
+    padding: 11px 12px;
+  }
+}
