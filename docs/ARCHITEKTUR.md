@@ -6,6 +6,7 @@
 - Verfügbare Klassen werden **dynamisch aus dem PDF-Header** erkannt (nicht im Code festgelegt).
 - Spaltenbreiten werden automatisch aus den Abständen der erkannten Klassen berechnet.
 - Startseite zeigt den **heutigen** Unterricht der gewählten Klasse, Wochenansicht zeigt alle Wochentage.
+- Zusätzliche TV-Route (`/tv`) zeigt eine dauerhafte Eingangsbereich-Ansicht mit Uhrzeit, Logo, Pinnwand, Sonderterminen und Tages-Stundenplan aller Klassen in einer gemeinsamen Tabelle.
 
 ## Wie die PDF-Erkennung funktioniert
 
@@ -58,6 +59,7 @@ src/
     announcements-data.json         ← Generiert durch prebuild
   app/
     page.tsx                        ← Heute: Uhrzeit + heutiger Unterricht
+    tv/page.tsx                     ← TV-Ansicht für Eingangsbereich (alle Klassen parallel)
     stundenplan/page.tsx            ← Wochenübersicht
     pinnwand/page.tsx               ← Ankündigungen
   lib/timetable/

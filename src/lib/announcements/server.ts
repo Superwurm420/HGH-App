@@ -40,3 +40,10 @@ export async function getSpecialEventsByClass(schoolClass: SchoolClass): Promise
     .map(toSpecialEvent)
     .filter((x): x is SpecialEvent => x !== null);
 }
+
+export async function getSpecialEventsForAllClasses(): Promise<SpecialEvent[]> {
+  const announcements = await getAnnouncements();
+  return announcements
+    .map(toSpecialEvent)
+    .filter((x): x is SpecialEvent => x !== null);
+}

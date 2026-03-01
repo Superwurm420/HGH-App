@@ -188,3 +188,25 @@ export async function getWeeklyPlanForClass(requestedClass?: SchoolClass) {
     todayKey: weekdayForToday(),
   };
 }
+
+export async function getWeeklyPlanForAllClasses() {
+  const data = loadTimetableData();
+  const latest = getLatestTimetable();
+  if (!latest) return null;
+
+  const parsed = data.schedules[latest.filename];
+  if (!parsed) return null;
+
+  const availableClasses = Object.keys(parsed).sort();
+  if (availableClasses.length === 0) return null;
+
+  const updatedAt = getLatestTimetableUpdatedDate(latest);
+
+  return {
+    latest,
+    updatedAt,
+    availableClasses,
+    schedulesByClass: parsed,
+    todayKey: weekdayForToday(),
+  };
+}
