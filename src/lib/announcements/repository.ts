@@ -89,7 +89,9 @@ function serializeClasses(value: string[]): string {
 }
 
 function readStore(): AnnouncementStorePayload {
-  ensureStoreExists();
+  if (!fs.existsSync(storePath)) {
+    return { version: 1, announcements: [] };
+  }
 
   try {
     const raw = fs.readFileSync(storePath, 'utf8');
