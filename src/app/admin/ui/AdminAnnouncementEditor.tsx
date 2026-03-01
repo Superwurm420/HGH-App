@@ -1,22 +1,19 @@
 'use client';
 
-import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   AnnouncementFormData,
   ValidationIssue,
   fromLocalDateTimeInput,
   getDefaultAnnouncementFormData,
-  parseAnnouncementTxt,
-  serializeAnnouncementTxt,
   toLocalDateTimeInput,
   validateAnnouncementForm,
 } from '@/lib/announcements/editor';
 
 type ApiFileEntry = {
+  id: string;
   file: string;
-  raw: string;
-  parsed: AnnouncementFormData;
-  issues: ValidationIssue[];
+  data: AnnouncementFormData;
 };
 
 const audienceOptions = ['alle', 'Schülerinnen und Schüler', 'Lehrkräfte', 'Eltern', 'Ausbildungspartner'];
@@ -48,10 +45,15 @@ function localNowRoundedToFiveMinutes(): string {
 }
 
 export function AdminAnnouncementEditor() {
-  const [filename, setFilename] = useState('neuer_eintrag');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState('');
+  const [isLoginPending, setIsLoginPending] = useState(false);
+
   const [formData, setFormData] = useState<AnnouncementFormData>(getDefaultAnnouncementFormData());
   const [savedFiles, setSavedFiles] = useState<ApiFileEntry[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [status, setStatus] = useState('Bereit.');
+  const [isBusy, setIsBusy] = useState(false);
 
   const issues = useMemo(() => validateAnnouncementForm(formData), [formData]);
   const hasErrors = issues.some((issue) => issue.severity === 'error');
@@ -65,83 +67,170 @@ export function AdminAnnouncementEditor() {
   const loadFiles = useCallback(async () => {
     const response = await fetch('/api/admin/announcements', { cache: 'no-store' });
     if (!response.ok) {
-      setStatus('Fehler beim Laden der vorhandenen Dateien.');
+      setStatus('Fehler beim Laden der vorhandenen Termine.');
       return;
     }
     const payload = (await response.json()) as { files: ApiFileEntry[] };
     setSavedFiles(payload.files);
   }, []);
 
-  useEffect(() => {
-    loadFiles().catch(() => setStatus('Fehler beim Laden der vorhandenen Dateien.'));
+  const checkSession = useCallback(async () => {
+    const response = await fetch('/api/admin/session', { cache: 'no-store' });
+    if (!response.ok) return;
+    const payload = (await response.json()) as { authenticated: boolean };
+    setIsAuthenticated(payload.authenticated);
+    if (payload.authenticated) {
+      await loadFiles();
+    }
   }, [loadFiles]);
+
+  useEffect(() => {
+    checkSession().catch(() => setStatus('Fehler beim Laden der Admin-Sitzung.'));
+  }, [checkSession]);
 
   function updateField<K extends keyof AnnouncementFormData>(key: K, value: AnnouncementFormData[K]) {
     setFormData((previous) => ({ ...previous, [key]: value }));
   }
 
-  function handleImportText(event: ChangeEvent<HTMLTextAreaElement>) {
-    const imported = event.target.value;
-    const parsed = parseAnnouncementTxt(imported);
-    setFormData(parsed);
-    setStatus('TXT-Inhalt importiert (lokal, noch nicht gespeichert).');
-  }
-
-  function handleFileUpload(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const content = typeof reader.result === 'string' ? reader.result : '';
-      const parsed = parseAnnouncementTxt(content);
-      setFormData(parsed);
-      setFilename(file.name.replace(/\.txt$/i, ''));
-      setStatus(`Datei „${file.name}“ importiert (lokal, noch nicht gespeichert).`);
-    };
-    reader.readAsText(file, 'utf8');
-  }
-
-  function exportTxt() {
-    const txt = serializeAnnouncementTxt(formData);
-    const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${filename || 'announcement'}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-    setStatus('TXT-Datei exportiert.');
-  }
-
-  async function saveOnServer() {
-    const response = await fetch('/api/admin/announcements', {
+  async function login() {
+    setIsLoginPending(true);
+    const response = await fetch('/api/admin/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ filename, data: formData }),
+      body: JSON.stringify({ password }),
     });
 
-    const payload = await response.json();
+    const payload = (await response.json()) as { error?: string };
     if (!response.ok) {
-      setStatus(payload.error ?? 'Speichern fehlgeschlagen.');
+      setStatus(payload.error ?? 'Anmeldung fehlgeschlagen.');
+      setIsLoginPending(false);
       return;
     }
 
-    setStatus(`Gespeichert als ${payload.file}.`);
+    setPassword('');
+    setStatus('Anmeldung erfolgreich.');
+    setIsAuthenticated(true);
+    setIsLoginPending(false);
     await loadFiles();
+  }
+
+  async function logout() {
+    await fetch('/api/admin/logout', { method: 'POST' });
+    setIsAuthenticated(false);
+    setSelectedId(null);
+    setFormData(getDefaultAnnouncementFormData());
+    setStatus('Abgemeldet.');
+  }
+
+  async function createEntry() {
+    setIsBusy(true);
+    const response = await fetch('/api/admin/announcements', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data: formData }),
+    });
+
+    const payload = (await response.json()) as { error?: string; issues?: ValidationIssue[] };
+    if (!response.ok) {
+      setStatus(payload.error ?? 'Speichern fehlgeschlagen.');
+      setIsBusy(false);
+      return;
+    }
+
+    setStatus('Termin gespeichert.');
+    setFormData(getDefaultAnnouncementFormData());
+    setSelectedId(null);
+    await loadFiles();
+    setIsBusy(false);
+  }
+
+  async function updateEntry() {
+    if (!selectedId) return;
+    setIsBusy(true);
+    const response = await fetch('/api/admin/announcements', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: selectedId, data: formData }),
+    });
+
+    const payload = (await response.json()) as { error?: string };
+    if (!response.ok) {
+      setStatus(payload.error ?? 'Aktualisieren fehlgeschlagen.');
+      setIsBusy(false);
+      return;
+    }
+
+    setStatus('Termin aktualisiert.');
+    await loadFiles();
+    setIsBusy(false);
+  }
+
+  async function deleteEntry(id: string) {
+    setIsBusy(true);
+    const response = await fetch('/api/admin/announcements', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+
+    const payload = (await response.json()) as { error?: string };
+    if (!response.ok) {
+      setStatus(payload.error ?? 'Löschen fehlgeschlagen.');
+      setIsBusy(false);
+      return;
+    }
+
+    if (selectedId === id) {
+      setSelectedId(null);
+      setFormData(getDefaultAnnouncementFormData());
+    }
+    setStatus('Termin gelöscht.');
+    await loadFiles();
+    setIsBusy(false);
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <section className="mx-auto max-w-md rounded-lg border border-gray-300 p-6 dark:border-gray-700">
+        <h2 className="mb-2 text-lg font-semibold">Admin-Anmeldung</h2>
+        <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">Bitte Passwort eingeben, um Termine zu verwalten.</p>
+        <label className="block text-sm font-medium">
+          Passwort
+          <input
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            className="mt-1 w-full rounded border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-900"
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault();
+                login().catch(() => setStatus('Anmeldung fehlgeschlagen.'));
+              }
+            }}
+          />
+        </label>
+        <button
+          type="button"
+          onClick={() => login().catch(() => setStatus('Anmeldung fehlgeschlagen.'))}
+          disabled={isLoginPending}
+          className="mt-4 rounded bg-blue-600 px-3 py-2 text-white disabled:opacity-50"
+        >
+          Anmelden
+        </button>
+        <p className="mt-3 text-sm text-gray-600 dark:text-gray-300">Status: {status}</p>
+      </section>
+    );
   }
 
   return (
     <section className="grid gap-6 lg:grid-cols-[2fr,1fr]">
       <div className="rounded-lg border border-gray-300 p-4 dark:border-gray-700">
-        <label className="mb-3 block text-sm font-medium">
-          Dateiname (ohne .txt)
-          <input
-            value={filename}
-            onChange={(event) => setFilename(event.target.value)}
-            className="mt-1 w-full rounded border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-900"
-          />
-        </label>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-lg font-semibold">Termin-Editor</h2>
+          <button type="button" onClick={logout} className="rounded border border-gray-300 px-3 py-2 text-sm dark:border-gray-700">
+            Abmelden
+          </button>
+        </div>
 
         <label className="block text-sm font-medium">
           Titel *
@@ -155,7 +244,7 @@ export function AdminAnnouncementEditor() {
 
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <div>
-            <label className="block text-sm font-medium">Start (Datum + Uhrzeit)</label>
+            <label className="block text-sm font-medium">Start (Datum + Uhrzeit) *</label>
             <input
               type="datetime-local"
               value={toLocalDateTimeInput(formData.date)}
@@ -169,13 +258,6 @@ export function AdminAnnouncementEditor() {
                 className="rounded border border-gray-300 px-2 py-1 text-xs dark:border-gray-700"
               >
                 Jetzt
-              </button>
-              <button
-                type="button"
-                onClick={() => updateField('date', '')}
-                className="rounded border border-gray-300 px-2 py-1 text-xs dark:border-gray-700"
-              >
-                Leeren
               </button>
             </div>
             <FieldError issues={issues} field="date" />
@@ -250,16 +332,32 @@ export function AdminAnnouncementEditor() {
         </label>
 
         <div className="mt-4 flex flex-wrap gap-2">
-          <button onClick={exportTxt} className="rounded bg-blue-600 px-3 py-2 text-white" type="button">
-            TXT exportieren
-          </button>
           <button
-            onClick={saveOnServer}
-            disabled={hasErrors}
+            onClick={() => createEntry().catch(() => setStatus('Speichern fehlgeschlagen.'))}
+            disabled={hasErrors || isBusy}
             className="rounded bg-emerald-600 px-3 py-2 text-white disabled:opacity-50"
             type="button"
           >
-            Auf Server speichern
+            Neuer Termin speichern
+          </button>
+          <button
+            onClick={() => updateEntry().catch(() => setStatus('Aktualisieren fehlgeschlagen.'))}
+            disabled={hasErrors || !selectedId || isBusy}
+            className="rounded bg-blue-600 px-3 py-2 text-white disabled:opacity-50"
+            type="button"
+          >
+            Ausgewählten Termin aktualisieren
+          </button>
+          <button
+            onClick={() => {
+              setSelectedId(null);
+              setFormData(getDefaultAnnouncementFormData());
+              setStatus('Formular zurückgesetzt.');
+            }}
+            className="rounded border border-gray-300 px-3 py-2 dark:border-gray-700"
+            type="button"
+          >
+            Neues Formular
           </button>
         </div>
 
@@ -268,34 +366,32 @@ export function AdminAnnouncementEditor() {
 
       <aside className="space-y-4 rounded-lg border border-gray-300 p-4 dark:border-gray-700">
         <div>
-          <h2 className="mb-2 text-lg font-semibold">TXT importieren</h2>
-          <input type="file" accept=".txt,text/plain" onChange={handleFileUpload} className="mb-2 block w-full text-sm" />
-          <textarea
-            placeholder="Oder TXT hier einfügen ..."
-            onChange={handleImportText}
-            rows={6}
-            className="w-full rounded border border-gray-300 p-2 text-sm dark:border-gray-700 dark:bg-gray-900"
-          />
-        </div>
-
-        <div>
-          <h2 className="mb-2 text-lg font-semibold">Vorhandene Dateien</h2>
-          <ul className="max-h-80 space-y-2 overflow-auto text-sm">
+          <h2 className="mb-2 text-lg font-semibold">Vorhandene Termine</h2>
+          <ul className="max-h-96 space-y-2 overflow-auto text-sm">
             {savedFiles.map((entry) => (
-              <li key={entry.file} className="rounded border border-gray-300 p-2 dark:border-gray-700">
+              <li key={entry.id} className="rounded border border-gray-300 p-2 dark:border-gray-700">
                 <button
                   type="button"
                   onClick={() => {
-                    setFilename(entry.file.replace(/\.txt$/i, ''));
-                    setFormData(entry.parsed);
-                    setStatus(`Datei „${entry.file}“ geladen.`);
+                    setSelectedId(entry.id);
+                    setFormData(entry.data);
+                    setStatus(`Termin „${entry.data.title || entry.file}“ geladen.`);
                   }}
-                  className="font-medium text-blue-700 underline"
+                  className="block w-full text-left font-medium text-blue-700 underline"
                 >
-                  {entry.file}
+                  {entry.data.title || entry.file}
+                </button>
+                <p className="mt-1 text-xs text-gray-500">{entry.data.date || 'ohne Datum'}</p>
+                <button
+                  type="button"
+                  onClick={() => deleteEntry(entry.id).catch(() => setStatus('Löschen fehlgeschlagen.'))}
+                  className="mt-2 rounded border border-red-300 px-2 py-1 text-xs text-red-600"
+                >
+                  Löschen
                 </button>
               </li>
             ))}
+            {savedFiles.length === 0 && <li className="text-sm text-gray-500">Noch keine Termine vorhanden.</li>}
           </ul>
         </div>
       </aside>

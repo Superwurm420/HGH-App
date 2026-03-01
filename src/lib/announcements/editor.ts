@@ -97,39 +97,39 @@ export function fromLocalDateTimeInput(value: string): string {
   return `${day}.${month}.${year} ${timePart}`;
 }
 
+function parseDate(value: string): Date | null {
+  if (!DE_DATE_TIME_PATTERN.test(value)) return null;
+  const [datePart, timePart] = value.split(' ');
+  const [day, month, year] = datePart.split('.').map(Number);
+  const [hour, minute] = timePart.split(':').map(Number);
+  return new Date(Date.UTC(year, month - 1, day, hour, minute));
+}
+
 export function validateAnnouncementForm(data: AnnouncementFormData): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
 
   if (!cleanValue(data.title)) {
-    issues.push({
-      field: 'title',
-      severity: 'error',
-      message: "Pflichtfeld 'title' fehlt.",
-    });
+    issues.push({ field: 'title', severity: 'error', message: "Pflichtfeld 'title' fehlt." });
   }
 
-  if (cleanValue(data.date) && !DE_DATE_TIME_PATTERN.test(cleanValue(data.date))) {
-    issues.push({
-      field: 'date',
-      severity: 'warning',
-      message: "'date' hat nicht das Format TT.MM.JJJJ HH:mm und wird später ignoriert.",
-    });
+  if (!cleanValue(data.date)) {
+    issues.push({ field: 'date', severity: 'error', message: "Pflichtfeld 'date' fehlt." });
+  } else if (!DE_DATE_TIME_PATTERN.test(cleanValue(data.date))) {
+    issues.push({ field: 'date', severity: 'error', message: "'date' muss das Format TT.MM.JJJJ HH:mm haben." });
   }
 
   if (cleanValue(data.expires) && !DE_DATE_TIME_PATTERN.test(cleanValue(data.expires))) {
-    issues.push({
-      field: 'expires',
-      severity: 'warning',
-      message: "'expires' hat nicht das Format TT.MM.JJJJ HH:mm und gilt dann als dauerhaft.",
-    });
+    issues.push({ field: 'expires', severity: 'error', message: "'expires' muss das Format TT.MM.JJJJ HH:mm haben." });
+  }
+
+  const start = parseDate(cleanValue(data.date));
+  const end = parseDate(cleanValue(data.expires));
+  if (start && end && end.getTime() < start.getTime()) {
+    issues.push({ field: 'expires', severity: 'error', message: "'expires' darf nicht vor 'date' liegen." });
   }
 
   if (!data.body.trim()) {
-    issues.push({
-      field: 'body',
-      severity: 'warning',
-      message: "Kein Text nach '---' gefunden.",
-    });
+    issues.push({ field: 'body', severity: 'warning', message: "Kein Text nach '---' gefunden." });
   }
 
   return issues;

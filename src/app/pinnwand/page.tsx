@@ -4,6 +4,7 @@ import { getWeeklyPlanForClass } from '@/lib/timetable/server';
 import { ClassFromStorage } from '@/components/schedule/ClassFromStorage';
 import { ClassSelector } from '@/components/schedule/ClassSelector';
 
+export const dynamic = 'force-dynamic';
 export default async function PinnwandPage({ searchParams }: { searchParams: { klasse?: string } }) {
   const plan = await getWeeklyPlanForClass(searchParams.klasse);
 

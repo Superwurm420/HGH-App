@@ -5,6 +5,7 @@ import { TvTimetableGrid } from '@/components/schedule/TvTimetableGrid';
 import { parseBerlinDate } from '@/lib/announcements/parser';
 import { TvPageController } from '@/components/tv/TvPageController';
 
+export const dynamic = 'force-dynamic';
 export default async function TvPage() {
   const plan = await getWeeklyPlanForAllClasses();
 

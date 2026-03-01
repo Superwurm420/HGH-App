@@ -197,10 +197,11 @@ function validateAnnouncements() {
     const raw = fs.readFileSync(fullPath, 'utf8');
     const { headers, body } = parseAnnouncement(raw);
 
-    // Nur fehlender Titel ist ein echter Fehler – alles andere wird still ignoriert.
     if (!headers.title) fail(`${file}: Feld 'title' fehlt (Eintrag hat keinen Titel).`);
-    if (headers.date && !deDateTimePattern.test(headers.date)) {
-      warn(`${file}: 'date' hat nicht das Format TT.MM.JJJJ HH:mm – Feld wird ignoriert.`);
+    if (!headers.date) {
+      fail(`${file}: Feld 'date' fehlt.`);
+    } else if (!deDateTimePattern.test(headers.date)) {
+      fail(`${file}: 'date' muss das Format TT.MM.JJJJ HH:mm haben.`);
     }
     if (headers.expires && !deDateTimePattern.test(headers.expires)) {
       warn(`${file}: 'expires' hat nicht das Format TT.MM.JJJJ HH:mm – gilt als dauerhaft.`);

@@ -43,9 +43,8 @@ export function parseAnnouncement(raw: string, file: string): Announcement {
   // anzeige: ja → über dem Stundenplan + Pinnwand; alles andere → nur Pinnwand.
   const highlight = parseAnzeige(headers.anzeige);
 
-  // Fehlende oder falsch formatierte Felder werden still ignoriert und als "dauerhaft" behandelt.
-  // Nur ein fehlender Titel wird als Warnung geloggt, da er für die Anzeige unbedingt nötig ist.
   if (!headers.title) warnings.push("Pflichtfeld 'title' fehlt.");
+  if (!headers.date) warnings.push("Pflichtfeld 'date' fehlt.");
 
   return {
     file,

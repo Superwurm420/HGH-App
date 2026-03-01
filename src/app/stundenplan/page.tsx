@@ -4,6 +4,7 @@ import { getSpecialEventsByClass } from '@/lib/announcements/server';
 import { ClassSelector } from '@/components/schedule/ClassSelector';
 import { DayTimetable } from '@/components/schedule/DayTimetable';
 
+export const dynamic = 'force-dynamic';
 export default async function StundenplanPage({ searchParams }: { searchParams: { klasse?: string } }) {
   const plan = await getWeeklyPlanForClass(searchParams.klasse);
 

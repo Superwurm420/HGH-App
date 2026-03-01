@@ -1,77 +1,68 @@
-import fs from 'node:fs';
-import path from 'node:path';
 import { NextRequest, NextResponse } from 'next/server';
+import { AnnouncementFormData, validateAnnouncementForm } from '@/lib/announcements/editor';
 import {
-  AnnouncementFormData,
-  getDefaultAnnouncementFormData,
-  parseAnnouncementTxt,
-  serializeAnnouncementTxt,
-  validateAnnouncementForm,
-} from '@/lib/announcements/editor';
+  createAdminAnnouncement,
+  deleteAdminAnnouncement,
+  listAdminAnnouncements,
+  updateAdminAnnouncement,
+} from '@/lib/announcements/admin-store';
 
-const announcementDir = path.join(process.cwd(), 'public/content/announcements');
-
-type SavePayload = {
-  filename: string;
-  data: AnnouncementFormData;
+type AnnouncementPayload = {
+  id?: string;
+  data?: AnnouncementFormData;
 };
 
-function ensureDirectory(): void {
-  if (!fs.existsSync(announcementDir)) {
-    fs.mkdirSync(announcementDir, { recursive: true });
-  }
-}
-
-function sanitizeFilename(filename: string): string {
-  const base = filename.trim().toLowerCase().replace(/[^a-z0-9_-]+/g, '_');
-  return (base || 'announcement') + '.txt';
-}
-
 export async function GET(): Promise<NextResponse> {
-  ensureDirectory();
-  const files = fs.readdirSync(announcementDir).filter((file) => file.toLowerCase().endsWith('.txt')).sort();
-
-  const entries = files.map((file) => {
-    const raw = fs.readFileSync(path.join(announcementDir, file), 'utf8');
-    const parsed = parseAnnouncementTxt(raw);
-    const issues = validateAnnouncementForm(parsed);
-    return {
-      file,
-      raw,
-      parsed,
-      issues,
-    };
-  });
-
-  return NextResponse.json({
-    files: entries,
-    template: getDefaultAnnouncementFormData(),
-  });
+  return NextResponse.json({ files: listAdminAnnouncements() });
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  ensureDirectory();
-
-  const payload = (await request.json()) as SavePayload;
-
-  if (!payload?.filename || !payload?.data) {
+  const payload = (await request.json()) as AnnouncementPayload;
+  if (!payload?.data) {
     return NextResponse.json({ error: 'Ungültige Daten.' }, { status: 400 });
   }
 
-  const filename = sanitizeFilename(payload.filename);
   const issues = validateAnnouncementForm(payload.data);
-  const hasErrors = issues.some((issue) => issue.severity === 'error');
-
-  if (hasErrors) {
+  if (issues.some((issue) => issue.severity === 'error')) {
     return NextResponse.json({ error: 'Validierung fehlgeschlagen.', issues }, { status: 400 });
   }
 
-  const raw = serializeAnnouncementTxt(payload.data);
-  fs.writeFileSync(path.join(announcementDir, filename), raw, 'utf8');
+  const entry = createAdminAnnouncement(payload.data);
+  return NextResponse.json({ entry });
+}
 
-  return NextResponse.json({
-    file: filename,
-    raw,
-    issues,
-  });
+export async function PUT(request: NextRequest): Promise<NextResponse> {
+  const payload = (await request.json()) as AnnouncementPayload;
+  if (!payload?.id || !payload?.data) {
+    return NextResponse.json({ error: 'Ungültige Daten.' }, { status: 400 });
+  }
+
+  const issues = validateAnnouncementForm(payload.data);
+  if (issues.some((issue) => issue.severity === 'error')) {
+    return NextResponse.json({ error: 'Validierung fehlgeschlagen.', issues }, { status: 400 });
+  }
+
+  try {
+    const entry = updateAdminAnnouncement(payload.id, payload.data);
+    return NextResponse.json({ entry });
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Speichern fehlgeschlagen.' },
+      { status: 404 },
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest): Promise<NextResponse> {
+  const payload = (await request.json()) as AnnouncementPayload;
+  if (!payload?.id) {
+    return NextResponse.json({ error: 'Ungültige Daten.' }, { status: 400 });
+  }
+
+  try {
+    deleteAdminAnnouncement(payload.id);
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Löschen fehlgeschlagen.' }, { status: 404 });
+  }
 }
