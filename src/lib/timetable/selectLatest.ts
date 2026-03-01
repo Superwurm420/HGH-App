@@ -1,3 +1,5 @@
+// NOTE: Build-time equivalent lives at scripts/lib/timetable-selection.mjs.
+// Keep both files in sync when changing parsing or comparison logic.
 import { TimetableMeta } from './types';
 
 const PATTERN = /^Stundenplan_kw_(\d{2})_Hj([12])_(\d{4})_(\d{2})\.pdf$/i;
