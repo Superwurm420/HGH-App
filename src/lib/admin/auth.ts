@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 
-export const ADMIN_PASSWORD = 'hgh-admin-2026';
-export const ADMIN_COOKIE_NAME = 'hgh_admin_session';
+export const ADMIN_PASSWORD = 'hgh-admin';
+export const ADMIN_COOKIE_NAME = 'hgh_admin';
 
 function secureCompare(a: string, b: string): boolean {
   const aBuffer = Buffer.from(a);
