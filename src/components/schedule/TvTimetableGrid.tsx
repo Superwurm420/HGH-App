@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { LessonEntry, ParsedSchedule, Weekday } from '@/lib/timetable/types';
+import { getBerlinMinutes } from '@/lib/berlin-time';
 
 type TvTimetableGridProps = {
   schedulesByClass: ParsedSchedule;
@@ -35,17 +36,7 @@ function parseTimeRange(time: string): LessonRange | null {
 }
 
 function getBerlinMinutesNow(): number {
-  const parts = new Intl.DateTimeFormat('de-DE', {
-    timeZone: 'Europe/Berlin',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  }).formatToParts(new Date());
-
-  const hour = Number(parts.find((part) => part.type === 'hour')?.value ?? '0');
-  const minute = Number(parts.find((part) => part.type === 'minute')?.value ?? '0');
-
-  return hour * 60 + minute;
+  return getBerlinMinutes();
 }
 
 function findCurrentPeriod(entries: LessonEntry[], nowMinutes: number): number | null {

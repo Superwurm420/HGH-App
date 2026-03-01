@@ -8,6 +8,11 @@ import {
   type BerlinDateParts,
   type SchoolHolidayRange,
 } from '@/lib/calendar/lowerSaxonySchoolFreeDays';
+import {
+  getBerlinNowParts,
+  timeToMinutes,
+  isWeekend as checkWeekend,
+} from '@/lib/berlin-time';
 import schoolHolidaysData from '@/generated/school-holidays-data.json';
 
 type MessagesData = {
@@ -47,39 +52,13 @@ const schoolHolidayRanges = ((schoolHolidaysData as SchoolHolidaysData).ranges ?
   (range) => typeof range.start === 'string' && typeof range.end === 'string',
 );
 
-function timeToMinutes(h: number, m: number): number {
-  return h * 60 + m;
-}
-
 function parseTime(value: string): number {
   const [h, m] = value.split(':').map(Number);
   return timeToMinutes(h, m);
 }
 
-function getBerlinNowParts(): BerlinDateParts & { hour: number; minute: number; weekdayShort: string } {
-  const parts = new Intl.DateTimeFormat('de-DE', {
-    timeZone: 'Europe/Berlin',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    weekday: 'short',
-    hour12: false,
-  }).formatToParts(new Date());
-
-  return {
-    year: Number(parts.find((p) => p.type === 'year')?.value ?? 0),
-    month: Number(parts.find((p) => p.type === 'month')?.value ?? 0),
-    day: Number(parts.find((p) => p.type === 'day')?.value ?? 0),
-    hour: Number(parts.find((p) => p.type === 'hour')?.value ?? 0),
-    minute: Number(parts.find((p) => p.type === 'minute')?.value ?? 0),
-    weekdayShort: parts.find((p) => p.type === 'weekday')?.value ?? '',
-  };
-}
-
-function getLegacyTimeCategory(hour: number, isWeekend: boolean): string {
-  if (isWeekend) return 'wochenende';
+function getLegacyTimeCategory(hour: number, isWeekendDay: boolean): string {
+  if (isWeekendDay) return 'wochenende';
   if (hour < 10) return 'morgen';
   if (hour < 13) return 'mittag';
   if (hour < 17) return 'nachmittag';
@@ -155,11 +134,11 @@ export function DailyMessage({
     const updateMessage = () => {
       const now = getBerlinNowParts();
       const nowMinutes = timeToMinutes(now.hour, now.minute);
-      const isWeekend = now.weekdayShort.startsWith('Sa') || now.weekdayShort.startsWith('So');
+      const isWeekendDay = checkWeekend(now.weekdayShort);
 
       const freeDayCategory = lessons.length === 0 ? getFreeDayCategory(now) : null;
 
-      const standardCategory: StandardCategory | null = isWeekend
+      const standardCategory: StandardCategory | null = isWeekendDay
         ? 'wochenende'
         : freeDayCategory
           ? freeDayCategory
@@ -195,7 +174,7 @@ export function DailyMessage({
         }
       }
 
-      const legacyCategory = getLegacyTimeCategory(now.hour, isWeekend);
+      const legacyCategory = getLegacyTimeCategory(now.hour, isWeekendDay);
       const legacyGeneral = (messages[legacyCategory] as string[] | undefined) ?? [];
       setText(pickMessage(legacyGeneral, 0));
     };

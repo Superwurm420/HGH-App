@@ -13,6 +13,7 @@ export type Announcement = {
 };
 
 const DE_DATE = /^\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}$/;
+const berlinHourFormatter = new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Berlin', hour: '2-digit', hour12: false });
 const COMBINED_CLASS_TOKEN = /\b[A-ZÄÖÜ]{1,5}\s*-?\s*\d{1,3}[A-Z]?\b/g;
 const SPLIT_CLASS_TOKENS = /[;,/|\s]+/;
 const COMMENT_PREFIXES = ['#', '//', ';'];
@@ -66,7 +67,7 @@ export function parseBerlinDate(value?: string): Date | null {
   const [hour, minute] = t.split(':').map(Number);
   const noonUtc = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
   const berlinNoonHour = parseInt(
-    new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Berlin', hour: '2-digit', hour12: false })
+    berlinHourFormatter
       .formatToParts(noonUtc)
       .find((p) => p.type === 'hour')?.value ?? '13',
     10,

@@ -153,14 +153,16 @@ export function getTimetableVersion(latest: TimetableMeta | null): string {
   return crypto.createHash('sha1').update(signature).digest('hex').slice(0, 12);
 }
 
+const berlinDateFormatter = new Intl.DateTimeFormat('de-DE', {
+  timeZone: 'Europe/Berlin',
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+});
+
 function getLatestTimetableUpdatedDate(latest: TimetableMeta): string | null {
   if (typeof latest.lastModifiedMs !== 'number') return null;
-  return new Intl.DateTimeFormat('de-DE', {
-    timeZone: 'Europe/Berlin',
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  }).format(new Date(latest.lastModifiedMs));
+  return berlinDateFormatter.format(new Date(latest.lastModifiedMs));
 }
 
 export async function getWeeklyPlanForClass(requestedClass?: SchoolClass) {

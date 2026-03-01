@@ -6,6 +6,30 @@ type ClockProps = {
   variant?: 'default' | 'tv';
 };
 
+const tvTimeFormatter = new Intl.DateTimeFormat('de-DE', {
+  hour: '2-digit',
+  minute: '2-digit',
+  timeZone: 'Europe/Berlin',
+});
+
+const tvDateFormatter = new Intl.DateTimeFormat('de-DE', {
+  weekday: 'long',
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  timeZone: 'Europe/Berlin',
+});
+
+const defaultFormatter = new Intl.DateTimeFormat('de-DE', {
+  weekday: 'long',
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  timeZone: 'Europe/Berlin',
+});
+
 export function Clock({ variant = 'default' }: ClockProps) {
   const [now, setNow] = useState(new Date());
 
@@ -18,20 +42,10 @@ export function Clock({ variant = 'default' }: ClockProps) {
     return (
       <div className="tv-clock" aria-live="polite">
         <p className="tv-clock-time">
-          {new Intl.DateTimeFormat('de-DE', {
-            hour: '2-digit',
-            minute: '2-digit',
-            timeZone: 'Europe/Berlin',
-          }).format(now)}
+          {tvTimeFormatter.format(now)}
         </p>
         <p className="tv-clock-date text-muted">
-          {new Intl.DateTimeFormat('de-DE', {
-            weekday: 'long',
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            timeZone: 'Europe/Berlin',
-          }).format(now)}
+          {tvDateFormatter.format(now)}
         </p>
       </div>
     );
@@ -39,15 +53,7 @@ export function Clock({ variant = 'default' }: ClockProps) {
 
   return (
     <p className="text-xl font-semibold" aria-live="polite">
-      {new Intl.DateTimeFormat('de-DE', {
-        weekday: 'long',
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZone: 'Europe/Berlin',
-      }).format(now)}
+      {defaultFormatter.format(now)}
     </p>
   );
 }
