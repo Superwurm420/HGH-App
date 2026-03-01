@@ -24,12 +24,22 @@ Hinweis: Das ist absichtlich eine einfache Zugangshürde und keine vollwertige S
 1. `/admin` öffnen.
 2. Formular ausfüllen (`title`, Start-/Ablaufzeit per Kalender+Uhrzeit, Zielgruppe, Klassen, Schalter für Sondertermin, `body`).
 3. Live-Hinweise beachten (Fehler/Warnungen werden sofort angezeigt).
-4. „Neuer Termin speichern“ legt den Eintrag direkt als TXT-Datei unter `public/content/announcements/` an.
+4. „Neuer Termin speichern“ legt den Eintrag in der zentralen Persistenz (`data/announcements-store.json`) an.
 5. Bestehende Termine können aus der Liste geladen, bearbeitet und gelöscht werden.
 
 Ausführliche Schritt-für-Schritt-Anleitung: [docs/CONTENT_GUIDE.md](docs/CONTENT_GUIDE.md)
 
 ![Screenshot Adminbereich](browser:/tmp/codex_browser_invocations/6b00fb57a87b4048/artifacts/artifacts/admin-editor-v2.png)
+
+
+## Zentrale Persistenz für Ankündigungen
+Die Laufzeitdaten für Pinnwand/Sondertermine liegen im zentralen Store `data/announcements-store.json` (statt direkter Schreibzugriffe auf einzelne TXT-Dateien).
+
+- **Admin-CRUD** (`/admin`) schreibt/löscht ausschließlich im zentralen Store.
+- **Leselogik** (`getAnnouncements`) liest denselben Store und bleibt durch interne TXT-Serialisierung kompatibel zur vorhandenen Parser-/Anzeige-Logik.
+- **Einmalige Migration** vorhandener TXT-Dateien: `npm run migrate-announcements`.
+
+Hinweis: Die TXT-Dateien unter `public/content/announcements/` bleiben als importierbare Altquelle/Beispieldaten nutzbar.
 
 ## Neuen Stundenplan hinzufügen
 1. PDF in `public/content/timetables/` ablegen (Name: `Stundenplan_kw_XX_HjY_YYYY_YY.pdf`)

@@ -1,6 +1,12 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import { AnnouncementFormData, parseAnnouncementTxt, serializeAnnouncementTxt, validateAnnouncementForm } from './editor';
+import { AnnouncementFormData, validateAnnouncementForm } from './editor';
+import {
+  deleteAnnouncementRecord,
+  getAnnouncementRecord,
+  listAnnouncementRecords,
+  toFormData,
+  toRecord,
+  upsertAnnouncementRecord,
+} from './repository';
 
 export type AdminAnnouncementEntry = {
   id: string;
@@ -8,29 +14,17 @@ export type AdminAnnouncementEntry = {
   data: AnnouncementFormData;
 };
 
-const announcementDir = path.join(process.cwd(), 'public/content/announcements');
-
-function ensureDirectory(): void {
-  if (!fs.existsSync(announcementDir)) {
-    fs.mkdirSync(announcementDir, { recursive: true });
-  }
-}
-
 function sanitizeBase(base: string): string {
   return (base || 'termin').trim().toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') || 'termin';
 }
 
-function createFileNameFromTitle(title: string): string {
+function toFileName(id: string): string {
+  return `${id}.txt`;
+}
+
+function createIdFromTitle(title: string): string {
   const stamp = new Date().toISOString().replace(/[:.]/g, '-');
-  return `${sanitizeBase(title)}-${stamp}.txt`;
-}
-
-function toId(file: string): string {
-  return file.replace(/\.txt$/i, '');
-}
-
-function fromId(id: string): string {
-  return `${sanitizeBase(id)}.txt`;
+  return `${sanitizeBase(title)}-${stamp}`;
 }
 
 function parseForSorting(date: string): number {
@@ -41,69 +35,51 @@ function parseForSorting(date: string): number {
 }
 
 export function listAdminAnnouncements(): AdminAnnouncementEntry[] {
-  ensureDirectory();
-  const files = fs
-    .readdirSync(announcementDir)
-    .filter((file) => file.toLowerCase().endsWith('.txt'))
-    .sort();
-
-  return files
-    .map((file) => {
-      const raw = fs.readFileSync(path.join(announcementDir, file), 'utf8');
-      return {
-        id: toId(file),
-        file,
-        data: parseAnnouncementTxt(raw),
-      };
-    })
+  return listAnnouncementRecords()
+    .map((record) => ({
+      id: record.id,
+      file: toFileName(record.id),
+      data: toFormData(record),
+    }))
     .sort((a, b) => parseForSorting(b.data.date) - parseForSorting(a.data.date));
 }
 
 export function createAdminAnnouncement(data: AnnouncementFormData): AdminAnnouncementEntry {
-  ensureDirectory();
-
   const issues = validateAnnouncementForm(data);
   const hasErrors = issues.some((issue) => issue.severity === 'error');
   if (hasErrors) {
     throw new Error('Validierung fehlgeschlagen.');
   }
 
-  const file = createFileNameFromTitle(data.title);
-  fs.writeFileSync(path.join(announcementDir, file), serializeAnnouncementTxt(data), 'utf8');
+  const id = createIdFromTitle(data.title);
+  upsertAnnouncementRecord(toRecord(data, id));
 
   return {
-    id: toId(file),
-    file,
+    id,
+    file: toFileName(id),
     data,
   };
 }
 
 export function updateAdminAnnouncement(id: string, data: AnnouncementFormData): AdminAnnouncementEntry {
-  ensureDirectory();
-
   const issues = validateAnnouncementForm(data);
   const hasErrors = issues.some((issue) => issue.severity === 'error');
   if (hasErrors) {
     throw new Error('Validierung fehlgeschlagen.');
   }
 
-  const file = fromId(id);
-  const fullPath = path.join(announcementDir, file);
-  if (!fs.existsSync(fullPath)) {
+  const existing = getAnnouncementRecord(id);
+  if (!existing) {
     throw new Error('Eintrag nicht gefunden.');
   }
 
-  fs.writeFileSync(fullPath, serializeAnnouncementTxt(data), 'utf8');
+  upsertAnnouncementRecord(toRecord(data, id, new Date(), existing.createdAt));
 
-  return { id: toId(file), file, data };
+  return { id, file: toFileName(id), data };
 }
 
 export function deleteAdminAnnouncement(id: string): void {
-  ensureDirectory();
-  const file = fromId(id);
-  const fullPath = path.join(announcementDir, file);
-  if (!fs.existsSync(fullPath)) {
+  if (!deleteAnnouncementRecord(id)) {
     throw new Error('Eintrag nicht gefunden.');
   }
-  fs.unlinkSync(fullPath);
 }

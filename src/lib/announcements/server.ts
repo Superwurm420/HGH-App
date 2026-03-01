@@ -1,26 +1,13 @@
-import fs from 'node:fs';
-import path from 'node:path';
 import { Announcement, isActive, isVisibleForClass, parseAnnouncement, toSpecialEvent } from './parser';
+import { listAnnouncementRecords, recordToRawTxt } from './repository';
 import { SchoolClass, SpecialEvent } from '@/lib/timetable/types';
 
-const announcementDir = path.join(process.cwd(), 'public/content/announcements');
-
-function loadAnnouncementsFromTxt(): Announcement[] {
-  if (!fs.existsSync(announcementDir)) return [];
-
-  const files = fs
-    .readdirSync(announcementDir)
-    .filter((file) => file.toLowerCase().endsWith('.txt'))
-    .sort();
-
-  return files.map((file) => {
-    const raw = fs.readFileSync(path.join(announcementDir, file), 'utf8');
-    return parseAnnouncement(raw, file);
-  });
+function loadAnnouncementsFromStore(): Announcement[] {
+  return listAnnouncementRecords().map((record) => parseAnnouncement(recordToRawTxt(record), `${record.id}.txt`));
 }
 
 export async function getAnnouncements(): Promise<Announcement[]> {
-  return loadAnnouncementsFromTxt().filter((x) => isActive(x));
+  return loadAnnouncementsFromStore().filter((x) => isActive(x));
 }
 
 export async function getAnnouncementsByClass(schoolClass: SchoolClass): Promise<Announcement[]> {
