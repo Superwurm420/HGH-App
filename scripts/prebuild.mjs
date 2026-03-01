@@ -268,13 +268,25 @@ async function parsePdf(filePath, getDocument) {
         targets.length > 1;
 
       if (allowSpan && !isPotentialBlockText) {
-        const nearest = sortedClasses.reduce((best, cls) => {
-          const distance = Math.abs(item.x - cls.center);
-          if (!best || distance < best.distance) return { cls: cls.cls, distance };
-          return best;
-        }, null);
-        if (nearest) {
-          byClass[nearest.cls].push(item.str);
+        // Räume und Lehrerkürzel anhand der Spaltengrenzen zuordnen,
+        // nicht anhand des nächsten Spaltenzentrums. Nearest-Center
+        // ordnet R-Spalten-Werte systematisch der NÄCHSTEN Klasse zu,
+        // weil die R-Spalte näher am Zentrum der Nachbarklasse liegt.
+        const containing = sortedClasses.find(
+          (cls) => item.x >= cls.left && item.x < cls.right,
+        );
+        if (containing) {
+          byClass[containing.cls].push(item.str);
+        } else {
+          // Fallback: nearest center falls kein Bound passt
+          const nearest = sortedClasses.reduce((best, cls) => {
+            const distance = Math.abs(item.x - cls.center);
+            if (!best || distance < best.distance) return { cls: cls.cls, distance };
+            return best;
+          }, null);
+          if (nearest) {
+            byClass[nearest.cls].push(item.str);
+          }
         }
         continue;
       }
@@ -383,8 +395,16 @@ async function parsePdf(filePath, getDocument) {
       const time = lessonMatch[2];
       if (!dayPeriodTimes[day][period]) dayPeriodTimes[day][period] = time;
       for (const cls of classes) {
-        const subject = cellText(rowClassTexts, cls);
-        const entry = { period, time, subject: subject || undefined };
+        let subject = cellText(rowClassTexts, cls);
+        let room;
+        // Raumnummer am Anfang des Fachtexts extrahieren (z.B. "5 Buchführung" → room=5, subject=Buchführung).
+        // Entsteht wenn Raumnummer und Fach im PDF auf derselben Zeile ohne klare Trennung stehen.
+        const leadingRoom = subject.match(/^(\d{1,2})\s+(\S.*)$/);
+        if (leadingRoom) {
+          room = leadingRoom[1];
+          subject = leadingRoom[2];
+        }
+        const entry = { period, time, subject: subject || undefined, ...(room ? { room } : {}) };
         out[cls][day].push(entry);
         lastByClass[`${cls}:${day}`] = entry;
       }
@@ -498,9 +518,8 @@ function normalizeBlockSpecialEntries(schedule, dayPeriodTimes) {
   const dayIndex = Object.fromEntries(WEEKDAYS.map((day, idx) => [day, idx]));
 
   function sanitizeSubject(subject) {
-    return subject.replace(/["„“”'`]/g, '').replace(/\s+/g, ' ').trim();
+    return subject.replace(/[“„””'`]/g, '').replace(/\s+/g, ' ').trim();
   }
-
 
   function buildBlockTitle(entries) {
     const tokens = entries
@@ -529,44 +548,11 @@ function normalizeBlockSpecialEntries(schedule, dayPeriodTimes) {
     return title.replace(/\s+/g, ' ').trim();
   }
 
-  for (const cls of Object.keys(schedule)) {
-    const entries = WEEKDAYS.flatMap((day) =>
-      (schedule[cls][day] ?? []).map((entry) => ({ ...entry, day })),
-    ).sort((a, b) => (dayIndex[a.day] - dayIndex[b.day]) || a.period - b.period);
-
-    if (entries.length < 2) continue;
-    if (entries.some((entry) => entry.room || entry.detail)) continue;
-
-    const dayCounts = Object.fromEntries(WEEKDAYS.map((day) => [day, 0]));
-    for (const entry of entries) dayCounts[entry.day] += 1;
-    if (Object.values(dayCounts).some((count) => count > 3)) continue;
-
-    const fragmentEntries = entries.filter((entry) => sanitizeSubject(entry.subject ?? '').length > 0);
-
-    if (fragmentEntries.length < 2) continue;
-
-    const hasFragmentLikeText = fragmentEntries.some((entry) => {
-      const subject = sanitizeSubject(entry.subject ?? '');
-      return subject.includes('-') || subject !== subject.toLowerCase();
-    });
-    if (!hasFragmentLikeText) continue;
-
-    const classHasOnlyFragments = entries.length === fragmentEntries.length;
-    const firstDayIndex = Math.min(...fragmentEntries.map((entry) => dayIndex[entry.day]));
-    const lastDayIndex = Math.max(...fragmentEntries.map((entry) => dayIndex[entry.day]));
-
-    const coveredDays = (classHasOnlyFragments && entries.length <= 10
-      ? WEEKDAYS
-      : WEEKDAYS.slice(firstDayIndex, lastDayIndex + 1)
-    ).filter((day) => Object.keys(dayPeriodTimes[day]).length > 0);
-
-    if (coveredDays.length === 0) continue;
-    if (entries.length > coveredDays.length * 3) continue;
-
+  function applyBlockForDays(cls, days, fragmentEntries) {
     const title = buildBlockTitle(fragmentEntries);
-    if (!title || title.length < 4) continue;
+    if (!title || title.length < 4) return;
 
-    for (const day of coveredDays) {
+    for (const day of days) {
       const periods = Object.keys(dayPeriodTimes[day]).map(Number).sort((a, b) => a - b);
       if (periods.length === 0) continue;
 
@@ -580,6 +566,68 @@ function normalizeBlockSpecialEntries(schedule, dayPeriodTimes) {
         time,
         subject: title,
       }];
+    }
+  }
+
+  for (const cls of Object.keys(schedule)) {
+    // ── Stufe 1: Ganze-Woche-Block ──────────────────────────────────
+    // Wenn KEIN Eintrag der Klasse einen Lehrer hat, ist die ganze Woche
+    // ein Sondertermin (z.B. Praktikum, Projektwoche).
+    const allEntries = WEEKDAYS.flatMap((day) =>
+      (schedule[cls][day] ?? []).map((entry) => ({ ...entry, day })),
+    ).sort((a, b) => (dayIndex[a.day] - dayIndex[b.day]) || a.period - b.period);
+
+    if (allEntries.length < 2) continue;
+
+    const hasAnyTeacher = allEntries.some((entry) => entry.detail);
+
+    if (!hasAnyTeacher) {
+      const fragmentEntries = allEntries.filter((e) => sanitizeSubject(e.subject ?? '').length > 0);
+      if (fragmentEntries.length < 2) continue;
+
+      const hasFragmentLikeText = fragmentEntries.some((entry) => {
+        const subject = sanitizeSubject(entry.subject ?? '');
+        return subject.includes('-') || subject !== subject.toLowerCase();
+      });
+      if (!hasFragmentLikeText) continue;
+
+      const classHasOnlyFragments = allEntries.length === fragmentEntries.length;
+      const firstDayIdx = Math.min(...fragmentEntries.map((e) => dayIndex[e.day]));
+      const lastDayIdx = Math.max(...fragmentEntries.map((e) => dayIndex[e.day]));
+
+      const coveredDays = (classHasOnlyFragments && allEntries.length <= 10
+        ? WEEKDAYS
+        : WEEKDAYS.slice(firstDayIdx, lastDayIdx + 1)
+      ).filter((day) => Object.keys(dayPeriodTimes[day]).length > 0);
+
+      if (coveredDays.length > 0) {
+        applyBlockForDays(cls, coveredDays, fragmentEntries);
+      }
+      continue;
+    }
+
+    // ── Stufe 2: Tageweise Fragment-Zusammenführung ─────────────────
+    // Bei gemischten Wochen (z.B. MO-MI Sondertermin, DO-FR Unterricht)
+    // werden einzelne Tage ohne Lehrer geprüft. Tage mit Bindestrich-
+    // Fragmenten (UNTER-, NEHMENS-, SERIEN-) werden zusammengeführt.
+    for (const day of WEEKDAYS) {
+      const dayEntries = schedule[cls][day] ?? [];
+      if (dayEntries.length < 2) continue;
+      if (dayEntries.some((e) => e.detail)) continue;
+
+      const cleaned = dayEntries
+        .map((e) => ({ ...e, cleanSubject: sanitizeSubject(e.subject ?? '') }))
+        .filter((e) => e.cleanSubject.length > 0);
+
+      if (cleaned.length < 2) continue;
+
+      // Nur mergen wenn mindestens ein Fragment mit Bindestrich am Ende
+      // vorliegt (z.B. “UNTER-”, “SERIEN-”). Das verhindert falsches
+      // Zusammenführen von normalen Events wie “Serviceteam”.
+      const hasTrailingHyphen = cleaned.some((e) => e.cleanSubject.endsWith('-'));
+      if (!hasTrailingHyphen) continue;
+
+      applyBlockForDays(cls, [day], cleaned);
     }
   }
 }
@@ -630,7 +678,19 @@ function mergePeriodPairs(lessons) {
     }
   }
 
-  return result;
+  // Verwaiste Lehrerkürzel entfernen: gerade Stunde mit Lehrer-Subject,
+  // ohne Detail/Room, wenn die vorangehende ungerade Stunde fehlt.
+  // Entsteht z.B. wenn im PDF Std.7 leer ist aber Std.8 nur "WEN" enthält.
+  const TEACHER_RE = /^[A-ZÄÖÜ]{2,6}(\/[A-ZÄÖÜ]{2,6})*$/;
+  return result.filter((entry, idx) => {
+    if (entry.period % 2 !== 0) return true;
+    if (!TEACHER_RE.test((entry.subject ?? '').trim())) return true;
+    if (entry.detail || entry.room || entry.periodEnd) return true;
+    // Prüfe ob die vorangehende ungerade Stunde existiert
+    const prev = result[idx - 1];
+    if (prev && prev.period === entry.period - 1) return true;
+    return false; // verwaist → entfernen
+  });
 }
 
 /** Verbindet den Start von time1 mit dem Ende von time2: "8.30 - 9.15" + "9.15 - 10.00" → "8.30 - 10.00" */
