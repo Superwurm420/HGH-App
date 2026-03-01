@@ -43,9 +43,12 @@ Der Parser erkennt Klassen und Spalten **dynamisch**. Er hat keine fest einprogr
 ```text
 public/content/                     ← HIER DATEIEN AUSTAUSCHEN
   timetables/                       ← Stundenplan-PDFs ablegen
-  announcements/                    ← Einheitliche Termin-TXTs (Pinnwand + Sondertermin)
+  announcements/                    ← Legacy/Import-Quelle für Termin-TXTs
   schulferien-nds.json              ← Ferien-/schulfreie Tage Niedersachsen (editierbar)
   branding/                         ← zentrale Logo-/Icon-Dateien für App & PWA
+
+data/
+  announcements-store.json          ← zentraler Laufzeit-Store für Pinnwand/Sondertermine
 
 scripts/
   prebuild.mjs                      ← Parst PDFs + Content-Dateien → JSON (läuft vor Build)
@@ -70,9 +73,10 @@ src/
 ```
 
 ## Pinnwand-Quelle zur Laufzeit
-- Pinnwand- und Sondertermin-Daten werden serverseitig direkt aus `public/content/announcements/*.txt` geladen.
+- Pinnwand- und Sondertermin-Daten werden serverseitig aus der zentralen Persistenz `data/announcements-store.json` geladen.
 - Änderungen im Adminbereich sind dadurch sofort wirksam (ohne neuen Build).
-- Das TXT-Format bleibt das führende Inhaltsformat.
+- Zur Kompatibilität wird intern weiter in das bestehende TXT-Format serialisiert und mit `parseAnnouncement` verarbeitet.
+- Bestehende TXT-Dateien unter `public/content/announcements/*.txt` können einmalig per `npm run migrate-announcements` importiert werden.
 
 ## Prioritäten
 1. Highlight-Termine aus Ankündigungen (`highlight: true`)
