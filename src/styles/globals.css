@@ -307,6 +307,15 @@ body {
   text-align: right;
 }
 
+.tt-info-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 1px;
+}
+
 /* Period column: number on top, time below */
 .tt-period-cell {
   display: flex;
