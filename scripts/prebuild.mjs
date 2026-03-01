@@ -271,6 +271,7 @@ async function parsePdf(filePath, getDocument) {
       str: (item.str || '').trim(),
       x: item.transform?.[4] ?? 0,
       y: item.transform?.[5] ?? 0,
+      width: item.width ?? 0,
     }))
     .filter((item) => item.str)
     .sort((a, b) => b.y - a.y || a.x - b.x);
@@ -302,16 +303,71 @@ async function parsePdf(filePath, getDocument) {
 
   const dayPeriodTimes = { MO: {}, DI: {}, MI: {}, DO: {}, FR: {} };
 
+  const sortedClasses = classes
+    .map((cls) => ({ cls, ...columnBounds[cls] }))
+    .sort((a, b) => a.left - b.left);
+
+  function resolveItemClasses(item) {
+    const xStart = item.x;
+    const xEnd = item.x + Math.max(item.width, 1);
+    const overlapping = sortedClasses
+      .filter((cls) => xStart < cls.right && xEnd > cls.left)
+      .map((cls) => cls.cls);
+
+    if (overlapping.length > 0) return overlapping;
+
+    const nearest = sortedClasses.reduce((best, cls) => {
+      const distance = Math.abs((xStart + xEnd) / 2 - cls.center);
+      if (!best || distance < best.distance) return { cls: cls.cls, distance };
+      return best;
+    }, null);
+    return nearest ? [nearest.cls] : [];
+  }
+
+  function getRowClassTextsWithSpan(row, allowSpan) {
+    const byClass = Object.fromEntries(classes.map((cls) => [cls, []]));
+    for (const item of row.items) {
+      if (item.x < timeColBoundary) continue;
+      const targets = allowSpan
+        ? resolveItemClasses(item)
+        : [
+          sortedClasses.reduce((best, cls) => {
+            const distance = Math.abs(item.x - cls.center);
+            if (!best || distance < best.distance) return { cls: cls.cls, distance };
+            return best;
+          }, null)?.cls,
+        ].filter(Boolean);
+
+      // Spaltenübergreifende Verteilung nur für echte Blocktexte,
+      // nicht für Räume/Lehrerkürzel/#NV-Zellen.
+      const isPotentialBlockText =
+        !isNoValue(item.str) &&
+        !isRoomValue(item.str) &&
+        !isTeacherToken(item.str) &&
+        targets.length > 1;
+
+      if (allowSpan && !isPotentialBlockText) {
+        const nearest = sortedClasses.reduce((best, cls) => {
+          const distance = Math.abs(item.x - cls.center);
+          if (!best || distance < best.distance) return { cls: cls.cls, distance };
+          return best;
+        }, null);
+        if (nearest) {
+          byClass[nearest.cls].push(item.str);
+        }
+        continue;
+      }
+
+      for (const cls of targets) byClass[cls].push(item.str);
+    }
+
+    return Object.fromEntries(
+      classes.map((cls) => [cls, byClass[cls].join(' ').replace(/\s+/g, ' ').trim()]),
+    );
+  }
+
   // Dynamische Spalten-Zuordnung statt fester Offsets
-  const cellText = (row, cls) => {
-    const { left, right } = columnBounds[cls];
-    return row.items
-      .filter((i) => i.x >= left && i.x < right)
-      .map((i) => i.str)
-      .join(' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-  };
+  const cellText = (rowClassTexts, cls) => rowClassTexts[cls] ?? '';
 
   // ── Pre-scan: detect day boundaries ──────────────────────────────
   // Day labels (MO, DI, …) appear at period 6, NOT at period 1.
@@ -365,11 +421,27 @@ async function parsePdf(filePath, getDocument) {
     return /^[A-ZÄÖÜ]{2,6}(\/[A-ZÄÖÜ]{2,6})*$/.test((s ?? '').trim());
   }
 
+  const periodRowYs = rows
+    .map((row) => {
+      const leftText = row.items
+        .filter((i) => i.x < timeColBoundary)
+        .map((i) => i.str)
+        .join(' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      return /^\d{1,2}\.\s*\d{1,2}[.:]\d{2}\s*-\s*\d{1,2}[.:]\d{2}/.test(leftText) ? row.y : null;
+    })
+    .filter((y) => y != null);
+  const minTimetableY = periodRowYs.length > 0 ? Math.min(...periodRowYs) - 4 : -Infinity;
+
   const lastByClass = {};
 
   for (const row of rows) {
+    if (row.y < minTimetableY) continue;
     const day = getDayForY(row.y);
     if (!day) continue;
+
+    const rowClassTexts = getRowClassTextsWithSpan(row, false);
 
     if (row.items.some((i) => i.x < timeColBoundary && i.str.includes('Mittagspause'))) continue;
 
@@ -390,7 +462,7 @@ async function parsePdf(filePath, getDocument) {
       const time = lessonMatch[2];
       if (!dayPeriodTimes[day][period]) dayPeriodTimes[day][period] = time;
       for (const cls of classes) {
-        const subject = cellText(row, cls);
+        const subject = cellText(rowClassTexts, cls);
         const entry = { period, time, subject: subject || undefined };
         out[cls][day].push(entry);
         lastByClass[`${cls}:${day}`] = entry;
@@ -399,8 +471,9 @@ async function parsePdf(filePath, getDocument) {
     }
 
     // Non-period row: classify each cell individually
+    const rowClassTextsSpan = getRowClassTextsWithSpan(row, true);
     for (const cls of classes) {
-      const val = cellText(row, cls);
+      const val = cellText(rowClassTextsSpan, cls);
       const key = `${cls}:${day}`;
       if (!val || isNoValue(val) || !lastByClass[key]) continue;
 
@@ -441,6 +514,23 @@ async function parsePdf(filePath, getDocument) {
   const classSet = new Set(classes.map((c) => c.toUpperCase()));
   // Matches standalone time ranges like "9.50 - 13.10 Uhr" that were misidentified as subjects
   const TIME_RANGE_SUBJECT = /^\d{1,2}[.:]\d{2}\s*-\s*\d{1,2}[.:]\d{2}/;
+  const PURE_NUMBER_SUBJECT = /^\d{1,3}$/;
+
+  function normalizeSubjectText(value) {
+    return (value ?? '')
+      .replace(/#(NV|N\/A|WERT!|REF!)/gi, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function dedupeTokenList(value) {
+    const tokens = (value ?? '').split(/\s+/).filter(Boolean);
+    const deduped = [];
+    for (const token of tokens) {
+      if (!deduped.includes(token)) deduped.push(token);
+    }
+    return deduped.join(' ');
+  }
 
   for (const cls of classes) {
     for (const d of WEEKDAYS) {
@@ -454,10 +544,12 @@ async function parsePdf(filePath, getDocument) {
 
       // Remove entries with no subject, 'R' headers, #NV-only subjects,
       // class names as subjects, or time ranges as subjects
-      let filtered = normalized.filter((l) => {
+      let filtered = normalized
+        .map((lesson) => ({ ...lesson, subject: normalizeSubjectText(lesson.subject) || undefined }))
+        .filter((l) => {
         if (!l.subject || l.subject === 'R' || isNoValue(l.subject)) return false;
         if (classSet.has(l.subject.toUpperCase().replace(/\s+/g, ''))) return false;
-        if (TIME_RANGE_SUBJECT.test(l.subject)) return false;
+        if (TIME_RANGE_SUBJECT.test(l.subject) || PURE_NUMBER_SUBJECT.test(l.subject)) return false;
         return true;
       });
       // Clean #NV from room fields
@@ -465,7 +557,8 @@ async function parsePdf(filePath, getDocument) {
         if (l.detail && isNoValue(l.detail)) delete l.detail;
         if (l.room) {
           const cleaned = l.room.replace(/#(NV|N\/A|WERT!|REF!)/gi, '').replace(/\s+/g, ' ').trim();
-          if (cleaned) l.room = cleaned;
+          const dedupedRoom = dedupeTokenList(cleaned);
+          if (dedupedRoom) l.room = dedupedRoom;
           else delete l.room;
         }
       }
