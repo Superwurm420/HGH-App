@@ -1,8 +1,7 @@
-import { getAnnouncements, getSpecialEventsForAllClasses } from '@/lib/announcements/server';
+import { getAnnouncements } from '@/lib/announcements/server';
 import { getWeeklyPlanForAllClasses } from '@/lib/timetable/server';
 import { Clock } from '@/components/ui/Clock';
 import { TvTimetableGrid } from '@/components/schedule/TvTimetableGrid';
-import { eventAppliesToDay } from '@/lib/timetable/types';
 import { parseBerlinDate } from '@/lib/announcements/parser';
 import { TvPageController } from '@/components/tv/TvPageController';
 
@@ -18,22 +17,12 @@ export default async function TvPage() {
     );
   }
 
-  const [announcements, specialEvents] = await Promise.all([
-    getAnnouncements(),
-    getSpecialEventsForAllClasses(),
-  ]);
+  const announcements = await getAnnouncements();
 
   const sortedAnnouncements = [...announcements].sort((a, b) => {
     const aDate = parseBerlinDate(a.date)?.getTime() ?? 0;
     const bDate = parseBerlinDate(b.date)?.getTime() ?? 0;
     return bDate - aDate;
-  });
-
-  const todaysEvents = specialEvents.filter((event) => eventAppliesToDay(event, plan.todayKey));
-  const sortedTodayEvents = [...todaysEvents].sort((a, b) => {
-    const aDate = parseBerlinDate(a.startsAt)?.getTime() ?? 0;
-    const bDate = parseBerlinDate(b.startsAt)?.getTime() ?? 0;
-    return aDate - bDate;
   });
 
   return (
@@ -76,21 +65,6 @@ export default async function TvPage() {
           )}
         </article>
 
-        <article className="tv-panel">
-          <h2>Sondertermine</h2>
-          {sortedTodayEvents.length === 0 ? (
-            <p className="text-sm text-muted">Keine Sondertermine heute.</p>
-          ) : (
-            <ul className="tv-events">
-              {sortedTodayEvents.slice(0, 8).map((event) => (
-                <li key={event.id}>
-                  <strong>{event.title}</strong>
-                  <span>{event.startsAt}{event.endsAt ? ` bis ${event.endsAt}` : ''}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </article>
       </section>
 
       <section className="tv-panel tv-timetable-panel">
