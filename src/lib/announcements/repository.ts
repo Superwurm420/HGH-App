@@ -21,6 +21,8 @@ type AnnouncementStorePayload = {
   announcements: AnnouncementRecord[];
 };
 
+type FsError = NodeJS.ErrnoException;
+
 export class AnnouncementStoreReadError extends Error {
   readonly storePath: string;
   readonly reason: string;
@@ -35,6 +37,20 @@ export class AnnouncementStoreReadError extends Error {
 
 const storeDir = path.join(process.cwd(), 'data');
 const storePath = path.join(storeDir, 'announcements-store.json');
+let memoryStoreFallback: AnnouncementStorePayload | null = null;
+
+function clonePayload(payload: AnnouncementStorePayload): AnnouncementStorePayload {
+  return {
+    version: 1,
+    announcements: payload.announcements.map((entry) => ({ ...entry, classes: [...entry.classes] })),
+  };
+}
+
+export function isFileSystemAccessError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const code = (error as FsError).code;
+  return code === 'EROFS' || code === 'EACCES' || code === 'EPERM' || code === 'ENOSPC';
+}
 
 function ensureStoreExists(): void {
   if (!fs.existsSync(storeDir)) {
@@ -101,6 +117,10 @@ function serializeClasses(value: string[]): string {
 }
 
 function readStore(): AnnouncementStorePayload {
+  if (memoryStoreFallback) {
+    return clonePayload(memoryStoreFallback);
+  }
+
   if (!fs.existsSync(storePath)) {
     return { version: 1, announcements: [] };
   }
@@ -138,8 +158,24 @@ function readStore(): AnnouncementStorePayload {
 }
 
 function writeStore(payload: AnnouncementStorePayload): void {
-  ensureStoreExists();
-  fs.writeFileSync(storePath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
+  if (memoryStoreFallback) {
+    memoryStoreFallback = clonePayload(payload);
+    return;
+  }
+
+  try {
+    ensureStoreExists();
+    fs.writeFileSync(storePath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
+  } catch (error) {
+    if (isFileSystemAccessError(error)) {
+      console.warn(
+        `[announcements] Store kann nicht auf Dateisystem geschrieben werden (${storePath}). Wechsle auf In-Memory-Fallback.`,
+      );
+      memoryStoreFallback = clonePayload(payload);
+      return;
+    }
+    throw error;
+  }
 }
 
 export function toRecord(data: AnnouncementFormData, id: string, now: Date = new Date(), createdAt?: string): AnnouncementRecord {

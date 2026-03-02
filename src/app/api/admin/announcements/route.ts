@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AnnouncementFormData, validateAnnouncementForm } from '@/lib/announcements/editor';
 import { createAdminAnnouncement, deleteAdminAnnouncement, listAdminAnnouncements, updateAdminAnnouncement } from '@/lib/announcements/admin-store';
-import { AnnouncementStoreReadError } from '@/lib/announcements/repository';
+import { AnnouncementStoreReadError, isFileSystemAccessError } from '@/lib/announcements/repository';
 
 type AnnouncementPayload = {
   id?: string;
@@ -9,6 +9,16 @@ type AnnouncementPayload = {
 };
 
 function handleStoreError(error: unknown): NextResponse {
+  if (isFileSystemAccessError(error)) {
+    return NextResponse.json(
+      {
+        error:
+          'Der Server kann aktuell nicht auf den Speicher schreiben (Dateisystem ist nicht beschreibbar). Bitte Hosting/Storage-Konfiguration prüfen.',
+      },
+      { status: 500 },
+    );
+  }
+
   if (error instanceof AnnouncementStoreReadError) {
     return NextResponse.json(
       {
