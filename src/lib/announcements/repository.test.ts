@@ -64,4 +64,36 @@ describe('readStore integration via listAnnouncementRecords', () => {
 
     expect(() => repository.listAnnouncementRecords()).toThrowError(repository.AnnouncementStoreReadError);
   });
+
+  it('falls back to in-memory store when filesystem is not writable', async () => {
+    setupTempCwd();
+    const repository = await loadRepositoryModule();
+
+    const writeSpy = vi.spyOn(fs, 'writeFileSync').mockImplementation(() => {
+      const error = new Error('read-only file system') as NodeJS.ErrnoException;
+      error.code = 'EROFS';
+      throw error;
+    });
+
+    repository.upsertAnnouncementRecord(
+      repository.toRecord(
+        {
+          title: 'Test Termin',
+          date: '10.10.2026 10:00',
+          audience: 'alle',
+          classes: '11A',
+          expires: '10.10.2026 12:00',
+          anzeige: 'ja',
+          body: 'Details',
+        },
+        'test-termin',
+      ),
+    );
+
+    const entries = repository.listAnnouncementRecords();
+    expect(entries).toHaveLength(1);
+    expect(entries[0]?.id).toBe('test-termin');
+    expect(entries[0]?.title).toBe('Test Termin');
+    expect(writeSpy).toHaveBeenCalled();
+  });
 });
