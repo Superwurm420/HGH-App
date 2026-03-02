@@ -21,6 +21,18 @@ type AnnouncementStorePayload = {
   announcements: AnnouncementRecord[];
 };
 
+export class AnnouncementStoreReadError extends Error {
+  readonly storePath: string;
+  readonly reason: string;
+
+  constructor(storePathValue: string, reason: string, options?: ErrorOptions) {
+    super(`Ankündigungs-Store kann nicht gelesen werden: ${reason}`, options);
+    this.name = 'AnnouncementStoreReadError';
+    this.storePath = storePathValue;
+    this.reason = reason;
+  }
+}
+
 const storeDir = path.join(process.cwd(), 'data');
 const storePath = path.join(storeDir, 'announcements-store.json');
 
@@ -97,7 +109,7 @@ function readStore(): AnnouncementStorePayload {
     const raw = fs.readFileSync(storePath, 'utf8');
     const parsed = JSON.parse(raw) as Partial<AnnouncementStorePayload>;
     if (parsed.version !== 1 || !Array.isArray(parsed.announcements)) {
-      throw new Error('Ungültiges Store-Format.');
+      throw new Error('Ungültiges Store-Schema (version/announcements).');
     }
 
     const announcements = parsed.announcements
@@ -108,8 +120,20 @@ function readStore(): AnnouncementStorePayload {
       version: 1,
       announcements,
     };
-  } catch {
-    return { version: 1, announcements: [] };
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : 'Unbekannter Lesefehler';
+    console.error(`[announcements] Fehlerhafter Store (${storePath}): ${reason}`);
+
+    const quarantinePath = `${storePath}.broken-${Date.now()}`;
+    try {
+      fs.renameSync(storePath, quarantinePath);
+      console.error(`[announcements] Defekter Store wurde nach ${quarantinePath} verschoben.`);
+    } catch (renameError) {
+      const renameReason = renameError instanceof Error ? renameError.message : 'Unbekannter Fehler beim Verschieben';
+      console.error(`[announcements] Quarantäne fehlgeschlagen (${storePath}): ${renameReason}`);
+    }
+
+    throw new AnnouncementStoreReadError(storePath, reason, error instanceof Error ? { cause: error } : undefined);
   }
 }
 
