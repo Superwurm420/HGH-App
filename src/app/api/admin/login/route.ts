@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ADMIN_COOKIE_NAME, createAdminSessionToken, isValidAdminPassword } from '@/lib/admin/auth';
+import { ADMIN_COOKIE_NAME, createAdminSessionToken, getAdminSessionMaxAgeSeconds, isValidAdminPassword } from '@/lib/admin/auth';
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const payload = (await request.json()) as { password?: string };
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
     path: '/',
-    maxAge: 60 * 60 * 12,
+    maxAge: getAdminSessionMaxAgeSeconds(),
   });
 
   return response;
