@@ -10,7 +10,8 @@
     "prebuild": "node scripts/prebuild.mjs",
     "validate-content": "node scripts/validate-content.mjs",
     "select-latest-timetable": "node scripts/select-latest-timetable.mjs",
-    "migrate-announcements": "node scripts/migrate-announcements-to-store.mjs"
+    "migrate-announcements": "node scripts/migrate-announcements-to-store.mjs",
+    "test:unit": "vitest run"
   },
   "dependencies": {
     "next": "14.2.32",
@@ -27,6 +28,7 @@
     "eslint-config-next": "14.2.32",
     "postcss": "8.5.3",
     "tailwindcss": "3.4.17",
-    "typescript": "5.8.2"
+    "typescript": "5.8.2",
+    "vitest": "^2.1.8"
   }
 }
