@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { AdminAnnouncementEditor } from './ui/AdminAnnouncementEditor';
+import { AdminWorkspace } from './ui/AdminWorkspace';
 
 export const metadata: Metadata = {
   title: 'Admin · Terminverwaltung',
@@ -12,7 +12,7 @@ export default function AdminPage() {
       <p className="mb-6 text-sm text-gray-600 dark:text-gray-300">
         Neue Termine können direkt erstellt, bearbeitet und gelöscht werden. Der Fokus liegt auf einem einfachen Ablauf ohne TXT-Upload.
       </p>
-      <AdminAnnouncementEditor />
+      <AdminWorkspace />
     </main>
   );
 }
