@@ -204,7 +204,7 @@ class VercelBlobContentStore implements ContentStore {
       const result = await listBlob({ token: this.token, prefix: normalizedPrefix });
       return result.blobs.map((blob) => ({
         key: blob.pathname,
-        contentType: blob.contentType,
+        contentType: null,
         size: blob.size,
         updatedAt: blob.uploadedAt,
       }));
