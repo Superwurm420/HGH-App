@@ -2,6 +2,8 @@ import path from 'node:path';
 import { NextRequest, NextResponse } from 'next/server';
 import { ContentStoreConfigurationError, ContentStoreUnavailableError, getContentStore } from '@/lib/storage/content-store';
 import { STORAGE_KEYS } from '@/lib/storage/object-keys';
+import { invalidateTimetableCache } from '@/lib/timetable/server';
+import { parseUploadedTimetablePdf, upsertTimetableIndexEntry } from '@/lib/timetable/generated-data';
 
 type ManagedFileEntry = {
   key: string;
@@ -79,9 +81,34 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const arrayBuffer = await file.arrayBuffer();
     const data = Buffer.from(arrayBuffer);
-    const key = `${STORAGE_KEYS.timetablesPrefix}${path.posix.basename(fileName).replace(/\s+/g, '_')}`;
+    const safeFileName = path.posix.basename(fileName).replace(/\s+/g, '_');
+    const key = `${STORAGE_KEYS.timetablesPrefix}${safeFileName}`;
     await store.putObject(key, data, 'application/pdf');
-    return NextResponse.json({ ok: true, key });
+
+    let parsed = false;
+    let indexed = false;
+
+    try {
+      const schedule = await parseUploadedTimetablePdf(data);
+      const indexResult = await upsertTimetableIndexEntry({
+        filename: safeFileName,
+        lastModifiedMs: Date.now(),
+        schedule,
+      });
+      parsed = indexResult.scheduleUpdated;
+      indexed = indexResult.metaUpdated;
+      if (parsed) {
+        invalidateTimetableCache();
+      }
+    } catch {
+      await upsertTimetableIndexEntry({
+        filename: safeFileName,
+        lastModifiedMs: Date.now(),
+      });
+      invalidateTimetableCache();
+    }
+
+    return NextResponse.json({ ok: true, key, indexed, parsed });
   } catch (error) {
     return handleStoreError(error);
   }
