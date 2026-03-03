@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { parseApiError, parseRequestFailure } from './apiError';
 
 export function AdminCalendarEditor() {
   const [urls, setUrls] = useState<string[]>([]);
@@ -12,15 +13,17 @@ export function AdminCalendarEditor() {
   const loadUrls = useCallback(async () => {
     try {
       const response = await fetch('/api/admin/calendar', { cache: 'no-store' });
-      const payload = (await response.json()) as { urls?: string[]; error?: string };
       if (!response.ok) {
-        setError(payload.error ?? 'Kalender konnte nicht geladen werden.');
+        const apiError = await parseApiError(response);
+        setError(apiError.message);
         return;
       }
+      const payload = (await response.json()) as { urls?: string[]; error?: string };
       setUrls(payload.urls ?? []);
       setError(null);
-    } catch {
-      setError('Kalender konnte nicht geladen werden.');
+    } catch (caughtError) {
+      const apiError = parseRequestFailure(caughtError);
+      setError(apiError.message);
     }
   }, []);
 
@@ -39,17 +42,20 @@ export function AdminCalendarEditor() {
         body: JSON.stringify({ urls: nextUrls }),
       });
 
-      const payload = (await response.json()) as { urls?: string[]; error?: string };
       if (!response.ok) {
-        setError(payload.error ?? 'Speichern fehlgeschlagen.');
+        const apiError = await parseApiError(response);
+        setError(apiError.message);
         setStatus('Speichern fehlgeschlagen.');
         return;
       }
 
+      const payload = (await response.json()) as { urls?: string[]; error?: string };
       setUrls(payload.urls ?? nextUrls);
       setStatus('Gespeichert.');
-    } catch {
-      setError('Speichern fehlgeschlagen.');
+      setError(null);
+    } catch (caughtError) {
+      const apiError = parseRequestFailure(caughtError);
+      setError(apiError.message);
       setStatus('Speichern fehlgeschlagen.');
     } finally {
       setIsBusy(false);

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { parseApiError, parseRequestFailure } from './apiError';
 
 type MessageCategories = {
   vorUnterricht?: string[];
@@ -122,17 +123,19 @@ export function AdminMessagesEditor() {
   const loadMessages = useCallback(async () => {
     try {
       const response = await fetch('/api/admin/messages', { cache: 'no-store' });
-      const payload = (await response.json()) as { messages?: MessagesPayload; error?: string };
       if (!response.ok) {
-        setError(payload.error ?? 'Meldungen konnten nicht geladen werden.');
+        const apiError = await parseApiError(response);
+        setError(apiError.message);
         return;
       }
+      const payload = (await response.json()) as { messages?: MessagesPayload; error?: string };
       setStandard(payload.messages?.standard ?? {});
       setKlassen(payload.messages?.klassen ?? {});
       setIsDirty(false);
       setError(null);
-    } catch {
-      setError('Meldungen konnten nicht geladen werden.');
+    } catch (caughtError) {
+      const apiError = parseRequestFailure(caughtError);
+      setError(apiError.message);
     }
   }, []);
 
@@ -203,19 +206,22 @@ export function AdminMessagesEditor() {
         }),
       });
 
-      const payload = (await response.json()) as { messages?: MessagesPayload; error?: string };
       if (!response.ok) {
-        setError(payload.error ?? 'Speichern fehlgeschlagen.');
+        const apiError = await parseApiError(response);
+        setError(apiError.message);
         setStatus('Speichern fehlgeschlagen.');
         return;
       }
 
+      const payload = (await response.json()) as { messages?: MessagesPayload; error?: string };
       setStandard(payload.messages?.standard ?? standard);
       setKlassen(payload.messages?.klassen ?? cleanedKlassen);
       setIsDirty(false);
       setStatus('Gespeichert.');
-    } catch {
-      setError('Speichern fehlgeschlagen.');
+      setError(null);
+    } catch (caughtError) {
+      const apiError = parseRequestFailure(caughtError);
+      setError(apiError.message);
       setStatus('Speichern fehlgeschlagen.');
     } finally {
       setIsBusy(false);

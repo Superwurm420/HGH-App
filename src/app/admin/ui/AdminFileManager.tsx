@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { parseApiError, parseRequestFailure } from './apiError';
 
 type ManagedFile = {
   key: string;
@@ -33,19 +34,25 @@ export function AdminFileManager() {
   const [isBusy, setIsBusy] = useState(false);
 
   const loadFiles = useCallback(async () => {
-    const response = await fetch('/api/admin/files', { cache: 'no-store' });
-    const payload = (await response.json()) as ApiResponse & { error?: string };
-    if (!response.ok) {
-      setError(payload.error ?? 'Dateien konnten nicht geladen werden.');
-      return;
-    }
+    try {
+      const response = await fetch('/api/admin/files', { cache: 'no-store' });
+      if (!response.ok) {
+        const apiError = await parseApiError(response);
+        setError(apiError.message);
+        return;
+      }
 
-    setError(null);
-    setFiles(payload.filesByCategory?.stundenplan ?? []);
+      const payload = (await response.json()) as ApiResponse & { error?: string };
+      setError(null);
+      setFiles(payload.filesByCategory?.stundenplan ?? []);
+    } catch (caughtError) {
+      const apiError = parseRequestFailure(caughtError);
+      setError(apiError.message);
+    }
   }, []);
 
   useEffect(() => {
-    loadFiles().catch(() => setError('Dateien konnten nicht geladen werden.'));
+    loadFiles();
   }, [loadFiles]);
 
   async function upload() {
@@ -61,47 +68,60 @@ export function AdminFileManager() {
     formData.append('category', 'stundenplan');
     formData.append('file', selectedFile);
 
-    const response = await fetch('/api/admin/files', {
-      method: 'POST',
-      body: formData,
-    });
+    try {
+      const response = await fetch('/api/admin/files', {
+        method: 'POST',
+        body: formData,
+      });
 
-    const payload = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        const apiError = await parseApiError(response);
+        setError(apiError.message);
+        setStatus('Upload fehlgeschlagen.');
+        return;
+      }
 
-    if (!response.ok) {
-      setError(payload.error ?? 'Upload fehlgeschlagen.');
+      setSelectedFile(undefined);
+      setStatus('Stundenplan erfolgreich gespeichert.');
+      setError(null);
+      await loadFiles();
+    } catch (caughtError) {
+      const apiError = parseRequestFailure(caughtError);
+      setError(apiError.message);
       setStatus('Upload fehlgeschlagen.');
+    } finally {
       setIsBusy(false);
-      return;
     }
-
-    setSelectedFile(undefined);
-    setStatus('Stundenplan erfolgreich gespeichert.');
-    await loadFiles();
-    setIsBusy(false);
   }
 
   async function remove(key: string) {
     setIsBusy(true);
     setError(null);
 
-    const response = await fetch('/api/admin/files', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ category: 'stundenplan', key }),
-    });
+    try {
+      const response = await fetch('/api/admin/files', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category: 'stundenplan', key }),
+      });
 
-    const payload = (await response.json()) as { error?: string };
-    if (!response.ok) {
-      setError(payload.error ?? 'Löschen fehlgeschlagen.');
+      if (!response.ok) {
+        const apiError = await parseApiError(response);
+        setError(apiError.message);
+        setStatus('Löschen fehlgeschlagen.');
+        return;
+      }
+
+      setStatus('Stundenplan gelöscht.');
+      setError(null);
+      await loadFiles();
+    } catch (caughtError) {
+      const apiError = parseRequestFailure(caughtError);
+      setError(apiError.message);
       setStatus('Löschen fehlgeschlagen.');
+    } finally {
       setIsBusy(false);
-      return;
     }
-
-    setStatus('Stundenplan gelöscht.');
-    await loadFiles();
-    setIsBusy(false);
   }
 
   return (
@@ -121,7 +141,7 @@ export function AdminFileManager() {
             <button
               type="button"
               disabled={isBusy}
-              onClick={() => remove(entry.key).catch(() => setError('Löschen fehlgeschlagen.'))}
+              onClick={() => remove(entry.key)}
               className="mt-2 rounded border border-red-300 px-2 py-1 text-xs text-red-600 disabled:opacity-50"
             >
               Löschen
@@ -141,7 +161,7 @@ export function AdminFileManager() {
         <button
           type="button"
           disabled={isBusy || !selectedFile}
-          onClick={() => upload().catch(() => setError('Upload fehlgeschlagen.'))}
+          onClick={() => upload()}
           className="rounded bg-emerald-600 px-3 py-2 text-sm text-white disabled:opacity-50"
         >
           Upload / Ersetzen
