@@ -23,7 +23,7 @@ function asManagedFile(key: string, size: number, updatedAt: Date | null): Manag
 
 function handleStoreError(error: unknown): NextResponse {
   if (error instanceof ContentStoreConfigurationError) {
-    return NextResponse.json({ error: 'Storage-Konfiguration fehlt oder ist ungültig.' }, { status: 500 });
+    return NextResponse.json({ error: `Storage-Konfiguration ungültig: ${error.reason}` }, { status: 500 });
   }
 
   if (error instanceof ContentStoreUnavailableError) {

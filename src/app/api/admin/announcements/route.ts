@@ -13,7 +13,7 @@ function handleStoreError(error: unknown): NextResponse {
   if (error instanceof ContentStoreConfigurationError) {
     return NextResponse.json(
       {
-        error: 'Storage-Konfiguration fehlt oder ist ungültig. Bitte Environment-Variablen prüfen.',
+        error: `Storage-Konfiguration ungültig: ${error.reason}`,
       },
       { status: 500 },
     );
