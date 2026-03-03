@@ -16,6 +16,14 @@ type ApiFileEntry = {
   data: AnnouncementFormData;
 };
 
+type AnnouncementListEntry = {
+  id: string;
+  file: string;
+  data: AnnouncementFormData;
+  hasDataError: boolean;
+  dataErrorMessage: string;
+};
+
 const audienceOptions = ['alle', 'Schülerinnen und Schüler', 'Lehrkräfte', 'Eltern', 'Ausbildungspartner'];
 
 function FieldError({ issues, field }: { issues: ValidationIssue[]; field: keyof AnnouncementFormData }) {
@@ -46,7 +54,7 @@ function localNowRoundedToFiveMinutes(): string {
 
 export function AdminAnnouncementEditor() {
   const [formData, setFormData] = useState<AnnouncementFormData>(getDefaultAnnouncementFormData());
-  const [savedFiles, setSavedFiles] = useState<ApiFileEntry[]>([]);
+  const [savedFiles, setSavedFiles] = useState<AnnouncementListEntry[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [status, setStatus] = useState('Bereit.');
   const [isBusy, setIsBusy] = useState(false);
@@ -60,19 +68,43 @@ export function AdminAnnouncementEditor() {
     return [trimmed, ...audienceOptions];
   }, [formData.audience]);
 
-  const loadFiles = useCallback(async () => {
+  const loadEntries = useCallback(async () => {
     const response = await fetch('/api/admin/announcements', { cache: 'no-store' });
     if (!response.ok) {
       setStatus('Fehler beim Laden der vorhandenen Termine.');
       return;
     }
     const payload = (await response.json()) as { files: ApiFileEntry[] };
-    setSavedFiles(payload.files);
+    const normalized = payload.files.map((entry) => {
+      const missingTitle = !entry.data?.title;
+      const missingDate = !entry.data?.date;
+      const errors: string[] = [];
+
+      if (missingTitle) errors.push('Titel fehlt');
+      if (missingDate) errors.push('Datum fehlt');
+
+      return {
+        ...entry,
+        hasDataError: errors.length > 0,
+        dataErrorMessage: errors.join(', '),
+      };
+    });
+
+    setSavedFiles(normalized);
+
+    setSelectedId((previousSelectedId) => {
+      if (!previousSelectedId) return null;
+      const stillExists = normalized.some((entry) => entry.id === previousSelectedId);
+      if (stillExists) return previousSelectedId;
+
+      setFormData(getDefaultAnnouncementFormData());
+      return null;
+    });
   }, []);
 
   useEffect(() => {
-    loadFiles().catch(() => setStatus('Fehler beim Laden der Termine.'));
-  }, [loadFiles]);
+    loadEntries().catch(() => setStatus('Fehler beim Laden der Termine.'));
+  }, [loadEntries]);
 
   function updateField<K extends keyof AnnouncementFormData>(key: K, value: AnnouncementFormData[K]) {
     setFormData((previous) => ({ ...previous, [key]: value }));
@@ -80,69 +112,75 @@ export function AdminAnnouncementEditor() {
 
   async function createEntry() {
     setIsBusy(true);
-    const response = await fetch('/api/admin/announcements', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ data: formData }),
-    });
+    try {
+      const response = await fetch('/api/admin/announcements', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: formData }),
+      });
 
-    const payload = (await response.json()) as { error?: string; issues?: ValidationIssue[] };
-    if (!response.ok) {
-      setStatus(payload.error ?? 'Speichern fehlgeschlagen.');
+      const payload = (await response.json()) as { error?: string; data?: AnnouncementFormData; file?: string; issues?: ValidationIssue[] };
+      if (!response.ok) {
+        setStatus(payload.error ?? `Speichern von „${formData.title || 'Neuer Termin'}“ fehlgeschlagen.`);
+        return;
+      }
+
+      const optimisticName = payload.data?.title || payload.file || formData.title || 'Neuer Termin';
+      setStatus(`Termin „${optimisticName}“ gespeichert. Liste wird aktualisiert …`);
+      setFormData(getDefaultAnnouncementFormData());
+      setSelectedId(null);
+    } finally {
+      await loadEntries();
       setIsBusy(false);
-      return;
     }
-
-    setStatus('Termin gespeichert.');
-    setFormData(getDefaultAnnouncementFormData());
-    setSelectedId(null);
-    await loadFiles();
-    setIsBusy(false);
   }
 
   async function updateEntry() {
     if (!selectedId) return;
     setIsBusy(true);
-    const response = await fetch('/api/admin/announcements', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: selectedId, data: formData }),
-    });
+    try {
+      const response = await fetch('/api/admin/announcements', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: selectedId, data: formData }),
+      });
 
-    const payload = (await response.json()) as { error?: string };
-    if (!response.ok) {
-      setStatus(payload.error ?? 'Aktualisieren fehlgeschlagen.');
+      const payload = (await response.json()) as { error?: string; data?: AnnouncementFormData; file?: string };
+      if (!response.ok) {
+        setStatus(payload.error ?? `Aktualisieren von „${formData.title || selectedId}“ fehlgeschlagen.`);
+        return;
+      }
+
+      const optimisticName = payload.data?.title || payload.file || formData.title || selectedId;
+      setStatus(`Termin „${optimisticName}“ aktualisiert. Liste wird aktualisiert …`);
+    } finally {
+      await loadEntries();
       setIsBusy(false);
-      return;
     }
-
-    setStatus('Termin aktualisiert.');
-    await loadFiles();
-    setIsBusy(false);
   }
 
   async function deleteEntry(id: string) {
     setIsBusy(true);
-    const response = await fetch('/api/admin/announcements', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id }),
-    });
+    const deletedEntry = savedFiles.find((entry) => entry.id === id);
 
-    const payload = (await response.json()) as { error?: string };
-    if (!response.ok) {
-      setStatus(payload.error ?? 'Löschen fehlgeschlagen.');
+    try {
+      const response = await fetch('/api/admin/announcements', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+
+      const payload = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        setStatus(payload.error ?? `Löschen von „${deletedEntry?.data.title || deletedEntry?.file || id}“ fehlgeschlagen.`);
+        return;
+      }
+
+      setStatus(`Termin „${deletedEntry?.data.title || deletedEntry?.file || id}“ gelöscht. Liste wird aktualisiert …`);
+    } finally {
+      await loadEntries();
       setIsBusy(false);
-      return;
     }
-
-    if (selectedId === id) {
-      setSelectedId(null);
-      setFormData(getDefaultAnnouncementFormData());
-    }
-    setStatus('Termin gelöscht.');
-    await loadFiles();
-    setIsBusy(false);
   }
 
   return (
@@ -295,13 +333,19 @@ export function AdminAnnouncementEditor() {
                   onClick={() => {
                     setSelectedId(entry.id);
                     setFormData(entry.data);
-                    setStatus(`Termin „${entry.data.title || entry.file}“ geladen.`);
+                    setStatus(
+                      entry.hasDataError
+                        ? `Fehlerhafter Termin „${entry.data.title || entry.file}“ geladen (${entry.dataErrorMessage}).`
+                        : `Termin „${entry.data.title || entry.file}“ geladen.`,
+                    );
                   }}
                   className="block w-full text-left font-medium text-blue-700 underline"
                 >
                   {entry.data.title || entry.file}
+                  {entry.hasDataError ? ' ⚠️' : ''}
                 </button>
                 <p className="mt-1 text-xs text-gray-500">{entry.data.date || 'ohne Datum'}</p>
+                {entry.hasDataError && <p className="mt-1 text-xs text-amber-600">Datenfehler: {entry.dataErrorMessage}</p>}
                 <button
                   type="button"
                   onClick={() => deleteEntry(entry.id).catch(() => setStatus('Löschen fehlgeschlagen.'))}
