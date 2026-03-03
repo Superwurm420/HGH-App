@@ -151,7 +151,7 @@ The `scripts/prebuild.mjs` script runs before every `dev` and `build`. It:
 
 - Password-based authentication via env vars (`ADMIN_USER`, `ADMIN_PASSWORD`)
 - HMAC-signed session cookies (12-hour expiry)
-- Middleware at `middleware.ts` protects all `/api/admin/*` routes except `/login` and `/session`
+- Middleware at `middleware.ts` protects `/admin` and all `/api/admin/*` routes except `/login` and `/session`
 - Admin panel at `/admin` provides CRUD for announcements
 
 ### Announcement Format
@@ -192,7 +192,7 @@ Key fields:
 | Endpoint | Method | Description |
 |---|---|---|
 | `/api/bootstrap` | GET | Returns latest timetable, announcements, version hash (supports ETag/304) |
-| `/api/admin/login` | POST | Password login, returns session cookie |
+| `/api/admin/login` | POST | Username + password login, returns session cookie |
 | `/api/admin/logout` | POST | Clears session cookie |
 | `/api/admin/session` | GET | Validates current session |
 | `/api/admin/announcements` | GET/POST/PUT/DELETE | Announcement CRUD (protected) |
@@ -235,7 +235,7 @@ Key fields:
 
 ```bash
 ADMIN_USER=redaktion              # Admin username
-ADMIN_PASSWORD=...                # Admin password (required for /admin access)
+ADMIN_PASSWORD=...                # Admin password (required, with ADMIN_USER, for /admin access)
 SESSION_SECRET=...                # HMAC secret for session cookies (falls back to ADMIN_PASSWORD)
 ```
 

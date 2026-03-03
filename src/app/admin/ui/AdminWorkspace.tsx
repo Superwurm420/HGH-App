@@ -9,6 +9,7 @@ import { AdminFileManager } from './AdminFileManager';
 
 export function AdminWorkspace() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoginPending, setIsLoginPending] = useState(false);
   const [status, setStatus] = useState('Bitte anmelden.');
@@ -34,7 +35,7 @@ export function AdminWorkspace() {
     const response = await fetch('/api/admin/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password }),
+      body: JSON.stringify({ username, password }),
     });
 
     const payload = (await response.json()) as { error?: string };
@@ -44,6 +45,7 @@ export function AdminWorkspace() {
       return;
     }
 
+    setUsername('');
     setPassword('');
     setIsAuthenticated(true);
     setStatus('Anmeldung erfolgreich.');
@@ -60,8 +62,17 @@ export function AdminWorkspace() {
     return (
       <section className="mx-auto max-w-md rounded-lg border border-gray-300 p-6 dark:border-gray-700">
         <h2 className="mb-2 text-lg font-semibold">Admin-Anmeldung</h2>
-        <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">Bitte Passwort eingeben, um den Adminbereich zu öffnen.</p>
+        <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">Bitte Benutzername und Passwort eingeben, um den Adminbereich zu öffnen.</p>
         <label className="block text-sm font-medium">
+          Benutzername
+          <input
+            type="text"
+            value={username}
+            onChange={(event) => setUsername(event.target.value)}
+            className="mt-1 w-full rounded border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-900"
+          />
+        </label>
+        <label className="mt-3 block text-sm font-medium">
           Passwort
           <input
             type="password"
