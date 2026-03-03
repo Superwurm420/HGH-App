@@ -1,6 +1,6 @@
-import fs from 'node:fs';
-import path from 'node:path';
 import { AnnouncementFormData, parseAnnouncementTxt, serializeAnnouncementTxt } from './editor';
+import { ContentStoreUnavailableError, getContentStore } from '../storage/content-store';
+import { STORAGE_KEYS } from '../storage/object-keys';
 
 export type AnnouncementRecord = {
   id: string;
@@ -21,48 +21,27 @@ type AnnouncementStorePayload = {
   announcements: AnnouncementRecord[];
 };
 
-type FsError = NodeJS.ErrnoException;
-
 export class AnnouncementStoreReadError extends Error {
-  readonly storePath: string;
+  readonly storeKey: string;
   readonly reason: string;
 
-  constructor(storePathValue: string, reason: string, options?: ErrorOptions) {
+  constructor(storeKeyValue: string, reason: string, options?: ErrorOptions) {
     super(`Ankündigungs-Store kann nicht gelesen werden: ${reason}`, options);
     this.name = 'AnnouncementStoreReadError';
-    this.storePath = storePathValue;
+    this.storeKey = storeKeyValue;
     this.reason = reason;
   }
 }
 
-const storeDir = path.join(process.cwd(), 'data');
-const storePath = path.join(storeDir, 'announcements-store.json');
-let memoryStoreFallback: AnnouncementStorePayload | null = null;
+export class AnnouncementStoreWriteError extends Error {
+  readonly storeKey: string;
+  readonly reason: string;
 
-function clonePayload(payload: AnnouncementStorePayload): AnnouncementStorePayload {
-  return {
-    version: 1,
-    announcements: payload.announcements.map((entry) => ({ ...entry, classes: [...entry.classes] })),
-  };
-}
-
-export function isFileSystemAccessError(error: unknown): boolean {
-  if (!error || typeof error !== 'object') return false;
-  const code = (error as FsError).code;
-  return code === 'EROFS' || code === 'EACCES' || code === 'EPERM' || code === 'ENOSPC';
-}
-
-function ensureStoreExists(): void {
-  if (!fs.existsSync(storeDir)) {
-    fs.mkdirSync(storeDir, { recursive: true });
-  }
-
-  if (!fs.existsSync(storePath)) {
-    const initialPayload: AnnouncementStorePayload = {
-      version: 1,
-      announcements: [],
-    };
-    fs.writeFileSync(storePath, `${JSON.stringify(initialPayload, null, 2)}\n`, 'utf8');
+  constructor(storeKeyValue: string, reason: string, options?: ErrorOptions) {
+    super(`Ankündigungs-Store kann nicht geschrieben werden: ${reason}`, options);
+    this.name = 'AnnouncementStoreWriteError';
+    this.storeKey = storeKeyValue;
+    this.reason = reason;
   }
 }
 
@@ -72,6 +51,10 @@ function normalizeAnzeige(value: string): 'ja' | 'nein' {
 
 function sanitizeString(value: unknown, fallback = ''): string {
   return typeof value === 'string' ? value : fallback;
+}
+
+function parseClasses(value: string): string[] {
+  return [...new Set(value.split(/[;,/|\s]+/).map((item) => item.trim()).filter(Boolean))];
 }
 
 function sanitizeClasses(value: unknown): string[] {
@@ -108,71 +91,55 @@ function normalizeRecord(entry: unknown): AnnouncementRecord | null {
   };
 }
 
-function parseClasses(value: string): string[] {
-  return [...new Set(value.split(/[;,/|\s]+/).map((item) => item.trim()).filter(Boolean))];
-}
-
 function serializeClasses(value: string[]): string {
   return value.join(', ');
 }
 
-function readStore(): AnnouncementStorePayload {
-  if (memoryStoreFallback) {
-    return clonePayload(memoryStoreFallback);
-  }
+async function readStore(): Promise<AnnouncementStorePayload> {
+  const store = getContentStore();
+  const storeKey = STORAGE_KEYS.announcements;
 
-  if (!fs.existsSync(storePath)) {
-    return { version: 1, announcements: [] };
+  let rawStore: string;
+  try {
+    const object = await store.getObject(storeKey);
+    if (!object) {
+      return { version: 1, announcements: [] };
+    }
+    rawStore = object.data.toString('utf8');
+  } catch (error) {
+    if (error instanceof ContentStoreUnavailableError) {
+      throw new AnnouncementStoreReadError(storeKey, error.message, { cause: error });
+    }
+    throw error;
   }
 
   try {
-    const raw = fs.readFileSync(storePath, 'utf8');
-    const parsed = JSON.parse(raw) as Partial<AnnouncementStorePayload>;
+    const parsed = JSON.parse(rawStore) as Partial<AnnouncementStorePayload>;
     if (parsed.version !== 1 || !Array.isArray(parsed.announcements)) {
       throw new Error('Ungültiges Store-Schema (version/announcements).');
     }
 
-    const announcements = parsed.announcements
-      .map((entry) => normalizeRecord(entry))
-      .filter((entry): entry is AnnouncementRecord => entry !== null);
-
     return {
       version: 1,
-      announcements,
+      announcements: parsed.announcements
+        .map((entry) => normalizeRecord(entry))
+        .filter((entry): entry is AnnouncementRecord => entry !== null),
     };
   } catch (error) {
     const reason = error instanceof Error ? error.message : 'Unbekannter Lesefehler';
-    console.error(`[announcements] Fehlerhafter Store (${storePath}): ${reason}`);
-
-    const quarantinePath = `${storePath}.broken-${Date.now()}`;
-    try {
-      fs.renameSync(storePath, quarantinePath);
-      console.error(`[announcements] Defekter Store wurde nach ${quarantinePath} verschoben.`);
-    } catch (renameError) {
-      const renameReason = renameError instanceof Error ? renameError.message : 'Unbekannter Fehler beim Verschieben';
-      console.error(`[announcements] Quarantäne fehlgeschlagen (${storePath}): ${renameReason}`);
-    }
-
-    throw new AnnouncementStoreReadError(storePath, reason, error instanceof Error ? { cause: error } : undefined);
+    throw new AnnouncementStoreReadError(storeKey, reason, error instanceof Error ? { cause: error } : undefined);
   }
 }
 
-function writeStore(payload: AnnouncementStorePayload): void {
-  if (memoryStoreFallback) {
-    memoryStoreFallback = clonePayload(payload);
-    return;
-  }
+async function writeStore(payload: AnnouncementStorePayload): Promise<void> {
+  const store = getContentStore();
+  const storeKey = STORAGE_KEYS.announcements;
 
   try {
-    ensureStoreExists();
-    fs.writeFileSync(storePath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
+    await store.putObject(storeKey, `${JSON.stringify(payload, null, 2)}\n`, 'application/json; charset=utf-8');
   } catch (error) {
-    if (isFileSystemAccessError(error)) {
-      console.warn(
-        `[announcements] Store kann nicht auf Dateisystem geschrieben werden (${storePath}). Wechsle auf In-Memory-Fallback.`,
-      );
-      memoryStoreFallback = clonePayload(payload);
-      return;
+    if (error instanceof ContentStoreUnavailableError) {
+      throw new AnnouncementStoreWriteError(storeKey, error.message, { cause: error });
     }
     throw error;
   }
@@ -207,30 +174,30 @@ export function toFormData(record: AnnouncementRecord): AnnouncementFormData {
   };
 }
 
-export function listAnnouncementRecords(): AnnouncementRecord[] {
-  return readStore().announcements;
+export async function listAnnouncementRecords(): Promise<AnnouncementRecord[]> {
+  return (await readStore()).announcements;
 }
 
-export function getAnnouncementRecord(id: string): AnnouncementRecord | null {
-  return listAnnouncementRecords().find((entry) => entry.id === id) ?? null;
+export async function getAnnouncementRecord(id: string): Promise<AnnouncementRecord | null> {
+  return (await listAnnouncementRecords()).find((entry) => entry.id === id) ?? null;
 }
 
-export function upsertAnnouncementRecord(record: AnnouncementRecord): void {
-  const store = readStore();
+export async function upsertAnnouncementRecord(record: AnnouncementRecord): Promise<void> {
+  const store = await readStore();
   const index = store.announcements.findIndex((entry) => entry.id === record.id);
   if (index >= 0) {
     store.announcements[index] = record;
   } else {
     store.announcements.push(record);
   }
-  writeStore(store);
+  await writeStore(store);
 }
 
-export function deleteAnnouncementRecord(id: string): boolean {
-  const store = readStore();
+export async function deleteAnnouncementRecord(id: string): Promise<boolean> {
+  const store = await readStore();
   const next = store.announcements.filter((entry) => entry.id !== id);
   if (next.length === store.announcements.length) return false;
-  writeStore({ ...store, announcements: next });
+  await writeStore({ ...store, announcements: next });
   return true;
 }
 
@@ -238,10 +205,7 @@ export function recordToRawTxt(record: AnnouncementRecord): string {
   return serializeAnnouncementTxt(toFormData(record));
 }
 
-export function rawTxtToRecord(id: string, raw: string, now: Date = new Date(), createdAt?: string): AnnouncementRecord {
-  return toRecord(parseAnnouncementTxt(raw), id, now, createdAt);
-}
-
-export function getStorePath(): string {
-  return storePath;
+export function parseRecordFromRawTxt(id: string, rawTxt: string, now: Date = new Date()): AnnouncementRecord {
+  const parsed = parseAnnouncementTxt(rawTxt);
+  return toRecord(parsed, id, now);
 }

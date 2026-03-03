@@ -5,6 +5,9 @@ import { pathToFileURL } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const originalCwd = process.cwd();
+const originalNodeEnv = process.env.NODE_ENV;
+const originalBlobToken = process.env.BLOB_READ_WRITE_TOKEN;
+const originalProvider = process.env.CONTENT_STORE_PROVIDER;
 
 async function loadRepositoryModule() {
   const modulePath = path.resolve(originalCwd, 'src/lib/announcements/repository.ts');
@@ -15,67 +18,44 @@ async function loadRepositoryModule() {
 function setupTempCwd(): string {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'announcements-repository-'));
   process.chdir(tempDir);
+  process.env.NODE_ENV = 'development';
+  delete process.env.BLOB_READ_WRITE_TOKEN;
+  delete process.env.CONTENT_STORE_PROVIDER;
   return tempDir;
 }
 
 afterEach(() => {
   process.chdir(originalCwd);
+  process.env.NODE_ENV = originalNodeEnv;
+  process.env.BLOB_READ_WRITE_TOKEN = originalBlobToken;
+  process.env.CONTENT_STORE_PROVIDER = originalProvider;
   vi.restoreAllMocks();
 });
 
 describe('readStore integration via listAnnouncementRecords', () => {
-  it('returns an empty list when store file does not exist', async () => {
-    const tempDir = setupTempCwd();
+  it('returns an empty list when store object does not exist', async () => {
+    setupTempCwd();
     const repository = await loadRepositoryModule();
 
-    expect(repository.listAnnouncementRecords()).toEqual([]);
-    expect(fs.existsSync(path.join(tempDir, 'data', 'announcements-store.json'))).toBe(false);
-  });
-
-  it('throws AnnouncementStoreReadError and quarantines broken json', async () => {
-    const tempDir = setupTempCwd();
-    const storeDir = path.join(tempDir, 'data');
-    fs.mkdirSync(storeDir, { recursive: true });
-
-    const storeFile = path.join(storeDir, 'announcements-store.json');
-    fs.writeFileSync(storeFile, '{ invalid json', 'utf8');
-
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
-    const repository = await loadRepositoryModule();
-
-    expect(() => repository.listAnnouncementRecords()).toThrowError(repository.AnnouncementStoreReadError);
-    expect(fs.existsSync(storeFile)).toBe(false);
-
-    const quarantinedFiles = fs.readdirSync(storeDir).filter((entry) => entry.startsWith('announcements-store.json.broken-'));
-    expect(quarantinedFiles).toHaveLength(1);
-    expect(consoleSpy).toHaveBeenCalled();
+    await expect(repository.listAnnouncementRecords()).resolves.toEqual([]);
   });
 
   it('throws AnnouncementStoreReadError for invalid schema payload', async () => {
-    setupTempCwd();
-    fs.mkdirSync(path.join(process.cwd(), 'data'), { recursive: true });
-    fs.writeFileSync(
-      path.join(process.cwd(), 'data', 'announcements-store.json'),
-      JSON.stringify({ version: 2, announcements: [] }),
-      'utf8',
-    );
+    const tempDir = setupTempCwd();
+    const storePath = path.join(tempDir, 'data/content-store/announcements/store.json');
+    fs.mkdirSync(path.dirname(storePath), { recursive: true });
+    fs.writeFileSync(storePath, JSON.stringify({ version: 2, announcements: [] }), 'utf8');
 
     const repository = await loadRepositoryModule();
 
-    expect(() => repository.listAnnouncementRecords()).toThrowError(repository.AnnouncementStoreReadError);
+    await expect(repository.listAnnouncementRecords()).rejects.toThrowError(repository.AnnouncementStoreReadError);
   });
 
-  it('falls back to in-memory store when filesystem is not writable', async () => {
+  it('writes and reads entries using local development fallback', async () => {
     setupTempCwd();
     const repository = await loadRepositoryModule();
 
-    const writeSpy = vi.spyOn(fs, 'writeFileSync').mockImplementation(() => {
-      const error = new Error('read-only file system') as NodeJS.ErrnoException;
-      error.code = 'EROFS';
-      throw error;
-    });
-
-    repository.upsertAnnouncementRecord(
+    await repository.upsertAnnouncementRecord(
       repository.toRecord(
         {
           title: 'Test Termin',
@@ -90,10 +70,17 @@ describe('readStore integration via listAnnouncementRecords', () => {
       ),
     );
 
-    const entries = repository.listAnnouncementRecords();
+    const entries = await repository.listAnnouncementRecords();
     expect(entries).toHaveLength(1);
     expect(entries[0]?.id).toBe('test-termin');
     expect(entries[0]?.title).toBe('Test Termin');
-    expect(writeSpy).toHaveBeenCalled();
+  });
+
+  it('fails in production without blob token', async () => {
+    setupTempCwd();
+    process.env.NODE_ENV = 'production';
+
+    const repository = await loadRepositoryModule();
+    await expect(repository.listAnnouncementRecords()).rejects.toThrowError(/BLOB_READ_WRITE_TOKEN fehlt/);
   });
 });

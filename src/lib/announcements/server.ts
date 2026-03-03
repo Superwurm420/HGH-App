@@ -2,12 +2,12 @@ import { Announcement, isActive, isVisibleForClass, parseAnnouncement, toSpecial
 import { listAnnouncementRecords, recordToRawTxt } from './repository';
 import { SchoolClass, SpecialEvent } from '@/lib/timetable/types';
 
-function loadAnnouncementsFromStore(): Announcement[] {
-  return listAnnouncementRecords().map((record) => parseAnnouncement(recordToRawTxt(record), `${record.id}.txt`));
+async function loadAnnouncementsFromStore(): Promise<Announcement[]> {
+  return (await listAnnouncementRecords()).map((record) => parseAnnouncement(recordToRawTxt(record), `${record.id}.txt`));
 }
 
 export async function getAnnouncements(): Promise<Announcement[]> {
-  return loadAnnouncementsFromStore().filter((x) => isActive(x));
+  return (await loadAnnouncementsFromStore()).filter((x) => isActive(x));
 }
 
 export async function getAnnouncementsByClass(schoolClass: SchoolClass): Promise<Announcement[]> {
