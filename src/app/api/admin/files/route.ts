@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ContentStoreConfigurationError, ContentStoreUnavailableError, getContentStore } from '@/lib/storage/content-store';
 import { STORAGE_KEYS } from '@/lib/storage/object-keys';
 
-type FileCategory = 'stundenplan' | 'kalender' | 'meldungen' | 'ferien';
+type FileCategory = 'stundenplan' | 'meldungen' | 'ferien';
 
 type ManagedFileEntry = {
   key: string;
@@ -22,7 +22,7 @@ type HolidayPayload = {
   ranges?: Array<{ start?: string; end?: string }>;
 };
 
-const CATEGORY_ORDER: FileCategory[] = ['stundenplan', 'kalender', 'meldungen', 'ferien'];
+const CATEGORY_ORDER: FileCategory[] = ['stundenplan', 'meldungen', 'ferien'];
 
 function asManagedFile(category: FileCategory, key: string, size: number, updatedAt: Date | null): ManagedFileEntry {
   return {
@@ -98,7 +98,7 @@ function validateHolidaySchema(raw: string): string | null {
 }
 
 function categoryFromValue(value: string | null): FileCategory | null {
-  if (value === 'stundenplan' || value === 'kalender' || value === 'meldungen' || value === 'ferien') return value;
+  if (value === 'stundenplan' || value === 'meldungen' || value === 'ferien') return value;
   return null;
 }
 
@@ -118,9 +118,8 @@ export async function GET(): Promise<NextResponse> {
   const store = getContentStore();
 
   try {
-    const [timetables, calendar, messages, holidays] = await Promise.all([
+    const [timetables, messages, holidays] = await Promise.all([
       store.list(STORAGE_KEYS.timetablesPrefix),
-      store.getObject(STORAGE_KEYS.calendar),
       store.getObject(STORAGE_KEYS.messages),
       store.getObject(STORAGE_KEYS.holidays),
     ]);
@@ -130,7 +129,6 @@ export async function GET(): Promise<NextResponse> {
         .filter((item) => item.key.toLowerCase().endsWith('.pdf'))
         .map((item) => asManagedFile('stundenplan', item.key, item.size, item.updatedAt))
         .sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? '')),
-      kalender: calendar ? [asManagedFile('kalender', STORAGE_KEYS.calendar, calendar.data.byteLength, null)] : [],
       meldungen: messages ? [asManagedFile('meldungen', STORAGE_KEYS.messages, messages.data.byteLength, null)] : [],
       ferien: holidays ? [asManagedFile('ferien', STORAGE_KEYS.holidays, holidays.data.byteLength, null)] : [],
     };
@@ -173,15 +171,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       const key = `${STORAGE_KEYS.timetablesPrefix}${path.posix.basename(fileName).replace(/\s+/g, '_')}`;
       await store.putObject(key, data, 'application/pdf');
       return NextResponse.json({ ok: true, key });
-    }
-
-    if (category === 'kalender') {
-      if (fileName !== 'kalender.txt') {
-        return NextResponse.json({ error: 'Kalender muss als "kalender.txt" hochgeladen werden.' }, { status: 400 });
-      }
-
-      await store.putObject(STORAGE_KEYS.calendar, data, 'text/plain; charset=utf-8');
-      return NextResponse.json({ ok: true, key: STORAGE_KEYS.calendar });
     }
 
     const raw = data.toString('utf8');
@@ -236,7 +225,6 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     }
 
     const keyByCategory: Record<Exclude<FileCategory, 'stundenplan'>, string> = {
-      kalender: STORAGE_KEYS.calendar,
       meldungen: STORAGE_KEYS.messages,
       ferien: STORAGE_KEYS.holidays,
     };

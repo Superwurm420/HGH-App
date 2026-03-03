@@ -10,15 +10,17 @@ import { AnnouncementList } from '@/components/announcements/AnnouncementList';
 import { getAnnouncementsByClass } from '@/lib/announcements/server';
 import { DailyMessage } from '@/components/ui/DailyMessage';
 import { GoogleCalendar } from '@/components/ui/GoogleCalendar';
+import { getCalendarUrls } from '@/lib/calendar/server';
 import messagesData from '@/generated/messages-data.json';
-import calendarData from '@/generated/calendar-data.json';
 
 export const dynamic = 'force-dynamic';
 const MAX_HOME_ANNOUNCEMENTS = 2;
 
 export default async function HomePage({ searchParams }: { searchParams: { klasse?: string } }) {
-  const plan = await getWeeklyPlanForClass(searchParams.klasse);
-  const calendarUrls = (calendarData as { urls: string[] }).urls ?? [];
+  const [plan, calendarUrls] = await Promise.all([
+    getWeeklyPlanForClass(searchParams.klasse),
+    getCalendarUrls(),
+  ]);
 
   if (!plan) {
     return (

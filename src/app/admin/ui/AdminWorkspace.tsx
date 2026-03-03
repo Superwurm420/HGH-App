@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { AdminAnnouncementEditor } from './AdminAnnouncementEditor';
+import { AdminCalendarEditor } from './AdminCalendarEditor';
 import { AdminFileManager } from './AdminFileManager';
 
 export function AdminWorkspace() {
@@ -96,7 +97,10 @@ export function AdminWorkspace() {
 
       <div className="grid gap-8 xl:grid-cols-2 xl:items-start">
         <AdminAnnouncementEditor />
-        <AdminFileManager />
+        <div className="space-y-8">
+          <AdminCalendarEditor />
+          <AdminFileManager />
+        </div>
       </div>
     </section>
   );

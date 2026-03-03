@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-type FileCategory = 'stundenplan' | 'kalender' | 'meldungen' | 'ferien';
+type FileCategory = 'stundenplan' | 'meldungen' | 'ferien';
 
 type ManagedFile = {
   key: string;
@@ -19,7 +19,6 @@ type ApiResponse = {
 
 const labels: Record<FileCategory, string> = {
   stundenplan: 'Stundenplan',
-  kalender: 'Kalender',
   meldungen: 'Meldungen',
   ferien: 'Ferien',
 };
@@ -39,14 +38,12 @@ function formatSize(size: number): string {
 
 function acceptedFileTypes(category: FileCategory): string {
   if (category === 'stundenplan') return '.pdf,application/pdf';
-  if (category === 'kalender') return '.txt,text/plain';
   return '.json,application/json';
 }
 
 export function AdminFileManager() {
   const [filesByCategory, setFilesByCategory] = useState<Record<FileCategory, ManagedFile[]>>({
     stundenplan: [],
-    kalender: [],
     meldungen: [],
     ferien: [],
   });
@@ -134,7 +131,7 @@ export function AdminFileManager() {
     <section className="rounded-lg border border-gray-300 p-4 dark:border-gray-700">
       <h2 className="mb-2 text-lg font-semibold">Dateiverwaltung</h2>
       <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">
-        Upload, Ersetzen und Löschen für Stundenplan, Kalender, Meldungen und Ferien.
+        Upload, Ersetzen und Löschen für Stundenplan, Meldungen und Ferien.
       </p>
 
       <div className="space-y-6">
