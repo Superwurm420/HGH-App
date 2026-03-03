@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCalendarUrls, saveCalendarUrls } from '@/lib/calendar/server';
 import { ContentStoreConfigurationError, ContentStoreUnavailableError } from '@/lib/storage/content-store';
+import { toGoogleCalendarEmbedUrls } from '@/lib/calendar/url-normalization';
 
 function handleStoreError(error: unknown): NextResponse {
   if (error instanceof ContentStoreConfigurationError) {
@@ -35,7 +36,12 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: '"urls" muss ein Array sein.' }, { status: 400 });
   }
 
-  const urls = payload.urls.filter((url): url is string => typeof url === 'string' && url.startsWith('http'));
+  const rawUrls = payload.urls.filter((url): url is string => typeof url === 'string');
+  const urls = toGoogleCalendarEmbedUrls(rawUrls);
+
+  if (rawUrls.length > 0 && urls.length === 0) {
+    return NextResponse.json({ error: 'Keine gültigen Google-Kalender-Links oder Kalender-IDs übergeben.' }, { status: 400 });
+  }
 
   try {
     await saveCalendarUrls(urls);

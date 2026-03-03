@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { toGoogleCalendarEmbedUrl, toGoogleCalendarEmbedUrls } from '@/lib/calendar/url-normalization';
 
 export function AdminCalendarEditor() {
   const [urls, setUrls] = useState<string[]>([]);
@@ -36,7 +37,7 @@ export function AdminCalendarEditor() {
       const response = await fetch('/api/admin/calendar', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ urls: nextUrls }),
+        body: JSON.stringify({ urls: toGoogleCalendarEmbedUrls(nextUrls) }),
       });
 
       const payload = (await response.json()) as { urls?: string[]; error?: string };
@@ -60,17 +61,18 @@ export function AdminCalendarEditor() {
     const trimmed = newUrl.trim();
     if (!trimmed) return;
 
-    if (!trimmed.startsWith('https://calendar.google.com/')) {
-      setError('Bitte eine gültige Google-Kalender-URL eingeben (https://calendar.google.com/...).');
+    const normalized = toGoogleCalendarEmbedUrl(trimmed);
+    if (!normalized) {
+      setError('Bitte eine gültige Google-Kalender-URL oder Kalender-ID eingeben.');
       return;
     }
 
-    if (urls.includes(trimmed)) {
+    if (urls.includes(normalized)) {
       setError('Diese URL ist bereits vorhanden.');
       return;
     }
 
-    const nextUrls = [...urls, trimmed];
+    const nextUrls = toGoogleCalendarEmbedUrls([...urls, normalized]);
     setNewUrl('');
     save(nextUrls);
   }
