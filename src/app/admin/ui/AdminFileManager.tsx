@@ -36,6 +36,13 @@ function formatSize(size: number): string {
   return `${(size / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+
+function acceptedFileTypes(category: FileCategory): string {
+  if (category === 'stundenplan') return '.pdf,application/pdf';
+  if (category === 'kalender') return '.txt,text/plain';
+  return '.json,application/json';
+}
+
 export function AdminFileManager() {
   const [filesByCategory, setFilesByCategory] = useState<Record<FileCategory, ManagedFile[]>>({
     stundenplan: [],
@@ -160,6 +167,7 @@ export function AdminFileManager() {
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <input
                   type="file"
+                  accept={acceptedFileTypes(category)}
                   onChange={(event) => {
                     const file = event.currentTarget.files?.[0];
                     setSelectedFiles((prev) => ({ ...prev, [category]: file }));
