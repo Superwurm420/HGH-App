@@ -13,7 +13,6 @@ import {
   timeToMinutes,
   isWeekend as checkWeekend,
 } from '@/lib/berlin-time';
-import schoolHolidaysData from '@/generated/school-holidays-data.json';
 import styles from './DailyMessage.module.css';
 
 type MessagesData = {
@@ -44,14 +43,6 @@ type MessagesData = {
   schulschluss?: string[];
   [key: string]: unknown;
 };
-
-type SchoolHolidaysData = {
-  ranges?: SchoolHolidayRange[];
-};
-
-const schoolHolidayRanges = ((schoolHolidaysData as SchoolHolidaysData).ranges ?? []).filter(
-  (range) => typeof range.start === 'string' && typeof range.end === 'string',
-);
 
 function parseTime(value: string): number {
   const [h, m] = value.split(':').map(Number);
@@ -112,9 +103,9 @@ type StandardCategory =
   | 'feiertag'
   | 'freierTag';
 
-function getFreeDayCategory(date: BerlinDateParts): 'feiertag' | 'freierTag' {
+function getFreeDayCategory(date: BerlinDateParts, ranges: SchoolHolidayRange[]): 'feiertag' | 'freierTag' {
   if (isLowerSaxonyPublicHoliday(date)) return 'feiertag';
-  if (isDateInSchoolHolidayRanges(date, schoolHolidayRanges)) return 'freierTag';
+  if (isDateInSchoolHolidayRanges(date, ranges)) return 'freierTag';
   return 'freierTag';
 }
 
@@ -122,10 +113,12 @@ export function DailyMessage({
   messages,
   schoolClass,
   lessons = [],
+  schoolHolidays = [],
 }: {
   messages: MessagesData;
   schoolClass?: string;
   lessons?: LessonEntry[];
+  schoolHolidays?: SchoolHolidayRange[];
 }) {
   const [text, setText] = useState('');
 
@@ -137,7 +130,7 @@ export function DailyMessage({
       const nowMinutes = timeToMinutes(now.hour, now.minute);
       const isWeekendDay = checkWeekend(now.weekdayShort);
 
-      const freeDayCategory = lessons.length === 0 ? getFreeDayCategory(now) : null;
+      const freeDayCategory = lessons.length === 0 ? getFreeDayCategory(now, schoolHolidays) : null;
 
       const standardCategory: StandardCategory | null = isWeekendDay
         ? 'wochenende'
@@ -184,7 +177,7 @@ export function DailyMessage({
     const intervalId = window.setInterval(updateMessage, 60_000);
 
     return () => window.clearInterval(intervalId);
-  }, [lessons, messages, schoolClass]);
+  }, [lessons, messages, schoolClass, schoolHolidays]);
 
   if (!text) return null;
 

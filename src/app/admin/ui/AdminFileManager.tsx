@@ -1,26 +1,16 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-
-type FileCategory = 'stundenplan' | 'meldungen' | 'ferien';
+import { useCallback, useEffect, useState } from 'react';
 
 type ManagedFile = {
   key: string;
   name: string;
-  category: FileCategory;
   size: number;
   updatedAt: string | null;
 };
 
 type ApiResponse = {
-  categories: FileCategory[];
-  filesByCategory: Record<FileCategory, ManagedFile[]>;
-};
-
-const labels: Record<FileCategory, string> = {
-  stundenplan: 'Stundenplan',
-  meldungen: 'Meldungen',
-  ferien: 'Ferien',
+  filesByCategory: { stundenplan: ManagedFile[] };
 };
 
 function formatDate(value: string | null): string {
@@ -35,24 +25,12 @@ function formatSize(size: number): string {
   return `${(size / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-
-function acceptedFileTypes(category: FileCategory): string {
-  if (category === 'stundenplan') return '.pdf,application/pdf';
-  return '.json,application/json';
-}
-
 export function AdminFileManager() {
-  const [filesByCategory, setFilesByCategory] = useState<Record<FileCategory, ManagedFile[]>>({
-    stundenplan: [],
-    meldungen: [],
-    ferien: [],
-  });
-  const [selectedFiles, setSelectedFiles] = useState<Partial<Record<FileCategory, File>>>({});
+  const [files, setFiles] = useState<ManagedFile[]>([]);
+  const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
   const [status, setStatus] = useState('Bereit.');
   const [error, setError] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
-
-  const categories = useMemo(() => Object.keys(labels) as FileCategory[], []);
 
   const loadFiles = useCallback(async () => {
     const response = await fetch('/api/admin/files', { cache: 'no-store' });
@@ -63,16 +41,15 @@ export function AdminFileManager() {
     }
 
     setError(null);
-    setFilesByCategory(payload.filesByCategory);
+    setFiles(payload.filesByCategory?.stundenplan ?? []);
   }, []);
 
   useEffect(() => {
     loadFiles().catch(() => setError('Dateien konnten nicht geladen werden.'));
   }, [loadFiles]);
 
-  async function upload(category: FileCategory) {
-    const file = selectedFiles[category];
-    if (!file) {
+  async function upload() {
+    if (!selectedFile) {
       setError('Bitte zuerst eine Datei auswählen.');
       return;
     }
@@ -81,8 +58,8 @@ export function AdminFileManager() {
     setError(null);
 
     const formData = new FormData();
-    formData.append('category', category);
-    formData.append('file', file);
+    formData.append('category', 'stundenplan');
+    formData.append('file', selectedFile);
 
     const response = await fetch('/api/admin/files', {
       method: 'POST',
@@ -98,20 +75,20 @@ export function AdminFileManager() {
       return;
     }
 
-    setSelectedFiles((prev) => ({ ...prev, [category]: undefined }));
-    setStatus(`${labels[category]} erfolgreich gespeichert.`);
+    setSelectedFile(undefined);
+    setStatus('Stundenplan erfolgreich gespeichert.');
     await loadFiles();
     setIsBusy(false);
   }
 
-  async function remove(category: FileCategory, key?: string) {
+  async function remove(key: string) {
     setIsBusy(true);
     setError(null);
 
     const response = await fetch('/api/admin/files', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ category, key }),
+      body: JSON.stringify({ category: 'stundenplan', key }),
     });
 
     const payload = (await response.json()) as { error?: string };
@@ -122,67 +99,53 @@ export function AdminFileManager() {
       return;
     }
 
-    setStatus(`${labels[category]} gelöscht.`);
+    setStatus('Stundenplan gelöscht.');
     await loadFiles();
     setIsBusy(false);
   }
 
   return (
     <section className="rounded-lg border border-gray-300 p-4 dark:border-gray-700">
-      <h2 className="mb-2 text-lg font-semibold">Dateiverwaltung</h2>
+      <h2 className="mb-2 text-lg font-semibold">Stundenpläne</h2>
       <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">
-        Upload, Ersetzen und Löschen für Stundenplan, Meldungen und Ferien.
+        Upload, Ersetzen und Löschen für Stundenplan-PDFs.
       </p>
 
-      <div className="space-y-6">
-        {categories.map((category) => {
-          const entries = filesByCategory[category] ?? [];
-          return (
-            <article key={category} className="rounded border border-gray-200 p-3 dark:border-gray-700">
-              <h3 className="text-base font-semibold">{labels[category]}</h3>
+      <ul className="space-y-2 text-sm">
+        {files.map((entry) => (
+          <li key={entry.key} className="rounded border border-gray-200 p-2 dark:border-gray-700">
+            <p className="font-medium">{entry.name}</p>
+            <p className="text-xs text-gray-600 dark:text-gray-300">
+              {formatSize(entry.size)} · aktualisiert: {formatDate(entry.updatedAt)}
+            </p>
+            <button
+              type="button"
+              disabled={isBusy}
+              onClick={() => remove(entry.key).catch(() => setError('Löschen fehlgeschlagen.'))}
+              className="mt-2 rounded border border-red-300 px-2 py-1 text-xs text-red-600 disabled:opacity-50"
+            >
+              Löschen
+            </button>
+          </li>
+        ))}
+        {files.length === 0 && <li className="text-xs text-gray-500">Keine Stundenpläne vorhanden.</li>}
+      </ul>
 
-              <ul className="mt-2 space-y-2 text-sm">
-                {entries.map((entry) => (
-                  <li key={entry.key} className="rounded border border-gray-200 p-2 dark:border-gray-700">
-                    <p className="font-medium">{entry.name}</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-300">
-                      {formatSize(entry.size)} · aktualisiert: {formatDate(entry.updatedAt)}
-                    </p>
-                    <button
-                      type="button"
-                      disabled={isBusy}
-                      onClick={() => remove(category, entry.key).catch(() => setError('Löschen fehlgeschlagen.'))}
-                      className="mt-2 rounded border border-red-300 px-2 py-1 text-xs text-red-600 disabled:opacity-50"
-                    >
-                      Löschen
-                    </button>
-                  </li>
-                ))}
-                {entries.length === 0 && <li className="text-xs text-gray-500">Keine Datei vorhanden.</li>}
-              </ul>
-
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <input
-                  type="file"
-                  accept={acceptedFileTypes(category)}
-                  onChange={(event) => {
-                    const file = event.currentTarget.files?.[0];
-                    setSelectedFiles((prev) => ({ ...prev, [category]: file }));
-                  }}
-                  className="max-w-xs text-sm"
-                />
-                <button
-                  type="button"
-                  disabled={isBusy || !selectedFiles[category]}
-                  onClick={() => upload(category).catch(() => setError('Upload fehlgeschlagen.'))}
-                  className="rounded bg-emerald-600 px-3 py-2 text-sm text-white disabled:opacity-50"
-                >
-                  Upload / Ersetzen
-                </button>
-              </div>
-            </article>
-          );
-        })}
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <input
+          type="file"
+          accept=".pdf,application/pdf"
+          onChange={(event) => setSelectedFile(event.currentTarget.files?.[0])}
+          className="max-w-xs text-sm"
+        />
+        <button
+          type="button"
+          disabled={isBusy || !selectedFile}
+          onClick={() => upload().catch(() => setError('Upload fehlgeschlagen.'))}
+          className="rounded bg-emerald-600 px-3 py-2 text-sm text-white disabled:opacity-50"
+        >
+          Upload / Ersetzen
+        </button>
       </div>
 
       <p className="mt-4 text-sm text-gray-700 dark:text-gray-200">Status: {status}</p>
