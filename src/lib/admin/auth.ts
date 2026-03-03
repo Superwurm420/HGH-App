@@ -16,6 +16,10 @@ function getAdminPassword(): string {
   return process.env.ADMIN_PASSWORD?.trim() || 'hgh-admin';
 }
 
+function getAdminUser(): string {
+  return process.env.ADMIN_USER?.trim() || 'redaktion';
+}
+
 function getSessionSecret(): string {
   return process.env.SESSION_SECRET?.trim() || getAdminPassword();
 }
@@ -34,6 +38,10 @@ function sign(payload: string): string {
 
 export function isValidAdminPassword(input: string): boolean {
   return secureCompare(input, getAdminPassword());
+}
+
+export function isValidAdminUser(input: string): boolean {
+  return secureCompare(input, getAdminUser());
 }
 
 export function createAdminSessionToken(now: Date = new Date()): string {
