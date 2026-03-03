@@ -220,24 +220,40 @@ class VercelBlobContentStore implements ContentStore {
 export function getContentStore(): ContentStore {
   const provider = process.env.CONTENT_STORE_PROVIDER?.trim().toLowerCase() ?? 'vercel-blob';
   const isDevelopment = process.env.NODE_ENV === 'development';
+  const allowLocalStoreInProduction = process.env.ALLOW_LOCAL_STORE_IN_PROD?.trim().toLowerCase() === 'true';
   const localRoot = path.join(process.cwd(), process.env.LOCAL_CONTENT_STORE_DIR ?? 'data/content-store');
   const token = process.env.BLOB_READ_WRITE_TOKEN?.trim();
+
+  const getLocalStoreWithWarning = (reason: string): ContentStore => {
+    if (!isDevelopment) {
+      console.warn(`[content-store] ${reason}`);
+    }
+    return new LocalContentStore(localRoot);
+  };
 
   if (provider === 'vercel-blob') {
     if (!token) {
       if (isDevelopment) {
         return new LocalContentStore(localRoot);
       }
-      throw new ContentStoreConfigurationError('BLOB_READ_WRITE_TOKEN fehlt für Production-Betrieb.');
+
+      if (allowLocalStoreInProduction) {
+        return getLocalStoreWithWarning(
+          'BLOB_READ_WRITE_TOKEN fehlt, nutze lokalen Fallback, da ALLOW_LOCAL_STORE_IN_PROD=true gesetzt ist.',
+        );
+      }
+
+      throw new ContentStoreConfigurationError(
+        'BLOB_READ_WRITE_TOKEN fehlt für CONTENT_STORE_PROVIDER=vercel-blob. Setze BLOB_READ_WRITE_TOKEN oder ALLOW_LOCAL_STORE_IN_PROD=true für Self-Hosting-Fallback.',
+      );
     }
     return new VercelBlobContentStore(token);
   }
 
   if (provider === 'local') {
-    if (!isDevelopment) {
-      throw new ContentStoreConfigurationError('CONTENT_STORE_PROVIDER=local ist nur in NODE_ENV=development erlaubt.');
-    }
-    return new LocalContentStore(localRoot);
+    return getLocalStoreWithWarning(
+      'CONTENT_STORE_PROVIDER=local ist in Produktion aktiviert. Daten werden ausschließlich lokal gespeichert.',
+    );
   }
 
   throw new ContentStoreConfigurationError(`Unbekannter CONTENT_STORE_PROVIDER: ${provider}`);
