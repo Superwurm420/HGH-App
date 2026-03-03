@@ -10,22 +10,27 @@ import { AnnouncementList } from '@/components/announcements/AnnouncementList';
 import { getAnnouncementsByClass } from '@/lib/announcements/server';
 import { DailyMessage } from '@/components/ui/DailyMessage';
 import { GoogleCalendar } from '@/components/ui/GoogleCalendar';
-import messagesData from '@/generated/messages-data.json';
-import calendarData from '@/generated/calendar-data.json';
+import { getCalendarUrls } from '@/lib/calendar/server';
+import { getMessages } from '@/lib/messages/server';
+import { getSchoolHolidays } from '@/lib/holidays/server';
 
 export const dynamic = 'force-dynamic';
 const MAX_HOME_ANNOUNCEMENTS = 2;
 
 export default async function HomePage({ searchParams }: { searchParams: { klasse?: string } }) {
-  const plan = await getWeeklyPlanForClass(searchParams.klasse);
-  const calendarUrls = (calendarData as { urls: string[] }).urls ?? [];
+  const [plan, calendarUrls, messagesData, schoolHolidays] = await Promise.all([
+    getWeeklyPlanForClass(searchParams.klasse),
+    getCalendarUrls(),
+    getMessages(),
+    getSchoolHolidays(),
+  ]);
 
   if (!plan) {
     return (
       <>
         <div className="card surface">
           <Countdown lessons={[]} />
-          <DailyMessage messages={messagesData as Record<string, unknown>} />
+          <DailyMessage messages={messagesData} schoolHolidays={schoolHolidays} />
           <p className="text-sm text-muted mt-2">Kein Stundenplan verfügbar.</p>
         </div>
         {calendarUrls.length > 0 ? (
@@ -59,9 +64,10 @@ export default async function HomePage({ searchParams }: { searchParams: { klass
               <Countdown lessons={plan.week[plan.todayKey]} />
 
               <DailyMessage
-                messages={messagesData as Record<string, unknown>}
+                messages={messagesData}
                 schoolClass={plan.schoolClass}
                 lessons={plan.week[plan.todayKey]}
+                schoolHolidays={schoolHolidays}
               />
             </div>
 
