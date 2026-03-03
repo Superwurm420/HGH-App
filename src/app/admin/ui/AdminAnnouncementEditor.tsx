@@ -45,10 +45,6 @@ function localNowRoundedToFiveMinutes(): string {
 }
 
 export function AdminAnnouncementEditor() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState('');
-  const [isLoginPending, setIsLoginPending] = useState(false);
-
   const [formData, setFormData] = useState<AnnouncementFormData>(getDefaultAnnouncementFormData());
   const [savedFiles, setSavedFiles] = useState<ApiFileEntry[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -74,52 +70,12 @@ export function AdminAnnouncementEditor() {
     setSavedFiles(payload.files);
   }, []);
 
-  const checkSession = useCallback(async () => {
-    const response = await fetch('/api/admin/session', { cache: 'no-store' });
-    if (!response.ok) return;
-    const payload = (await response.json()) as { authenticated: boolean };
-    setIsAuthenticated(payload.authenticated);
-    if (payload.authenticated) {
-      await loadFiles();
-    }
-  }, [loadFiles]);
-
   useEffect(() => {
-    checkSession().catch(() => setStatus('Fehler beim Laden der Admin-Sitzung.'));
-  }, [checkSession]);
+    loadFiles().catch(() => setStatus('Fehler beim Laden der Termine.'));
+  }, [loadFiles]);
 
   function updateField<K extends keyof AnnouncementFormData>(key: K, value: AnnouncementFormData[K]) {
     setFormData((previous) => ({ ...previous, [key]: value }));
-  }
-
-  async function login() {
-    setIsLoginPending(true);
-    const response = await fetch('/api/admin/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password }),
-    });
-
-    const payload = (await response.json()) as { error?: string };
-    if (!response.ok) {
-      setStatus(payload.error ?? 'Anmeldung fehlgeschlagen.');
-      setIsLoginPending(false);
-      return;
-    }
-
-    setPassword('');
-    setStatus('Anmeldung erfolgreich.');
-    setIsAuthenticated(true);
-    setIsLoginPending(false);
-    await loadFiles();
-  }
-
-  async function logout() {
-    await fetch('/api/admin/logout', { method: 'POST' });
-    setIsAuthenticated(false);
-    setSelectedId(null);
-    setFormData(getDefaultAnnouncementFormData());
-    setStatus('Abgemeldet.');
   }
 
   async function createEntry() {
@@ -189,47 +145,11 @@ export function AdminAnnouncementEditor() {
     setIsBusy(false);
   }
 
-  if (!isAuthenticated) {
-    return (
-      <section className="mx-auto max-w-md rounded-lg border border-gray-300 p-6 dark:border-gray-700">
-        <h2 className="mb-2 text-lg font-semibold">Admin-Anmeldung</h2>
-        <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">Bitte Passwort eingeben, um Termine zu verwalten.</p>
-        <label className="block text-sm font-medium">
-          Passwort
-          <input
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            className="mt-1 w-full rounded border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-900"
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                event.preventDefault();
-                login().catch(() => setStatus('Anmeldung fehlgeschlagen.'));
-              }
-            }}
-          />
-        </label>
-        <button
-          type="button"
-          onClick={() => login().catch(() => setStatus('Anmeldung fehlgeschlagen.'))}
-          disabled={isLoginPending}
-          className="mt-4 rounded bg-blue-600 px-3 py-2 text-white disabled:opacity-50"
-        >
-          Anmelden
-        </button>
-        <p className="mt-3 text-sm text-gray-600 dark:text-gray-300">Status: {status}</p>
-      </section>
-    );
-  }
-
   return (
     <section className="grid gap-6 lg:grid-cols-[2fr,1fr]">
       <div className="rounded-lg border border-gray-300 p-4 dark:border-gray-700">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-lg font-semibold">Termin-Editor</h2>
-          <button type="button" onClick={logout} className="rounded border border-gray-300 px-3 py-2 text-sm dark:border-gray-700">
-            Abmelden
-          </button>
         </div>
 
         <label className="block text-sm font-medium">
