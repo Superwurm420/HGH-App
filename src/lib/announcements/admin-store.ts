@@ -34,8 +34,8 @@ function parseForSorting(date: string): number {
   return Date.UTC(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute));
 }
 
-export function listAdminAnnouncements(): AdminAnnouncementEntry[] {
-  return listAnnouncementRecords()
+export async function listAdminAnnouncements(): Promise<AdminAnnouncementEntry[]> {
+  return (await listAnnouncementRecords())
     .map((record) => ({
       id: record.id,
       file: toFileName(record.id),
@@ -44,7 +44,7 @@ export function listAdminAnnouncements(): AdminAnnouncementEntry[] {
     .sort((a, b) => parseForSorting(b.data.date) - parseForSorting(a.data.date));
 }
 
-export function createAdminAnnouncement(data: AnnouncementFormData): AdminAnnouncementEntry {
+export async function createAdminAnnouncement(data: AnnouncementFormData): Promise<AdminAnnouncementEntry> {
   const issues = validateAnnouncementForm(data);
   const hasErrors = issues.some((issue) => issue.severity === 'error');
   if (hasErrors) {
@@ -52,7 +52,7 @@ export function createAdminAnnouncement(data: AnnouncementFormData): AdminAnnoun
   }
 
   const id = createIdFromTitle(data.title);
-  upsertAnnouncementRecord(toRecord(data, id));
+  await upsertAnnouncementRecord(toRecord(data, id));
 
   return {
     id,
@@ -61,25 +61,25 @@ export function createAdminAnnouncement(data: AnnouncementFormData): AdminAnnoun
   };
 }
 
-export function updateAdminAnnouncement(id: string, data: AnnouncementFormData): AdminAnnouncementEntry {
+export async function updateAdminAnnouncement(id: string, data: AnnouncementFormData): Promise<AdminAnnouncementEntry> {
   const issues = validateAnnouncementForm(data);
   const hasErrors = issues.some((issue) => issue.severity === 'error');
   if (hasErrors) {
     throw new Error('Validierung fehlgeschlagen.');
   }
 
-  const existing = getAnnouncementRecord(id);
+  const existing = await getAnnouncementRecord(id);
   if (!existing) {
     throw new Error('Eintrag nicht gefunden.');
   }
 
-  upsertAnnouncementRecord(toRecord(data, id, new Date(), existing.createdAt));
+  await upsertAnnouncementRecord(toRecord(data, id, new Date(), existing.createdAt));
 
   return { id, file: toFileName(id), data };
 }
 
-export function deleteAdminAnnouncement(id: string): void {
-  if (!deleteAnnouncementRecord(id)) {
+export async function deleteAdminAnnouncement(id: string): Promise<void> {
+  if (!(await deleteAnnouncementRecord(id))) {
     throw new Error('Eintrag nicht gefunden.');
   }
 }

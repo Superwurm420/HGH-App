@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AnnouncementFormData, validateAnnouncementForm } from '@/lib/announcements/editor';
 import { createAdminAnnouncement, deleteAdminAnnouncement, listAdminAnnouncements, updateAdminAnnouncement } from '@/lib/announcements/admin-store';
-import { AnnouncementStoreReadError, isFileSystemAccessError } from '@/lib/announcements/repository';
+import { AnnouncementStoreReadError, AnnouncementStoreWriteError } from '@/lib/announcements/repository';
+import { ContentStoreConfigurationError, ContentStoreUnavailableError } from '@/lib/storage/content-store';
 
 type AnnouncementPayload = {
   id?: string;
@@ -9,21 +10,28 @@ type AnnouncementPayload = {
 };
 
 function handleStoreError(error: unknown): NextResponse {
-  if (isFileSystemAccessError(error)) {
+  if (error instanceof ContentStoreConfigurationError) {
     return NextResponse.json(
       {
-        error:
-          'Der Server kann aktuell nicht auf den Speicher schreiben (Dateisystem ist nicht beschreibbar). Bitte Hosting/Storage-Konfiguration prüfen.',
+        error: 'Storage-Konfiguration fehlt oder ist ungültig. Bitte Environment-Variablen prüfen.',
       },
       { status: 500 },
+    );
+  }
+
+  if (error instanceof ContentStoreUnavailableError || error instanceof AnnouncementStoreWriteError) {
+    return NextResponse.json(
+      {
+        error: 'Der Storage-Dienst ist aktuell nicht erreichbar. Bitte später erneut versuchen.',
+      },
+      { status: 503 },
     );
   }
 
   if (error instanceof AnnouncementStoreReadError) {
     return NextResponse.json(
       {
-        error:
-          'Die gespeicherten Termine sind defekt und wurden in Quarantäne verschoben. Bitte Backup prüfen und Datensatz neu aufbauen.',
+        error: 'Die gespeicherten Termine können nicht gelesen werden (Datenformat oder Storage-Inhalt defekt).',
       },
       { status: 500 },
     );
@@ -34,7 +42,7 @@ function handleStoreError(error: unknown): NextResponse {
 
 export async function GET(): Promise<NextResponse> {
   try {
-    return NextResponse.json({ files: listAdminAnnouncements() });
+    return NextResponse.json({ files: await listAdminAnnouncements() });
   } catch (error) {
     return handleStoreError(error);
   }
@@ -52,7 +60,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const entry = createAdminAnnouncement(payload.data);
+    const entry = await createAdminAnnouncement(payload.data);
     return NextResponse.json({ entry });
   } catch (error) {
     return handleStoreError(error);
@@ -71,16 +79,13 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const entry = updateAdminAnnouncement(payload.id, payload.data);
+    const entry = await updateAdminAnnouncement(payload.id, payload.data);
     return NextResponse.json({ entry });
   } catch (error) {
-    if (error instanceof AnnouncementStoreReadError) {
-      return handleStoreError(error);
+    if (error instanceof Error && error.message === 'Eintrag nicht gefunden.') {
+      return NextResponse.json({ error: error.message }, { status: 404 });
     }
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Speichern fehlgeschlagen.' },
-      { status: 404 },
-    );
+    return handleStoreError(error);
   }
 }
 
@@ -91,12 +96,12 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    deleteAdminAnnouncement(payload.id);
+    await deleteAdminAnnouncement(payload.id);
     return NextResponse.json({ ok: true });
   } catch (error) {
-    if (error instanceof AnnouncementStoreReadError) {
-      return handleStoreError(error);
+    if (error instanceof Error && error.message === 'Eintrag nicht gefunden.') {
+      return NextResponse.json({ error: error.message }, { status: 404 });
     }
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Löschen fehlgeschlagen.' }, { status: 404 });
+    return handleStoreError(error);
   }
 }
