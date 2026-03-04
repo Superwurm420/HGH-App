@@ -2,7 +2,8 @@ import path from 'node:path';
 import { NextRequest, NextResponse } from 'next/server';
 import { STORAGE_KEYS } from '@/lib/storage/object-keys';
 import { invalidateTimetableCache } from '@/lib/timetable/server';
-import { parseUploadedTimetablePdf, removeTimetableIndexEntry, upsertTimetableIndexEntry } from '@/lib/timetable/generated-data';
+import { parseTimetableFilename } from '@/lib/timetable/selectLatest';
+import { parseTimetablePdfBuffer } from '@/lib/timetable/upload-parser';
 import {
   uploadContent,
   deleteContent,
@@ -100,44 +101,51 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const data = Buffer.from(arrayBuffer);
     const safeFileName = path.posix.basename(fileName).replace(/\s+/g, '_');
     const key = `${STORAGE_KEYS.timetablesPrefix}${safeFileName}`;
+    const uploadedAt = Date.now();
+    const timetableMeta = parseTimetableFilename(safeFileName, { lastModifiedMs: uploadedAt });
 
     await uploadContent({
       key,
       data,
       contentType: 'application/pdf',
       category: 'timetable',
-      meta: { originalName: fileName },
+      meta: {
+        originalName: fileName,
+        timetable: timetableMeta,
+      },
     });
 
     console.info(`[admin/files] Stundenplan hochgeladen: ${key}`);
 
     let parsed = false;
-    let indexed = false;
+    const indexed = true;
 
     try {
-      const schedule = await parseUploadedTimetablePdf(data);
-      const indexResult = await upsertTimetableIndexEntry({
-        filename: safeFileName,
-        lastModifiedMs: Date.now(),
-        schedule,
+      const schedule = await parseTimetablePdfBuffer(new Uint8Array(data));
+      await updateContentItem(key, {
+        timetable_json: schedule as unknown as Record<string, unknown>,
+        timetable_version: String(uploadedAt),
+        meta: {
+          originalName: fileName,
+          timetable: timetableMeta,
+          parsing: { ok: true },
+        },
       });
-      parsed = indexResult.scheduleUpdated;
-      indexed = indexResult.metaUpdated;
-
-      if (parsed) {
-        await updateContentItem(key, {
-          timetable_json: schedule as unknown as Record<string, unknown>,
-          timetable_version: String(Date.now()),
-        });
-        invalidateTimetableCache();
-      }
-    } catch {
-      await upsertTimetableIndexEntry({
-        filename: safeFileName,
-        lastModifiedMs: Date.now(),
+      parsed = true;
+    } catch (error) {
+      console.warn(`[admin/files] Parsing fehlgeschlagen für ${key}. Datei bleibt gespeichert.`, error);
+      await updateContentItem(key, {
+        timetable_json: null,
+        timetable_version: null,
+        meta: {
+          originalName: fileName,
+          timetable: timetableMeta,
+          parsing: { ok: false },
+        },
       });
-      invalidateTimetableCache();
     }
+
+    invalidateTimetableCache();
 
     const warning = parsed ? null : 'Datei gespeichert, aber der Stundenplan konnte nicht gelesen werden. Bitte PDF-Format prüfen.';
     return NextResponse.json({ ok: true, key, indexed, parsed, warning });
@@ -160,9 +168,6 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
 
   try {
     await deleteContent(key);
-
-    const filename = path.posix.basename(key);
-    await removeTimetableIndexEntry(filename);
     invalidateTimetableCache();
 
     console.info(`[admin/files] Stundenplan gelöscht: ${key}`);
