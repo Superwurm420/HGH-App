@@ -182,6 +182,7 @@ class VercelBlobContentStore implements ContentStore {
         token: this.token,
         access: 'public',
         contentType,
+        addRandomSuffix: false,
         allowOverwrite: true,
       });
     } catch (error) {
@@ -192,7 +193,12 @@ class VercelBlobContentStore implements ContentStore {
   async deleteObject(key: string): Promise<void> {
     const normalizedKey = normalizeKey(key);
     try {
-      await del(normalizedKey, { token: this.token });
+      const result = await listBlob({ prefix: normalizedKey, token: this.token, limit: 1 });
+      const blob = result.blobs.find((entry) => entry.pathname === normalizedKey);
+      if (!blob) {
+        return;
+      }
+      await del(blob.url, { token: this.token });
     } catch (error) {
       throw new ContentStoreUnavailableError(`Vercel Blob konnte ${normalizedKey} nicht löschen.`, error instanceof Error ? { cause: error } : undefined);
     }
