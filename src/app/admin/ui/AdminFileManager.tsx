@@ -57,51 +57,61 @@ export function AdminFileManager() {
     setIsBusy(true);
     setError(null);
 
-    const formData = new FormData();
-    formData.append('category', 'stundenplan');
-    formData.append('file', selectedFile);
+    try {
+      const formData = new FormData();
+      formData.append('category', 'stundenplan');
+      formData.append('file', selectedFile);
 
-    const response = await fetch('/api/admin/files', {
-      method: 'POST',
-      body: formData,
-    });
+      const response = await fetch('/api/admin/files', {
+        method: 'POST',
+        body: formData,
+      });
 
-    const payload = (await response.json()) as { error?: string };
+      const payload = (await response.json()) as { error?: string };
 
-    if (!response.ok) {
-      setError(payload.error ?? 'Upload fehlgeschlagen.');
+      if (!response.ok) {
+        setError(payload.error ?? 'Upload fehlgeschlagen.');
+        setStatus('Upload fehlgeschlagen.');
+        return;
+      }
+
+      setSelectedFile(undefined);
+      setStatus('Stundenplan erfolgreich gespeichert.');
+      try { await loadFiles(); } catch { /* Liste wird beim nächsten Laden aktualisiert */ }
+    } catch {
+      setError('Upload fehlgeschlagen.');
       setStatus('Upload fehlgeschlagen.');
+    } finally {
       setIsBusy(false);
-      return;
     }
-
-    setSelectedFile(undefined);
-    setStatus('Stundenplan erfolgreich gespeichert.');
-    await loadFiles();
-    setIsBusy(false);
   }
 
   async function remove(key: string) {
     setIsBusy(true);
     setError(null);
 
-    const response = await fetch('/api/admin/files', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ category: 'stundenplan', key }),
-    });
+    try {
+      const response = await fetch('/api/admin/files', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category: 'stundenplan', key }),
+      });
 
-    const payload = (await response.json()) as { error?: string };
-    if (!response.ok) {
-      setError(payload.error ?? 'Löschen fehlgeschlagen.');
+      const payload = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        setError(payload.error ?? 'Löschen fehlgeschlagen.');
+        setStatus('Löschen fehlgeschlagen.');
+        return;
+      }
+
+      setStatus('Stundenplan gelöscht.');
+      try { await loadFiles(); } catch { /* Liste wird beim nächsten Laden aktualisiert */ }
+    } catch {
+      setError('Löschen fehlgeschlagen.');
       setStatus('Löschen fehlgeschlagen.');
+    } finally {
       setIsBusy(false);
-      return;
     }
-
-    setStatus('Stundenplan gelöscht.');
-    await loadFiles();
-    setIsBusy(false);
   }
 
   return (
