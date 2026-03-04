@@ -92,47 +92,57 @@ function getLatestTimetableUpdatedDate(latest: TimetableMeta): string | null {
 }
 
 export async function getWeeklyPlanForClass(requestedClass?: SchoolClass) {
-  const { data, latest } = await loadTimetableContext();
-  if (!latest) return null;
+  try {
+    const { data, latest } = await loadTimetableContext();
+    if (!latest) return null;
 
-  const parsed = data.schedules[latest.filename];
-  if (!parsed) return null;
+    const parsed = data.schedules[latest.filename];
+    if (!parsed) return null;
 
-  const availableClasses = Object.keys(parsed).sort();
-  if (availableClasses.length === 0) return null;
+    const availableClasses = Object.keys(parsed).sort();
+    if (availableClasses.length === 0) return null;
 
-  const schoolClass =
-    requestedClass && parsed[requestedClass] ? requestedClass : availableClasses[0];
+    const schoolClass =
+      requestedClass && parsed[requestedClass] ? requestedClass : availableClasses[0];
 
-  const updatedAt = getLatestTimetableUpdatedDate(latest);
+    const updatedAt = getLatestTimetableUpdatedDate(latest);
 
-  return {
-    latest,
-    updatedAt,
-    availableClasses,
-    schoolClass,
-    week: parsed[schoolClass],
-    todayKey: weekdayForToday(),
-  };
+    return {
+      latest,
+      updatedAt,
+      availableClasses,
+      schoolClass,
+      week: parsed[schoolClass],
+      todayKey: weekdayForToday(),
+    };
+  } catch (error) {
+    console.warn('[timetable] Konnte Wochenplan nicht laden. Nutze sicheren Fallback (null).', error);
+    return null;
+  }
 }
 
 export async function getWeeklyPlanForAllClasses() {
-  const { data, latest } = await loadTimetableContext();
-  if (!latest) return null;
+  try {
+    const { data, latest } = await loadTimetableContext();
+    if (!latest) return null;
 
-  const parsed = data.schedules[latest.filename];
-  if (!parsed) return null;
+    const parsed = data.schedules[latest.filename];
+    if (!parsed) return null;
 
-  const availableClasses = Object.keys(parsed).sort();
-  if (availableClasses.length === 0) return null;
+    const availableClasses = Object.keys(parsed).sort();
+    if (availableClasses.length === 0) return null;
 
-  const updatedAt = getLatestTimetableUpdatedDate(latest);
+    const updatedAt = getLatestTimetableUpdatedDate(latest);
 
-  return {
-    latest,
-    updatedAt,
-    availableClasses,
-    schedulesByClass: parsed,
-    todayKey: weekdayForToday(),
-  };
+    return {
+      latest,
+      updatedAt,
+      availableClasses,
+      schedulesByClass: parsed,
+      todayKey: weekdayForToday(),
+    };
+  } catch (error) {
+    console.warn('[timetable] Konnte Wochenplan-Übersicht nicht laden. Nutze sicheren Fallback (null).', error);
+    return null;
+  }
 }

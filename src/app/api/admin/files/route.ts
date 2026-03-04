@@ -12,6 +12,8 @@ import {
 } from '@/lib/supabase/content-store';
 import type { ContentItemRow } from '@/lib/supabase/db-types';
 
+export const runtime = 'nodejs';
+
 
 type ManagedFileEntry = {
   key: string;
@@ -39,6 +41,15 @@ function handleStoreError(error: unknown): NextResponse {
   return NextResponse.json({ error: 'Interner Fehler in der Dateiverwaltung.' }, { status: 500 });
 }
 
+export async function OPTIONS(): Promise<NextResponse> {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      Allow: 'GET, POST, DELETE, OPTIONS',
+    },
+  });
+}
+
 export async function GET(): Promise<NextResponse> {
   try {
     const items = await listContentItems('timetable');
@@ -57,7 +68,13 @@ export async function GET(): Promise<NextResponse> {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  const formData = await request.formData();
+  let formData: FormData;
+  try {
+    formData = await request.formData();
+  } catch {
+    return NextResponse.json({ error: 'Ungültige Formulardaten.' }, { status: 400 });
+  }
+
   const category = formData.get('category')?.toString();
   const file = formData.get('file');
 

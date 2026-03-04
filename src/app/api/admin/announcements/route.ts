@@ -4,6 +4,8 @@ import { createAdminAnnouncement, deleteAdminAnnouncement, listAdminAnnouncement
 import { AnnouncementStoreReadError, AnnouncementStoreWriteError } from '@/lib/announcements/repository';
 import { ContentStoreConfigurationError, ContentStoreUnavailableError } from '@/lib/storage/content-store';
 
+export const runtime = 'nodejs';
+
 type AnnouncementPayload = {
   id?: string;
   data?: AnnouncementFormData;
@@ -38,6 +40,15 @@ function handleStoreError(error: unknown): NextResponse {
   }
 
   return NextResponse.json({ error: 'Interner Fehler beim Zugriff auf Termine.' }, { status: 500 });
+}
+
+export async function OPTIONS(): Promise<NextResponse> {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      Allow: 'GET, POST, PUT, DELETE, OPTIONS',
+    },
+  });
 }
 
 export async function GET(): Promise<NextResponse> {
