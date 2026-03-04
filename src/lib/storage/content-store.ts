@@ -190,8 +190,9 @@ class VercelBlobContentStore implements ContentStore {
 
   async putObject(key: string, data: Buffer | string, contentType: string): Promise<ContentStorePutResult> {
     const normalizedKey = normalizeKey(key);
+    const payload = toBuffer(data);
     try {
-      const result = await put(normalizedKey, toBuffer(data), {
+      const result = await put(normalizedKey, payload, {
         token: this.token,
         access: 'public',
         contentType,
@@ -201,8 +202,7 @@ class VercelBlobContentStore implements ContentStore {
       return {
         key: normalizedKey,
         url: result.url,
-        uploadedAt: result.uploadedAt,
-        size: result.size,
+        size: payload.byteLength,
         contentType: result.contentType,
       };
     } catch (error) {
