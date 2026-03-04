@@ -100,7 +100,7 @@ export function AdminFileManager() {
         method: 'POST',
       });
 
-      const payload = (await response.json()) as { error?: string; counts?: { timetables: number } };
+      const payload = (await response.json()) as { error?: string; counts?: { processed: number; parsed: number; failed: number } };
 
       if (!response.ok) {
         setError(payload.error ?? 'Index-Neuaufbau fehlgeschlagen.');
@@ -108,7 +108,15 @@ export function AdminFileManager() {
         return;
       }
 
-      setStatus(`Index neu aufgebaut (${payload.counts?.timetables ?? 0} Stundenpläne).`);
+      const processed = payload.counts?.processed ?? 0;
+      const parsed = payload.counts?.parsed ?? 0;
+      const failed = payload.counts?.failed ?? 0;
+
+      if (failed > 0) {
+        setStatus(`Index neu aufgebaut: ${parsed}/${processed} PDF(s) geparst, ${failed} fehlgeschlagen.`);
+      } else {
+        setStatus(`Index neu aufgebaut: ${parsed}/${processed} PDF(s) erfolgreich geparst.`);
+      }
       try { await loadFiles(); } catch { /* Liste wird beim nächsten Laden aktualisiert */ }
     } catch {
       setError('Index-Neuaufbau fehlgeschlagen.');
