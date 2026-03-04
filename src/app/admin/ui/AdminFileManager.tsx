@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { parseApiError, parseRequestFailure } from './apiError';
+import { formatApiStatus, parseApiError, parseRequestFailure } from './apiError';
 
 type ManagedFile = {
   key: string;
@@ -31,11 +31,13 @@ export function AdminFileManager() {
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
   const [status, setStatus] = useState('Bereit.');
   const [error, setError] = useState<string | null>(null);
+  const [lastApiStatus, setLastApiStatus] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
 
   const loadFiles = useCallback(async () => {
     try {
       const response = await fetch('/api/admin/files', { cache: 'no-store' });
+      setLastApiStatus(formatApiStatus(response));
       if (!response.ok) {
         const apiError = await parseApiError(response);
         setError(apiError.message);
@@ -47,6 +49,7 @@ export function AdminFileManager() {
       setFiles(payload.filesByCategory?.stundenplan ?? []);
     } catch (caughtError) {
       const apiError = parseRequestFailure(caughtError);
+      setLastApiStatus(null);
       setError(apiError.message);
     }
   }, []);
@@ -73,6 +76,7 @@ export function AdminFileManager() {
         method: 'POST',
         body: formData,
       });
+      setLastApiStatus(formatApiStatus(response));
 
       if (!response.ok) {
         const apiError = await parseApiError(response);
@@ -87,6 +91,7 @@ export function AdminFileManager() {
       await loadFiles();
     } catch (caughtError) {
       const apiError = parseRequestFailure(caughtError);
+      setLastApiStatus(null);
       setError(apiError.message);
       setStatus('Upload fehlgeschlagen.');
     } finally {
@@ -104,6 +109,7 @@ export function AdminFileManager() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ category: 'stundenplan', key }),
       });
+      setLastApiStatus(formatApiStatus(response));
 
       if (!response.ok) {
         const apiError = await parseApiError(response);
@@ -117,6 +123,7 @@ export function AdminFileManager() {
       await loadFiles();
     } catch (caughtError) {
       const apiError = parseRequestFailure(caughtError);
+      setLastApiStatus(null);
       setError(apiError.message);
       setStatus('Löschen fehlgeschlagen.');
     } finally {
@@ -169,6 +176,7 @@ export function AdminFileManager() {
       </div>
 
       <p className="mt-4 text-sm text-gray-700 dark:text-gray-200">Status: {status}</p>
+      {lastApiStatus ? <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Letzter API-Status: {lastApiStatus}</p> : null}
       {error ? <p className="mt-1 text-sm text-red-600">Fehler: {error}</p> : null}
     </section>
   );

@@ -9,7 +9,7 @@ import {
   toLocalDateTimeInput,
   validateAnnouncementForm,
 } from '@/lib/announcements/editor';
-import { parseApiError, parseRequestFailure } from './apiError';
+import { formatApiStatus, parseApiError, parseRequestFailure } from './apiError';
 
 type ApiFileEntry = {
   id: string;
@@ -51,6 +51,7 @@ export function AdminAnnouncementEditor() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [status, setStatus] = useState('Bereit.');
   const [error, setError] = useState<string | null>(null);
+  const [lastApiStatus, setLastApiStatus] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
 
   const issues = useMemo(() => validateAnnouncementForm(formData), [formData]);
@@ -65,6 +66,7 @@ export function AdminAnnouncementEditor() {
   const loadFiles = useCallback(async () => {
     try {
       const response = await fetch('/api/admin/announcements', { cache: 'no-store' });
+      setLastApiStatus(formatApiStatus(response));
       if (!response.ok) {
         const apiError = await parseApiError(response);
         setError(apiError.message);
@@ -77,6 +79,7 @@ export function AdminAnnouncementEditor() {
       setError(null);
     } catch (caughtError) {
       const apiError = parseRequestFailure(caughtError);
+      setLastApiStatus(null);
       setError(apiError.message);
       setStatus('Fehler beim Laden der Termine.');
     }
@@ -99,6 +102,7 @@ export function AdminAnnouncementEditor() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ data: formData }),
       });
+      setLastApiStatus(formatApiStatus(response));
 
       if (!response.ok) {
         const apiError = await parseApiError(response);
@@ -114,6 +118,7 @@ export function AdminAnnouncementEditor() {
       await loadFiles();
     } catch (caughtError) {
       const apiError = parseRequestFailure(caughtError);
+      setLastApiStatus(null);
       setError(apiError.message);
       setStatus('Speichern fehlgeschlagen.');
     } finally {
@@ -131,6 +136,7 @@ export function AdminAnnouncementEditor() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: selectedId, data: formData }),
       });
+      setLastApiStatus(formatApiStatus(response));
 
       if (!response.ok) {
         const apiError = await parseApiError(response);
@@ -144,6 +150,7 @@ export function AdminAnnouncementEditor() {
       await loadFiles();
     } catch (caughtError) {
       const apiError = parseRequestFailure(caughtError);
+      setLastApiStatus(null);
       setError(apiError.message);
       setStatus('Aktualisieren fehlgeschlagen.');
     } finally {
@@ -160,6 +167,7 @@ export function AdminAnnouncementEditor() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id }),
       });
+      setLastApiStatus(formatApiStatus(response));
 
       if (!response.ok) {
         const apiError = await parseApiError(response);
@@ -177,6 +185,7 @@ export function AdminAnnouncementEditor() {
       await loadFiles();
     } catch (caughtError) {
       const apiError = parseRequestFailure(caughtError);
+      setLastApiStatus(null);
       setError(apiError.message);
       setStatus('Löschen fehlgeschlagen.');
     } finally {
@@ -321,6 +330,7 @@ export function AdminAnnouncementEditor() {
         </div>
 
         <p className="mt-3 text-sm text-gray-600 dark:text-gray-300">Status: {status}</p>
+        {lastApiStatus ? <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Letzter API-Status: {lastApiStatus}</p> : null}
         {error ? <p className="mt-1 text-sm text-red-600">Fehler: {error}</p> : null}
       </div>
 

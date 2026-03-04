@@ -1,18 +1,20 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { parseApiError, parseRequestFailure } from './apiError';
+import { formatApiStatus, parseApiError, parseRequestFailure } from './apiError';
 
 export function AdminCalendarEditor() {
   const [urls, setUrls] = useState<string[]>([]);
   const [newUrl, setNewUrl] = useState('');
   const [status, setStatus] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [lastApiStatus, setLastApiStatus] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
 
   const loadUrls = useCallback(async () => {
     try {
       const response = await fetch('/api/admin/calendar', { cache: 'no-store' });
+      setLastApiStatus(formatApiStatus(response));
       if (!response.ok) {
         const apiError = await parseApiError(response);
         setError(apiError.message);
@@ -23,6 +25,7 @@ export function AdminCalendarEditor() {
       setError(null);
     } catch (caughtError) {
       const apiError = parseRequestFailure(caughtError);
+      setLastApiStatus(null);
       setError(apiError.message);
     }
   }, []);
@@ -41,6 +44,7 @@ export function AdminCalendarEditor() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ urls: nextUrls }),
       });
+      setLastApiStatus(formatApiStatus(response));
 
       if (!response.ok) {
         const apiError = await parseApiError(response);
@@ -55,6 +59,7 @@ export function AdminCalendarEditor() {
       setError(null);
     } catch (caughtError) {
       const apiError = parseRequestFailure(caughtError);
+      setLastApiStatus(null);
       setError(apiError.message);
       setStatus('Speichern fehlgeschlagen.');
     } finally {
@@ -140,6 +145,7 @@ export function AdminCalendarEditor() {
       </div>
 
       {status && <p className="mt-3 text-sm text-gray-700 dark:text-gray-200">Status: {status}</p>}
+      {lastApiStatus ? <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Letzter API-Status: {lastApiStatus}</p> : null}
       {error && <p className="mt-1 text-sm text-red-600">Fehler: {error}</p>}
     </section>
   );

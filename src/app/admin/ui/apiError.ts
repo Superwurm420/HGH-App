@@ -7,6 +7,10 @@ type ApiErrorPayload = {
   error?: string;
 };
 
+export function formatApiStatus(response: Response): string {
+  return `${response.status}${response.statusText ? ` ${response.statusText}` : ''}`;
+}
+
 export async function parseApiError(response: Response): Promise<ApiErrorDetails> {
   try {
     const payload = (await response.json()) as ApiErrorPayload;
