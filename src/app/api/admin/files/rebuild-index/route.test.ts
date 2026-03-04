@@ -1,5 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+vi.mock('@/lib/supabase/client', () => ({
+  SupabaseConfigurationError: class SupabaseConfigurationError extends Error {
+    variableName: string;
+    constructor(variableName: string) {
+      super(`Fehlende oder leere Umgebungsvariable: ${variableName}`);
+      this.variableName = variableName;
+    }
+  },
+}));
+
 vi.mock('@/lib/supabase/content-store', () => ({
   listContentItems: vi.fn(),
   downloadFromStorage: vi.fn(),
@@ -29,10 +39,22 @@ import {
   updateContentItem,
 } from '@/lib/supabase/content-store';
 import { parseTimetablePdfBuffer } from '@/lib/timetable/upload-parser';
+import { SupabaseConfigurationError } from '@/lib/supabase/client';
 
 describe('POST /api/admin/files/rebuild-index', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it('returns 500 when Supabase configuration is missing', async () => {
+    vi.mocked(listContentItems).mockRejectedValue(new SupabaseConfigurationError('SUPABASE_SERVICE_ROLE_KEY'));
+
+    const response = await POST();
+    const payload = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(payload.error).toContain('Server-Konfiguration unvollständig');
+    expect(payload.error).toContain('SUPABASE_SERVICE_ROLE_KEY');
   });
 
   it('continues on partial failures and returns processed/parsed/failed counts', async () => {

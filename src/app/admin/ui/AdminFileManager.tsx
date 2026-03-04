@@ -13,6 +13,11 @@ type ApiResponse = {
   filesByCategory: { stundenplan: ManagedFile[] };
 };
 
+function isConfigurationErrorMessage(message: string | null): boolean {
+  if (!message) return false;
+  return message.toLowerCase().includes('server-konfiguration unvollständig');
+}
+
 function formatDate(value: string | null): string {
   if (!value) return 'unbekannt';
   const date = new Date(value);
@@ -211,6 +216,11 @@ export function AdminFileManager() {
 
       <p className="mt-4 text-sm text-gray-700 dark:text-gray-200">Status: {status}</p>
       {error ? <p className="mt-1 text-sm text-red-600">Fehler: {error}</p> : null}
+      {isConfigurationErrorMessage(error) ? (
+        <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
+          Hinweis: Bitte SUPABASE_URL und SUPABASE_SERVICE_ROLE_KEY in der Server-Umgebung prüfen.
+        </p>
+      ) : null}
     </section>
   );
 }

@@ -1,6 +1,16 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
 
+vi.mock('@/lib/supabase/client', () => ({
+  SupabaseConfigurationError: class SupabaseConfigurationError extends Error {
+    variableName: string;
+    constructor(variableName: string) {
+      super(`Fehlende oder leere Umgebungsvariable: ${variableName}`);
+      this.variableName = variableName;
+    }
+  },
+}));
+
 vi.mock('@/lib/supabase/content-store', () => ({
   uploadContent: vi.fn(),
   updateContentItem: vi.fn(),
@@ -23,13 +33,27 @@ vi.mock('@/lib/timetable/upload-parser', () => ({
   parseTimetablePdfBuffer: vi.fn(),
 }));
 
-import { POST } from './route';
-import { uploadContent, updateContentItem } from '@/lib/supabase/content-store';
+import { GET, POST } from './route';
+import { uploadContent, updateContentItem, listContentItems } from '@/lib/supabase/content-store';
 import { parseTimetablePdfBuffer } from '@/lib/timetable/upload-parser';
+import { SupabaseConfigurationError } from '@/lib/supabase/client';
 
 describe('POST /api/admin/files', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+
+
+  it('returns 500 with a clear message when Supabase environment configuration is missing', async () => {
+    vi.mocked(listContentItems).mockRejectedValue(new SupabaseConfigurationError('SUPABASE_URL'));
+
+    const response = await GET();
+    const payload = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(payload.error).toContain('Server-Konfiguration unvollständig');
+    expect(payload.error).toContain('SUPABASE_URL');
   });
 
   it('returns success with warning when parsing fails but storage/index update succeed', async () => {
