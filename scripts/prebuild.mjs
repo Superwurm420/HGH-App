@@ -22,7 +22,9 @@ const OUTPUT_DIR = path.join(ROOT, 'src/generated');
 
 // ── Timetable constants ─────────────────────────────────────────────────────
 
-const CLASS_PATTERN = /^[A-Z]{1,3}\s?\d{2}$/;
+// Klassenkürzel sind nicht überall gleich streng (z. B. "BFS1", "GT 11A", "FOA12").
+// Daher bewusst großzügiger als früher, um Upload-Parsing und Prebuild robuster zu machen.
+const CLASS_PATTERN = /^[A-ZÄÖÜ]{1,5}\s?\d{1,2}[A-Z]?$/;
 const WEEKDAYS = ['MO', 'DI', 'MI', 'DO', 'FR'];
 const DAY_SET = new Set(WEEKDAYS);
 
