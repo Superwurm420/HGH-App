@@ -1,10 +1,17 @@
 import path from 'node:path';
 import { NextRequest, NextResponse } from 'next/server';
-import { ContentStoreConfigurationError, ContentStoreUnavailableError, getContentStore } from '@/lib/storage/content-store';
 import { STORAGE_KEYS } from '@/lib/storage/object-keys';
 import { invalidateTimetableCache } from '@/lib/timetable/server';
 import { parseUploadedTimetablePdf, removeTimetableIndexEntry, upsertTimetableIndexEntry } from '@/lib/timetable/generated-data';
-import { BlobIndexEntry, mutateBlobIndex, readBlobIndex } from '@/lib/storage/blob-index';
+import {
+  uploadContent,
+  deleteContent,
+  listContentItems,
+  updateContentItem,
+  SupabaseContentError,
+} from '@/lib/supabase/content-store';
+import type { ContentItemRow } from '@/lib/supabase/db-types';
+
 
 type ManagedFileEntry = {
   key: string;
@@ -14,23 +21,19 @@ type ManagedFileEntry = {
   updatedAt: string | null;
 };
 
-function asManagedFile(entry: BlobIndexEntry): ManagedFileEntry {
+function asManagedFile(item: ContentItemRow): ManagedFileEntry {
   return {
-    key: entry.pathname,
-    name: path.posix.basename(entry.pathname),
+    key: item.key,
+    name: path.posix.basename(item.key),
     category: 'stundenplan',
-    size: entry.size ?? 0,
-    updatedAt: entry.uploadedAt ?? null,
+    size: item.size ?? 0,
+    updatedAt: item.created_at ?? null,
   };
 }
 
 function handleStoreError(error: unknown): NextResponse {
-  if (error instanceof ContentStoreConfigurationError) {
-    return NextResponse.json({ error: `Storage-Konfiguration ungültig: ${error.reason}` }, { status: 500 });
-  }
-
-  if (error instanceof ContentStoreUnavailableError) {
-    return NextResponse.json({ error: 'Storage aktuell nicht erreichbar.' }, { status: 503 });
+  if (error instanceof SupabaseContentError) {
+    return NextResponse.json({ error: `Storage-Fehler: ${error.reason}` }, { status: 503 });
   }
 
   return NextResponse.json({ error: 'Interner Fehler in der Dateiverwaltung.' }, { status: 500 });
@@ -38,11 +41,11 @@ function handleStoreError(error: unknown): NextResponse {
 
 export async function GET(): Promise<NextResponse> {
   try {
-    const index = await readBlobIndex();
+    const items = await listContentItems('timetable');
 
     const filesByCategory = {
-      stundenplan: index.timetables
-        .filter((item) => item.pathname.toLowerCase().endsWith('.pdf'))
+      stundenplan: items
+        .filter((item) => item.key.toLowerCase().endsWith('.pdf'))
         .map((item) => asManagedFile(item))
         .sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? '')),
     };
@@ -75,33 +78,21 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Stundenplan muss eine PDF-Datei sein.' }, { status: 400 });
   }
 
-  const store = getContentStore();
-
   try {
     const arrayBuffer = await file.arrayBuffer();
     const data = Buffer.from(arrayBuffer);
     const safeFileName = path.posix.basename(fileName).replace(/\s+/g, '_');
     const key = `${STORAGE_KEYS.timetablesPrefix}${safeFileName}`;
-    const putResult = await store.putObject(key, data, 'application/pdf');
 
-    await mutateBlobIndex((index) => {
-      const nextEntry: BlobIndexEntry = {
-        pathname: key,
-        type: 'timetable',
-        uploadedAt: putResult.uploadedAt?.toISOString() ?? new Date().toISOString(),
-        url: putResult.url,
-        originalName: fileName,
-        size: putResult.size ?? data.byteLength,
-        contentType: putResult.contentType ?? 'application/pdf',
-      };
-
-      return {
-        ...index,
-        timetables: [...index.timetables.filter((entry) => entry.pathname !== key), nextEntry],
-      };
+    await uploadContent({
+      key,
+      data,
+      contentType: 'application/pdf',
+      category: 'timetable',
+      meta: { originalName: fileName },
     });
 
-    console.info(`[admin/files] Stundenplan hochgeladen und Index aktualisiert: ${key}`);
+    console.info(`[admin/files] Stundenplan hochgeladen: ${key}`);
 
     let parsed = false;
     let indexed = false;
@@ -115,7 +106,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       });
       parsed = indexResult.scheduleUpdated;
       indexed = indexResult.metaUpdated;
+
       if (parsed) {
+        await updateContentItem(key, {
+          timetable_json: schedule as unknown as Record<string, unknown>,
+          timetable_version: String(Date.now()),
+        });
         invalidateTimetableCache();
       }
     } catch {
@@ -145,24 +141,14 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Ungültiger Stundenplan-Key.' }, { status: 400 });
   }
 
-  const store = getContentStore();
-
   try {
-    const index = await readBlobIndex();
-    const existing = index.timetables.find((entry) => entry.pathname === key);
-
-    await store.deleteObject(key, { url: existing?.url });
-
-    await mutateBlobIndex((current) => ({
-      ...current,
-      timetables: current.timetables.filter((entry) => entry.pathname !== key),
-    }));
+    await deleteContent(key);
 
     const filename = path.posix.basename(key);
     await removeTimetableIndexEntry(filename);
     invalidateTimetableCache();
 
-    console.info(`[admin/files] Stundenplan gelöscht und Index bereinigt: ${key}`);
+    console.info(`[admin/files] Stundenplan gelöscht: ${key}`);
 
     return NextResponse.json({ ok: true });
   } catch (error) {

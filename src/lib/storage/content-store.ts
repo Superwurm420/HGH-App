@@ -1,6 +1,13 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { del, list as listBlob, put } from '@vercel/blob';
+import {
+  uploadToStorage,
+  deleteFromStorage,
+  downloadFromStorage,
+  insertContentItem,
+  deleteContentItem,
+} from '@/lib/supabase/content-store';
+
 
 export type ContentStoreObject = {
   key: string;
@@ -18,7 +25,6 @@ export type ContentStoreListItem = {
 export type ContentStorePutResult = {
   key: string;
   url?: string;
-  uploadedAt?: Date;
   size?: number;
   contentType?: string;
 };
@@ -27,7 +33,6 @@ export interface ContentStore {
   getObject(key: string): Promise<ContentStoreObject | null>;
   putObject(key: string, data: Buffer | string, contentType: string): Promise<ContentStorePutResult>;
   deleteObject(key: string, options?: { url?: string }): Promise<void>;
-  list(prefix: string): Promise<ContentStoreListItem[]>;
 }
 
 export class ContentStoreError extends Error {
@@ -61,6 +66,18 @@ function normalizeKey(key: string): string {
 function toBuffer(data: Buffer | string): Buffer {
   return typeof data === 'string' ? Buffer.from(data, 'utf8') : data;
 }
+
+function detectCategory(key: string, contentType: string): 'timetable' | 'announcement' | 'image' | 'config' | 'other' {
+  if (key.startsWith('timetables/') || contentType === 'application/pdf') return 'timetable';
+  if (key.startsWith('announcements/')) return 'announcement';
+  if (key.startsWith('images/') || contentType.startsWith('image/')) return 'image';
+  if (contentType.includes('json') || key.endsWith('.json')) return 'config';
+  return 'other';
+}
+
+// ---------------------------------------------------------------------------
+// Lokaler Fallback-Store (für Development ohne Supabase)
+// ---------------------------------------------------------------------------
 
 class LocalContentStore implements ContentStore {
   private readonly localRoot: string;
@@ -114,77 +131,28 @@ class LocalContentStore implements ContentStore {
       throw new ContentStoreUnavailableError(`Lokaler Store konnte ${key} nicht löschen.`, error instanceof Error ? { cause: error } : undefined);
     }
   }
-
-  async list(prefix: string): Promise<ContentStoreListItem[]> {
-    const normalizedPrefix = normalizeKey(prefix);
-    const root = this.localPathForKey(normalizedPrefix);
-
-    const files: ContentStoreListItem[] = [];
-
-    const walk = async (dir: string): Promise<void> => {
-      const entries = await fs.readdir(dir, { withFileTypes: true });
-      for (const entry of entries) {
-        const fullPath = path.join(dir, entry.name);
-        if (entry.isDirectory()) {
-          await walk(fullPath);
-          continue;
-        }
-
-        const stats = await fs.stat(fullPath);
-        const relativePath = path.relative(this.localRoot, fullPath).split(path.sep).join('/');
-        files.push({
-          key: relativePath,
-          contentType: null,
-          size: stats.size,
-          updatedAt: stats.mtime,
-        });
-      }
-    };
-
-    try {
-      await walk(root);
-      return files;
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-        return [];
-      }
-      throw new ContentStoreUnavailableError(
-        `Lokaler Store konnte Prefix ${normalizedPrefix} nicht auflisten.`,
-        error instanceof Error ? { cause: error } : undefined,
-      );
-    }
-  }
 }
 
-class VercelBlobContentStore implements ContentStore {
-  private readonly token: string;
+// ---------------------------------------------------------------------------
+// Supabase-basierter Store
+// ---------------------------------------------------------------------------
 
-  constructor(token: string) {
-    this.token = token;
-  }
-
+class SupabaseContentStore implements ContentStore {
   async getObject(key: string): Promise<ContentStoreObject | null> {
     const normalizedKey = normalizeKey(key);
     try {
-      const result = await listBlob({ prefix: normalizedKey, token: this.token, limit: 1 });
-      const blob = result.blobs.find((entry) => entry.pathname === normalizedKey);
-      if (!blob) {
-        return null;
-      }
-
-      const response = await fetch(blob.url);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const arrayBuffer = await response.arrayBuffer();
+      const result = await downloadFromStorage(normalizedKey);
+      if (!result) return null;
       return {
         key: normalizedKey,
-        data: Buffer.from(arrayBuffer),
-        contentType: response.headers.get('content-type'),
+        data: result.data,
+        contentType: result.contentType,
       };
     } catch (error) {
-      throw new ContentStoreUnavailableError(`Vercel Blob konnte ${normalizedKey} nicht lesen.`, error instanceof Error ? { cause: error } : undefined);
+      throw new ContentStoreUnavailableError(
+        `Supabase konnte ${normalizedKey} nicht lesen.`,
+        error instanceof Error ? { cause: error } : undefined,
+      );
     }
   }
 
@@ -192,99 +160,65 @@ class VercelBlobContentStore implements ContentStore {
     const normalizedKey = normalizeKey(key);
     const payload = toBuffer(data);
     try {
-      const result = await put(normalizedKey, payload, {
-        token: this.token,
-        access: 'public',
-        contentType,
-        addRandomSuffix: false,
-        allowOverwrite: true,
+      const url = await uploadToStorage(normalizedKey, payload, contentType);
+
+      await insertContentItem({
+        key: normalizedKey,
+        url,
+        category: detectCategory(normalizedKey, contentType),
+        content_type: contentType,
+        size: payload.byteLength,
       });
+
       return {
         key: normalizedKey,
-        url: result.url,
+        url,
         size: payload.byteLength,
-        contentType: result.contentType,
+        contentType,
       };
     } catch (error) {
-      throw new ContentStoreUnavailableError(`Vercel Blob konnte ${normalizedKey} nicht schreiben.`, error instanceof Error ? { cause: error } : undefined);
+      throw new ContentStoreUnavailableError(
+        `Supabase konnte ${normalizedKey} nicht schreiben.`,
+        error instanceof Error ? { cause: error } : undefined,
+      );
     }
   }
 
-  async deleteObject(key: string, options?: { url?: string }): Promise<void> {
+  async deleteObject(key: string): Promise<void> {
     const normalizedKey = normalizeKey(key);
     try {
-      if (options?.url) {
-        await del(options.url, { token: this.token });
-        return;
-      }
-      const result = await listBlob({ prefix: normalizedKey, token: this.token, limit: 1 });
-      const blob = result.blobs.find((entry) => entry.pathname === normalizedKey);
-      if (!blob) {
-        return;
-      }
-      await del(blob.url, { token: this.token });
-    } catch (error) {
-      throw new ContentStoreUnavailableError(`Vercel Blob konnte ${normalizedKey} nicht löschen.`, error instanceof Error ? { cause: error } : undefined);
-    }
-  }
-
-  async list(prefix: string): Promise<ContentStoreListItem[]> {
-    const normalizedPrefix = normalizeKey(prefix);
-    try {
-      const result = await listBlob({ token: this.token, prefix: normalizedPrefix });
-      return result.blobs.map((blob) => ({
-        key: blob.pathname,
-        contentType: null,
-        size: blob.size,
-        updatedAt: blob.uploadedAt,
-      }));
+      await deleteFromStorage(normalizedKey).catch((err) => {
+        console.warn(`[content-store] Storage-Löschung für ${normalizedKey} fehlgeschlagen.`, err);
+      });
+      await deleteContentItem(normalizedKey);
     } catch (error) {
       throw new ContentStoreUnavailableError(
-        `Vercel Blob konnte Prefix ${normalizedPrefix} nicht auflisten.`,
+        `Supabase konnte ${normalizedKey} nicht löschen.`,
         error instanceof Error ? { cause: error } : undefined,
       );
     }
   }
 }
 
+// ---------------------------------------------------------------------------
+// Factory
+// ---------------------------------------------------------------------------
+
 export function getContentStore(): ContentStore {
-  const provider = process.env.CONTENT_STORE_PROVIDER?.trim().toLowerCase() ?? 'vercel-blob';
   const isDevelopment = process.env.NODE_ENV === 'development';
-  const allowLocalStoreInProduction = process.env.ALLOW_LOCAL_STORE_IN_PROD?.trim().toLowerCase() === 'true';
-  const localRoot = path.join(process.cwd(), process.env.LOCAL_CONTENT_STORE_DIR ?? 'data/content-store');
-  const token = process.env.BLOB_READ_WRITE_TOKEN?.trim();
+  const hasSupabase = Boolean(process.env.SUPABASE_URL?.trim() && process.env.SUPABASE_SERVICE_ROLE_KEY?.trim());
+  const forceLocal = process.env.CONTENT_STORE_PROVIDER?.trim().toLowerCase() === 'local';
 
-  const getLocalStoreWithWarning = (reason: string): ContentStore => {
-    if (!isDevelopment) {
-      console.warn(`[content-store] ${reason}`);
-    }
+  if (forceLocal || (isDevelopment && !hasSupabase)) {
+    const localRoot = path.join(process.cwd(), process.env.LOCAL_CONTENT_STORE_DIR ?? 'data/content-store');
     return new LocalContentStore(localRoot);
-  };
-
-  if (provider === 'vercel-blob') {
-    if (!token) {
-      if (isDevelopment) {
-        return new LocalContentStore(localRoot);
-      }
-
-      if (allowLocalStoreInProduction) {
-        return getLocalStoreWithWarning(
-          'BLOB_READ_WRITE_TOKEN fehlt, nutze lokalen Fallback, da ALLOW_LOCAL_STORE_IN_PROD=true gesetzt ist.',
-        );
-      }
-
-      throw new ContentStoreConfigurationError(
-        'BLOB_READ_WRITE_TOKEN fehlt für CONTENT_STORE_PROVIDER=vercel-blob. Setze BLOB_READ_WRITE_TOKEN oder ALLOW_LOCAL_STORE_IN_PROD=true für Self-Hosting-Fallback.',
-      );
-    }
-    return new VercelBlobContentStore(token);
   }
 
-  if (provider === 'local') {
-    return getLocalStoreWithWarning(
-      'CONTENT_STORE_PROVIDER=local ist in Produktion aktiviert. Daten werden ausschließlich lokal gespeichert.',
+  if (!hasSupabase) {
+    throw new ContentStoreConfigurationError(
+      'SUPABASE_URL und SUPABASE_SERVICE_ROLE_KEY müssen gesetzt sein. Setze CONTENT_STORE_PROVIDER=local für lokalen Fallback.',
     );
   }
 
-  throw new ContentStoreConfigurationError(`Unbekannter CONTENT_STORE_PROVIDER: ${provider}`);
+  return new SupabaseContentStore();
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getContentStore } from '@/lib/storage/content-store';
 import { STORAGE_KEYS } from '@/lib/storage/object-keys';
+import { getContentItem } from '@/lib/supabase/content-store';
+import { downloadFromStorage } from '@/lib/supabase/content-store';
 
 type Params = {
   filename: string;
@@ -24,18 +25,22 @@ export async function GET(_request: NextRequest, context: { params: Promise<Para
   const key = `${STORAGE_KEYS.timetablesPrefix}${filename}`;
 
   try {
-    const store = getContentStore();
-    const object = await store.getObject(key);
-    if (!object) {
+    const item = await getContentItem(key);
+    if (item?.url) {
+      return NextResponse.redirect(item.url, { status: 302 });
+    }
+
+    const result = await downloadFromStorage(key);
+    if (!result) {
       return NextResponse.json({ error: 'Datei nicht gefunden.' }, { status: 404 });
     }
 
     const headers = new Headers();
-    headers.set('Content-Type', object.contentType ?? 'application/pdf');
+    headers.set('Content-Type', result.contentType ?? 'application/pdf');
     headers.set('Cache-Control', 'public, max-age=300, s-maxage=300');
     headers.set('Content-Disposition', `inline; filename="${filename}"`);
 
-    return new NextResponse(object.data, { status: 200, headers });
+    return new NextResponse(result.data, { status: 200, headers });
   } catch {
     return NextResponse.json({ error: 'Datei konnte nicht geladen werden.' }, { status: 503 });
   }

@@ -6,8 +6,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const originalCwd = process.cwd();
 const originalNodeEnv = process.env.NODE_ENV;
-const originalBlobToken = process.env.BLOB_READ_WRITE_TOKEN;
 const originalProvider = process.env.CONTENT_STORE_PROVIDER;
+const originalSupabaseUrl = process.env.SUPABASE_URL;
+const originalSupabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 async function loadRepositoryModule() {
   const modulePath = path.resolve(originalCwd, 'src/lib/announcements/repository.ts');
@@ -19,16 +20,18 @@ function setupTempCwd(): string {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'announcements-repository-'));
   process.chdir(tempDir);
   process.env.NODE_ENV = 'development';
-  delete process.env.BLOB_READ_WRITE_TOKEN;
-  delete process.env.CONTENT_STORE_PROVIDER;
+  process.env.CONTENT_STORE_PROVIDER = 'local';
+  delete process.env.SUPABASE_URL;
+  delete process.env.SUPABASE_SERVICE_ROLE_KEY;
   return tempDir;
 }
 
 afterEach(() => {
   process.chdir(originalCwd);
   process.env.NODE_ENV = originalNodeEnv;
-  process.env.BLOB_READ_WRITE_TOKEN = originalBlobToken;
   process.env.CONTENT_STORE_PROVIDER = originalProvider;
+  process.env.SUPABASE_URL = originalSupabaseUrl;
+  process.env.SUPABASE_SERVICE_ROLE_KEY = originalSupabaseKey;
   vi.restoreAllMocks();
 });
 
@@ -76,11 +79,12 @@ describe('readStore integration via listAnnouncementRecords', () => {
     expect(entries[0]?.title).toBe('Test Termin');
   });
 
-  it('fails in production without blob token', async () => {
+  it('fails in production without Supabase config', async () => {
     setupTempCwd();
     process.env.NODE_ENV = 'production';
+    delete process.env.CONTENT_STORE_PROVIDER;
 
     const repository = await loadRepositoryModule();
-    await expect(repository.listAnnouncementRecords()).rejects.toThrowError(/BLOB_READ_WRITE_TOKEN fehlt/);
+    await expect(repository.listAnnouncementRecords()).rejects.toThrowError(/SUPABASE_URL/);
   });
 });

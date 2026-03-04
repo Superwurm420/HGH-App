@@ -3,7 +3,7 @@ import { compareTimetable } from './selectLatest';
 import { ParsedSchedule, SchoolClass, TimetableMeta } from './types';
 import crypto from 'node:crypto';
 import { readTimetableGeneratedData } from './generated-data';
-import { readBlobIndex } from '@/lib/storage/blob-index';
+import { listContentItems } from '@/lib/supabase/content-store';
 
 type TimetableGeneratedData = {
   files: TimetableMeta[];
@@ -26,14 +26,14 @@ async function hydrateLatestMeta(data: TimetableGeneratedData): Promise<Timetabl
   if (candidates.length === 0) return null;
 
   try {
-    const index = await readBlobIndex();
+    const items = await listContentItems('timetable');
     const byName = new Map(
-      index.timetables
-        .map((entry) => {
-          const segments = entry.pathname.split('/');
+      items
+        .map((item) => {
+          const segments = item.key.split('/');
           return {
             name: segments[segments.length - 1] ?? '',
-            updatedMs: new Date(entry.uploadedAt).getTime(),
+            updatedMs: new Date(item.created_at).getTime(),
           };
         })
         .filter((entry) => entry.name.toLowerCase().endsWith('.pdf') && Number.isFinite(entry.updatedMs))
