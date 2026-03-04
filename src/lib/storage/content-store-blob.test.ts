@@ -30,6 +30,13 @@ describe('VercelBlobContentStore behavior', () => {
 
     const { getContentStore } = await import('./content-store');
 
+    putMock.mockResolvedValue({
+      url: 'https://blob.vercel-storage.com/announcements/store.json',
+      uploadedAt: new Date('2026-01-01T10:00:00.000Z'),
+      size: 11,
+      contentType: 'application/json',
+    });
+
     const store = getContentStore();
     await store.putObject('announcements/store.json', '{"ok":true}', 'application/json');
 
