@@ -121,16 +121,16 @@ export function AdminAnnouncementEditor() {
 
       const payload = (await response.json()) as { error?: string; data?: AnnouncementFormData; file?: string; issues?: ValidationIssue[] };
       if (!response.ok) {
-        setStatus(payload.error ?? `Speichern von „${formData.title || 'Neuer Termin'}“ fehlgeschlagen.`);
+        setStatus(payload.error ?? `Speichern von „${formData.title || 'Neuer Termin'}” fehlgeschlagen.`);
         return;
       }
 
       const optimisticName = payload.data?.title || payload.file || formData.title || 'Neuer Termin';
-      setStatus(`Termin „${optimisticName}“ gespeichert. Liste wird aktualisiert …`);
+      setStatus(`Termin „${optimisticName}” gespeichert. Liste wird aktualisiert …`);
       setFormData(getDefaultAnnouncementFormData());
       setSelectedId(null);
     } finally {
-      await loadEntries();
+      try { await loadEntries(); } catch { /* Liste wird beim nächsten Laden aktualisiert */ }
       setIsBusy(false);
     }
   }
@@ -147,14 +147,14 @@ export function AdminAnnouncementEditor() {
 
       const payload = (await response.json()) as { error?: string; data?: AnnouncementFormData; file?: string };
       if (!response.ok) {
-        setStatus(payload.error ?? `Aktualisieren von „${formData.title || selectedId}“ fehlgeschlagen.`);
+        setStatus(payload.error ?? `Aktualisieren von „${formData.title || selectedId}” fehlgeschlagen.`);
         return;
       }
 
       const optimisticName = payload.data?.title || payload.file || formData.title || selectedId;
-      setStatus(`Termin „${optimisticName}“ aktualisiert. Liste wird aktualisiert …`);
+      setStatus(`Termin „${optimisticName}” aktualisiert. Liste wird aktualisiert …`);
     } finally {
-      await loadEntries();
+      try { await loadEntries(); } catch { /* Liste wird beim nächsten Laden aktualisiert */ }
       setIsBusy(false);
     }
   }
@@ -172,13 +172,13 @@ export function AdminAnnouncementEditor() {
 
       const payload = (await response.json()) as { error?: string };
       if (!response.ok) {
-        setStatus(payload.error ?? `Löschen von „${deletedEntry?.data.title || deletedEntry?.file || id}“ fehlgeschlagen.`);
+        setStatus(payload.error ?? `Löschen von „${deletedEntry?.data.title || deletedEntry?.file || id}” fehlgeschlagen.`);
         return;
       }
 
-      setStatus(`Termin „${deletedEntry?.data.title || deletedEntry?.file || id}“ gelöscht. Liste wird aktualisiert …`);
+      setStatus(`Termin „${deletedEntry?.data.title || deletedEntry?.file || id}” gelöscht. Liste wird aktualisiert …`);
     } finally {
-      await loadEntries();
+      try { await loadEntries(); } catch { /* Liste wird beim nächsten Laden aktualisiert */ }
       setIsBusy(false);
     }
   }
