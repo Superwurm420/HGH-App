@@ -1,11 +1,9 @@
 import { weekdayForToday } from './pdfParser';
 import { compareTimetable } from './selectLatest';
 import { ParsedSchedule, SchoolClass, TimetableMeta } from './types';
-import path from 'node:path';
 import crypto from 'node:crypto';
-import { getContentStore } from '@/lib/storage/content-store';
-import { STORAGE_KEYS } from '@/lib/storage/object-keys';
 import { readTimetableGeneratedData } from './generated-data';
+import { readBlobIndex } from '@/lib/storage/blob-index';
 
 type TimetableGeneratedData = {
   files: TimetableMeta[];
@@ -28,15 +26,17 @@ async function hydrateLatestMeta(data: TimetableGeneratedData): Promise<Timetabl
   if (candidates.length === 0) return null;
 
   try {
-    const store = getContentStore();
-    const blobs = await store.list(STORAGE_KEYS.timetablesPrefix);
+    const index = await readBlobIndex();
     const byName = new Map(
-      blobs
-        .map((entry) => ({
-          name: path.posix.basename(entry.key),
-          updatedMs: entry.updatedAt?.getTime() ?? 0,
-        }))
-        .filter((entry) => entry.name.toLowerCase().endsWith('.pdf'))
+      index.timetables
+        .map((entry) => {
+          const segments = entry.pathname.split('/');
+          return {
+            name: segments[segments.length - 1] ?? '',
+            updatedMs: new Date(entry.uploadedAt).getTime(),
+          };
+        })
+        .filter((entry) => entry.name.toLowerCase().endsWith('.pdf') && Number.isFinite(entry.updatedMs))
         .map((entry) => [entry.name, entry.updatedMs]),
     );
 

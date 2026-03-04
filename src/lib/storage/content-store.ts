@@ -15,10 +15,18 @@ export type ContentStoreListItem = {
   updatedAt: Date | null;
 };
 
+export type ContentStorePutResult = {
+  key: string;
+  url?: string;
+  uploadedAt?: Date;
+  size?: number;
+  contentType?: string;
+};
+
 export interface ContentStore {
   getObject(key: string): Promise<ContentStoreObject | null>;
-  putObject(key: string, data: Buffer | string, contentType: string): Promise<void>;
-  deleteObject(key: string): Promise<void>;
+  putObject(key: string, data: Buffer | string, contentType: string): Promise<ContentStorePutResult>;
+  deleteObject(key: string, options?: { url?: string }): Promise<void>;
   list(prefix: string): Promise<ContentStoreListItem[]>;
 }
 
@@ -83,11 +91,16 @@ class LocalContentStore implements ContentStore {
     }
   }
 
-  async putObject(key: string, data: Buffer | string): Promise<void> {
+  async putObject(key: string, data: Buffer | string): Promise<ContentStorePutResult> {
     const filePath = this.localPathForKey(key);
+    const payload = toBuffer(data);
     try {
       await fs.mkdir(path.dirname(filePath), { recursive: true });
-      await fs.writeFile(filePath, toBuffer(data));
+      await fs.writeFile(filePath, payload);
+      return {
+        key: normalizeKey(key),
+        size: payload.byteLength,
+      };
     } catch (error) {
       throw new ContentStoreUnavailableError(`Lokaler Store konnte ${key} nicht schreiben.`, error instanceof Error ? { cause: error } : undefined);
     }
@@ -175,24 +188,35 @@ class VercelBlobContentStore implements ContentStore {
     }
   }
 
-  async putObject(key: string, data: Buffer | string, contentType: string): Promise<void> {
+  async putObject(key: string, data: Buffer | string, contentType: string): Promise<ContentStorePutResult> {
     const normalizedKey = normalizeKey(key);
     try {
-      await put(normalizedKey, toBuffer(data), {
+      const result = await put(normalizedKey, toBuffer(data), {
         token: this.token,
         access: 'public',
         contentType,
         addRandomSuffix: false,
         allowOverwrite: true,
       });
+      return {
+        key: normalizedKey,
+        url: result.url,
+        uploadedAt: result.uploadedAt,
+        size: result.size,
+        contentType: result.contentType,
+      };
     } catch (error) {
       throw new ContentStoreUnavailableError(`Vercel Blob konnte ${normalizedKey} nicht schreiben.`, error instanceof Error ? { cause: error } : undefined);
     }
   }
 
-  async deleteObject(key: string): Promise<void> {
+  async deleteObject(key: string, options?: { url?: string }): Promise<void> {
     const normalizedKey = normalizeKey(key);
     try {
+      if (options?.url) {
+        await del(options.url, { token: this.token });
+        return;
+      }
       const result = await listBlob({ prefix: normalizedKey, token: this.token, limit: 1 });
       const blob = result.blobs.find((entry) => entry.pathname === normalizedKey);
       if (!blob) {

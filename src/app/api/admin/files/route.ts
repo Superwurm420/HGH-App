@@ -3,7 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ContentStoreConfigurationError, ContentStoreUnavailableError, getContentStore } from '@/lib/storage/content-store';
 import { STORAGE_KEYS } from '@/lib/storage/object-keys';
 import { invalidateTimetableCache } from '@/lib/timetable/server';
-import { parseUploadedTimetablePdf, upsertTimetableIndexEntry } from '@/lib/timetable/generated-data';
+import { parseUploadedTimetablePdf, removeTimetableIndexEntry, upsertTimetableIndexEntry } from '@/lib/timetable/generated-data';
+import { BlobIndexEntry, mutateBlobIndex, readBlobIndex } from '@/lib/storage/blob-index';
 
 type ManagedFileEntry = {
   key: string;
@@ -13,13 +14,13 @@ type ManagedFileEntry = {
   updatedAt: string | null;
 };
 
-function asManagedFile(key: string, size: number, updatedAt: Date | null): ManagedFileEntry {
+function asManagedFile(entry: BlobIndexEntry): ManagedFileEntry {
   return {
-    key,
-    name: path.posix.basename(key),
+    key: entry.pathname,
+    name: path.posix.basename(entry.pathname),
     category: 'stundenplan',
-    size,
-    updatedAt: updatedAt?.toISOString() ?? null,
+    size: entry.size ?? 0,
+    updatedAt: entry.uploadedAt ?? null,
   };
 }
 
@@ -36,15 +37,13 @@ function handleStoreError(error: unknown): NextResponse {
 }
 
 export async function GET(): Promise<NextResponse> {
-  const store = getContentStore();
-
   try {
-    const timetables = await store.list(STORAGE_KEYS.timetablesPrefix);
+    const index = await readBlobIndex();
 
     const filesByCategory = {
-      stundenplan: timetables
-        .filter((item) => item.key.toLowerCase().endsWith('.pdf'))
-        .map((item) => asManagedFile(item.key, item.size, item.updatedAt))
+      stundenplan: index.timetables
+        .filter((item) => item.pathname.toLowerCase().endsWith('.pdf'))
+        .map((item) => asManagedFile(item))
         .sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? '')),
     };
 
@@ -83,7 +82,26 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const data = Buffer.from(arrayBuffer);
     const safeFileName = path.posix.basename(fileName).replace(/\s+/g, '_');
     const key = `${STORAGE_KEYS.timetablesPrefix}${safeFileName}`;
-    await store.putObject(key, data, 'application/pdf');
+    const putResult = await store.putObject(key, data, 'application/pdf');
+
+    await mutateBlobIndex((index) => {
+      const nextEntry: BlobIndexEntry = {
+        pathname: key,
+        type: 'timetable',
+        uploadedAt: putResult.uploadedAt?.toISOString() ?? new Date().toISOString(),
+        url: putResult.url,
+        originalName: fileName,
+        size: putResult.size ?? data.byteLength,
+        contentType: putResult.contentType ?? 'application/pdf',
+      };
+
+      return {
+        ...index,
+        timetables: [...index.timetables.filter((entry) => entry.pathname !== key), nextEntry],
+      };
+    });
+
+    console.info(`[admin/files] Stundenplan hochgeladen und Index aktualisiert: ${key}`);
 
     let parsed = false;
     let indexed = false;
@@ -129,7 +147,22 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
   const store = getContentStore();
 
   try {
-    await store.deleteObject(key);
+    const index = await readBlobIndex();
+    const existing = index.timetables.find((entry) => entry.pathname === key);
+
+    await store.deleteObject(key, { url: existing?.url });
+
+    await mutateBlobIndex((current) => ({
+      ...current,
+      timetables: current.timetables.filter((entry) => entry.pathname !== key),
+    }));
+
+    const filename = path.posix.basename(key);
+    await removeTimetableIndexEntry(filename);
+    invalidateTimetableCache();
+
+    console.info(`[admin/files] Stundenplan gelöscht und Index bereinigt: ${key}`);
+
     return NextResponse.json({ ok: true });
   } catch (error) {
     return handleStoreError(error);

@@ -57,6 +57,25 @@ export async function upsertTimetableIndexEntry(params: {
   return { metaUpdated: true, scheduleUpdated: Boolean(params.schedule) };
 }
 
+export async function removeTimetableIndexEntry(filename: string): Promise<boolean> {
+  const data = await readTimetableGeneratedData();
+  const nextFiles = data.files.filter((entry) => entry.filename !== filename);
+  const hadFile = nextFiles.length !== data.files.length;
+
+  const schedules = { ...data.schedules };
+  const hadSchedule = Object.prototype.hasOwnProperty.call(schedules, filename);
+  if (hadSchedule) {
+    delete schedules[filename];
+  }
+
+  if (!hadFile && !hadSchedule) {
+    return false;
+  }
+
+  await writeTimetableGeneratedData({ files: nextFiles, schedules });
+  return true;
+}
+
 export async function parseUploadedTimetablePdf(data: Buffer): Promise<ParsedSchedule> {
   const tempPath = path.join(os.tmpdir(), `hgh-upload-${Date.now()}-${Math.random().toString(16).slice(2)}.pdf`);
   await fs.writeFile(tempPath, data);

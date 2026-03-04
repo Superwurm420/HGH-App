@@ -6,4 +6,5 @@ export const STORAGE_KEYS = {
   calendarLegacy: 'calendar/kalender.txt',
   messages: 'messages/messages.json',
   holidays: 'holidays/schulferien-nds.json',
+  blobIndex: 'meta/index.json',
 } as const;

@@ -86,6 +86,34 @@ export function AdminFileManager() {
     }
   }
 
+
+  async function rebuildIndex() {
+    setIsBusy(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/admin/files/rebuild-index', {
+        method: 'POST',
+      });
+
+      const payload = (await response.json()) as { error?: string; counts?: { timetables: number } };
+
+      if (!response.ok) {
+        setError(payload.error ?? 'Index-Neuaufbau fehlgeschlagen.');
+        setStatus('Index-Neuaufbau fehlgeschlagen.');
+        return;
+      }
+
+      setStatus(`Index neu aufgebaut (${payload.counts?.timetables ?? 0} Stundenpläne).`);
+      try { await loadFiles(); } catch { /* Liste wird beim nächsten Laden aktualisiert */ }
+    } catch {
+      setError('Index-Neuaufbau fehlgeschlagen.');
+      setStatus('Index-Neuaufbau fehlgeschlagen.');
+    } finally {
+      setIsBusy(false);
+    }
+  }
+
   async function remove(key: string) {
     setIsBusy(true);
     setError(null);
@@ -155,6 +183,17 @@ export function AdminFileManager() {
           className="rounded bg-emerald-600 px-3 py-2 text-sm text-white disabled:opacity-50"
         >
           Upload / Ersetzen
+        </button>
+      </div>
+
+      <div className="mt-3">
+        <button
+          type="button"
+          disabled={isBusy}
+          onClick={() => rebuildIndex().catch(() => setError('Index-Neuaufbau fehlgeschlagen.'))}
+          className="rounded border border-gray-400 px-3 py-2 text-sm disabled:opacity-50"
+        >
+          Index neu aufbauen
         </button>
       </div>
 
