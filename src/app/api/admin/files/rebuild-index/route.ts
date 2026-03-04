@@ -7,6 +7,7 @@ import {
   updateContentItem,
   SupabaseContentError,
 } from '@/lib/supabase/content-store';
+import { SupabaseConfigurationError } from '@/lib/supabase/client';
 
 export async function POST(): Promise<NextResponse> {
   try {
@@ -69,6 +70,13 @@ export async function POST(): Promise<NextResponse> {
 
     return NextResponse.json({ ok: true, counts });
   } catch (error) {
+    if (error instanceof SupabaseConfigurationError) {
+      return NextResponse.json(
+        { error: `Server-Konfiguration unvollständig: ${error.variableName} fehlt.` },
+        { status: 500 },
+      );
+    }
+
     if (error instanceof SupabaseContentError) {
       return NextResponse.json({ error: `Storage-Fehler: ${error.reason}` }, { status: 503 });
     }

@@ -12,6 +12,7 @@ import {
   SupabaseContentError,
 } from '@/lib/supabase/content-store';
 import type { ContentItemRow } from '@/lib/supabase/db-types';
+import { SupabaseConfigurationError } from '@/lib/supabase/client';
 
 export const runtime = 'nodejs';
 
@@ -35,6 +36,13 @@ function asManagedFile(item: ContentItemRow): ManagedFileEntry {
 }
 
 function handleStoreError(error: unknown): NextResponse {
+  if (error instanceof SupabaseConfigurationError) {
+    return NextResponse.json(
+      { error: `Server-Konfiguration unvollständig: ${error.variableName} fehlt.` },
+      { status: 500 },
+    );
+  }
+
   if (error instanceof SupabaseContentError) {
     return NextResponse.json({ error: `Storage-Fehler: ${error.reason}` }, { status: 503 });
   }

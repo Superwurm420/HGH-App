@@ -2,10 +2,20 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 let serverClient: SupabaseClient | null = null;
 
+export class SupabaseConfigurationError extends Error {
+  variableName: string;
+
+  constructor(variableName: string) {
+    super(`Fehlende oder leere Umgebungsvariable: ${variableName}`);
+    this.name = 'SupabaseConfigurationError';
+    this.variableName = variableName;
+  }
+}
+
 function getRequiredEnv(name: string): string {
   const value = process.env[name]?.trim();
   if (!value) {
-    throw new Error(`Fehlende Umgebungsvariable: ${name}`);
+    throw new SupabaseConfigurationError(name);
   }
   return value;
 }
