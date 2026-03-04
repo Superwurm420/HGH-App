@@ -2,7 +2,6 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { compareTimetable, parseTimetableFilename } from './selectLatest';
 import { ParsedSchedule, TimetableMeta } from './types';
-import { parseTimetablePdfBuffer } from './upload-parser';
 
 const DATA_PATH = path.join(process.cwd(), 'src/generated/timetable-data.json');
 
@@ -73,5 +72,6 @@ export async function removeTimetableIndexEntry(filename: string): Promise<boole
 }
 
 export async function parseUploadedTimetablePdf(data: Buffer): Promise<ParsedSchedule> {
+  const { parseTimetablePdfBuffer } = await import('./upload-parser');
   return parseTimetablePdfBuffer(new Uint8Array(data));
 }
