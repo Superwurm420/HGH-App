@@ -1,14 +1,10 @@
 import fs from 'node:fs/promises';
-import os from 'node:os';
 import path from 'node:path';
-import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
 import { compareTimetable, parseTimetableFilename } from './selectLatest';
 import { ParsedSchedule, TimetableMeta } from './types';
+import { parseTimetablePdfBuffer } from './upload-parser';
 
-const execFileAsync = promisify(execFile);
 const DATA_PATH = path.join(process.cwd(), 'src/generated/timetable-data.json');
-const PARSE_SCRIPT_PATH = path.join(process.cwd(), 'scripts/parse-timetable-pdf.mjs');
 
 type TimetableGeneratedData = {
   files: TimetableMeta[];
@@ -77,15 +73,5 @@ export async function removeTimetableIndexEntry(filename: string): Promise<boole
 }
 
 export async function parseUploadedTimetablePdf(data: Buffer): Promise<ParsedSchedule> {
-  const tempPath = path.join(os.tmpdir(), `hgh-upload-${Date.now()}-${Math.random().toString(16).slice(2)}.pdf`);
-  await fs.writeFile(tempPath, data);
-
-  try {
-    const { stdout } = await execFileAsync(process.execPath, [PARSE_SCRIPT_PATH, tempPath], {
-      maxBuffer: 10 * 1024 * 1024,
-    });
-    return JSON.parse(stdout.trim()) as ParsedSchedule;
-  } finally {
-    await fs.rm(tempPath, { force: true });
-  }
+  return parseTimetablePdfBuffer(new Uint8Array(data));
 }
