@@ -3,7 +3,12 @@ import { listAnnouncementRecords, recordToRawTxt } from './repository';
 import { SchoolClass, SpecialEvent } from '@/lib/timetable/types';
 
 async function loadAnnouncementsFromStore(): Promise<Announcement[]> {
-  return (await listAnnouncementRecords()).map((record) => parseAnnouncement(recordToRawTxt(record), `${record.id}.txt`));
+  try {
+    return (await listAnnouncementRecords()).map((record) => parseAnnouncement(recordToRawTxt(record), `${record.id}.txt`));
+  } catch (error) {
+    console.warn('[announcements] Konnte Ankündigungen nicht aus dem Store laden. Nutze sicheren Default ([]).', error);
+    return [];
+  }
 }
 
 export async function getAnnouncements(): Promise<Announcement[]> {
