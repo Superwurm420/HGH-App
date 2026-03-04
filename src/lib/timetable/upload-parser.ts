@@ -51,7 +51,10 @@ export async function parseTimetablePdfBuffer(data: Uint8Array): Promise<ParsedS
   const content = await page.getTextContent();
 
   const items: TextItem[] = content.items
-    .map((item) => ({ str: (item.str || '').trim(), x: item.transform?.[4] ?? 0, y: item.transform?.[5] ?? 0 }))
+    .flatMap((item) => {
+      if (!('str' in item)) return [];
+      return [{ str: (item.str || '').trim(), x: item.transform?.[4] ?? 0, y: item.transform?.[5] ?? 0 }];
+    })
     .filter((item) => item.str)
     .sort((a, b) => b.y - a.y || a.x - b.x);
 
