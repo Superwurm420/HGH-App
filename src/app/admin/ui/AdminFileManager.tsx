@@ -67,7 +67,7 @@ export function AdminFileManager() {
         body: formData,
       });
 
-      const payload = (await response.json()) as { error?: string };
+      const payload = (await response.json()) as { error?: string; parsed?: boolean; warning?: string | null };
 
       if (!response.ok) {
         setError(payload.error ?? 'Upload fehlgeschlagen.');
@@ -76,7 +76,11 @@ export function AdminFileManager() {
       }
 
       setSelectedFile(undefined);
-      setStatus('Stundenplan erfolgreich gespeichert.');
+      if (payload.parsed === false) {
+        setStatus(payload.warning ?? 'Datei gespeichert, aber kein Stundenplan erkannt.');
+      } else {
+        setStatus('Stundenplan erfolgreich gespeichert und verarbeitet.');
+      }
       try { await loadFiles(); } catch { /* Liste wird beim nächsten Laden aktualisiert */ }
     } catch {
       setError('Upload fehlgeschlagen.');

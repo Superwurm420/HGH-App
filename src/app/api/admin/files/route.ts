@@ -108,7 +108,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       invalidateTimetableCache();
     }
 
-    return NextResponse.json({ ok: true, key, indexed, parsed });
+    const warning = parsed ? null : 'Datei gespeichert, aber der Stundenplan konnte nicht gelesen werden. Bitte PDF-Format prüfen.';
+    return NextResponse.json({ ok: true, key, indexed, parsed, warning });
   } catch (error) {
     return handleStoreError(error);
   }
