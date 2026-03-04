@@ -142,9 +142,11 @@ The `scripts/prebuild.mjs` script runs before every `dev` and `build`. It:
 
 ### Data Flow
 
+- **Storage**: Supabase Storage (Bucket: `content`, public) für Dateien. Supabase Postgres (`content_items`) als Index.
 - **Build time**: PDFs + content files → `scripts/prebuild.mjs` → `src/generated/*.json`
-- **Runtime (timetable)**: `src/lib/timetable/server.ts` reads from generated JSON, caches in memory, auto-detects new PDFs and triggers rebuild
-- **Runtime (announcements)**: `src/lib/announcements/repository.ts` manages a JSON store at `data/announcements-store.json` with an in-memory fallback for read-only filesystems
+- **Runtime (timetable)**: `src/lib/timetable/server.ts` reads from generated JSON, hydrates metadata from `content_items` DB
+- **Runtime (announcements)**: `src/lib/announcements/repository.ts` manages a JSON store in Supabase Storage with local fallback
+- **Runtime (UI reads)**: Nur DB-Reads aus `content_items` + direkte Storage-URL-Abrufe. Kein `list()`/`head()` im normalen Betrieb.
 - **Client-side**: Pages are server-rendered (RSC). Class selection is stored in `localStorage` and synced via `?klasse=` search param
 
 ### Admin System
@@ -237,9 +239,12 @@ Key fields:
 ADMIN_USER=redaktion              # Admin username
 ADMIN_PASSWORD=...                # Admin password (required, with ADMIN_USER, for /admin access)
 SESSION_SECRET=...                # HMAC secret for session cookies (falls back to ADMIN_PASSWORD)
+SUPABASE_URL=...                  # Supabase project URL
+SUPABASE_ANON_KEY=...             # Supabase anon key (optional)
+SUPABASE_SERVICE_ROLE_KEY=...     # Supabase service role key (server-only!)
 ```
 
-Copy `.env.example` to `.env` and set secure values.
+Copy `.env.example` to `.env` and set secure values. See `docs/ADMIN.md` for Supabase setup.
 
 ## Testing
 

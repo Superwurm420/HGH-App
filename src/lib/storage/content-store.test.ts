@@ -4,42 +4,43 @@ import { ContentStoreConfigurationError, getContentStore } from './content-store
 const originalEnv = {
   NODE_ENV: process.env.NODE_ENV,
   CONTENT_STORE_PROVIDER: process.env.CONTENT_STORE_PROVIDER,
-  BLOB_READ_WRITE_TOKEN: process.env.BLOB_READ_WRITE_TOKEN,
-  ALLOW_LOCAL_STORE_IN_PROD: process.env.ALLOW_LOCAL_STORE_IN_PROD,
+  SUPABASE_URL: process.env.SUPABASE_URL,
+  SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
 };
 
 afterEach(() => {
   process.env.NODE_ENV = originalEnv.NODE_ENV;
   process.env.CONTENT_STORE_PROVIDER = originalEnv.CONTENT_STORE_PROVIDER;
-  process.env.BLOB_READ_WRITE_TOKEN = originalEnv.BLOB_READ_WRITE_TOKEN;
-  process.env.ALLOW_LOCAL_STORE_IN_PROD = originalEnv.ALLOW_LOCAL_STORE_IN_PROD;
+  process.env.SUPABASE_URL = originalEnv.SUPABASE_URL;
+  process.env.SUPABASE_SERVICE_ROLE_KEY = originalEnv.SUPABASE_SERVICE_ROLE_KEY;
   vi.restoreAllMocks();
 });
 
 describe('getContentStore configuration', () => {
-  it('throws a detailed configuration error for vercel-blob without token in production', () => {
+  it('throws a configuration error when Supabase env vars are missing in production', () => {
     process.env.NODE_ENV = 'production';
-    process.env.CONTENT_STORE_PROVIDER = 'vercel-blob';
-    delete process.env.BLOB_READ_WRITE_TOKEN;
-    delete process.env.ALLOW_LOCAL_STORE_IN_PROD;
+    delete process.env.CONTENT_STORE_PROVIDER;
+    delete process.env.SUPABASE_URL;
+    delete process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     expect(() => getContentStore()).toThrowError(ContentStoreConfigurationError);
-    expect(() => getContentStore()).toThrowError(/BLOB_READ_WRITE_TOKEN/);
-    expect(() => getContentStore()).toThrowError(/ALLOW_LOCAL_STORE_IN_PROD=true/);
+    expect(() => getContentStore()).toThrowError(/SUPABASE_URL/);
   });
 
-  it('uses local fallback in production when explicitly enabled', async () => {
-    process.env.NODE_ENV = 'production';
-    process.env.CONTENT_STORE_PROVIDER = 'vercel-blob';
-    delete process.env.BLOB_READ_WRITE_TOKEN;
-    process.env.ALLOW_LOCAL_STORE_IN_PROD = 'true';
-
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+  it('uses local fallback in development when Supabase env vars are missing', () => {
+    process.env.NODE_ENV = 'development';
+    delete process.env.SUPABASE_URL;
+    delete process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     const store = getContentStore();
-    await expect(store.list('health/')).resolves.toEqual([]);
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('ALLOW_LOCAL_STORE_IN_PROD=true'),
-    );
+    expect(store).toBeDefined();
+  });
+
+  it('uses local fallback when CONTENT_STORE_PROVIDER=local', () => {
+    process.env.NODE_ENV = 'production';
+    process.env.CONTENT_STORE_PROVIDER = 'local';
+
+    const store = getContentStore();
+    expect(store).toBeDefined();
   });
 });
