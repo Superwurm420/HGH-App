@@ -3,6 +3,8 @@ import { compareTimetable, parseTimetableFilename } from './selectLatest';
 import { ParsedSchedule, SchoolClass, TimetableMeta } from './types';
 import crypto from 'node:crypto';
 import { listContentItems } from '@/lib/supabase/content-store';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
 type TimetableGeneratedData = {
   files: TimetableMeta[];
@@ -72,9 +74,9 @@ function parseMetaFromItem(item: { key: string; created_at: string; meta: Record
       yearStart: typeof baseMeta.yearStart === 'number' ? baseMeta.yearStart : undefined,
       yearEndShort: typeof baseMeta.yearEndShort === 'number' ? baseMeta.yearEndShort : undefined,
       href: typeof baseMeta.href === 'string' ? baseMeta.href : `/content/timetables/${filename}`,
-      source: baseMeta.source === 'name-pattern' || baseMeta.source === 'name-fallback' || baseMeta.source === 'file-mtime'
+      source: (baseMeta.source === 'name-pattern' || baseMeta.source === 'name-fallback' || baseMeta.source === 'file-mtime'
         ? baseMeta.source
-        : undefined,
+        : undefined) as TimetableMeta['source'],
       lastModifiedMs: typeof baseMeta.lastModifiedMs === 'number' ? baseMeta.lastModifiedMs : undefined,
     }
     : null;
@@ -87,7 +89,13 @@ function parseMetaFromItem(item: { key: string; created_at: string; meta: Record
     typeof parsedFromMeta.yearEndShort === 'number'
   ) {
     return {
-      ...parsedFromMeta,
+      filename: parsedFromMeta.filename,
+      kw: parsedFromMeta.kw,
+      halfYear: parsedFromMeta.halfYear,
+      yearStart: parsedFromMeta.yearStart,
+      yearEndShort: parsedFromMeta.yearEndShort,
+      href: parsedFromMeta.href,
+      source: parsedFromMeta.source,
       lastModifiedMs: parsedFromMeta.lastModifiedMs ?? new Date(item.created_at).getTime(),
     };
   }
@@ -124,13 +132,38 @@ async function readTimetableDataFromContentItems(): Promise<TimetableGeneratedDa
   return { files, schedules };
 }
 
+async function readTimetableDataFromGeneratedJson(): Promise<TimetableGeneratedData> {
+  try {
+    const jsonPath = path.join(process.cwd(), 'src/generated/timetable-data.json');
+    const raw = await fs.readFile(jsonPath, 'utf8');
+    return JSON.parse(raw) as TimetableGeneratedData;
+  } catch {
+    return { files: [], schedules: {} };
+  }
+}
+
 async function loadTimetableContext(): Promise<TimetableContext> {
   const now = Date.now();
   if (cachedContext && now - lastCheckedAt < CHECK_INTERVAL_MS) {
     return cachedContext;
   }
 
-  const data = await readTimetableDataFromContentItems();
+  let data: TimetableGeneratedData;
+  try {
+    data = await readTimetableDataFromContentItems();
+  } catch (error) {
+    console.warn('[timetable] Supabase nicht erreichbar, nutze prebuild-JSON als Fallback.', error);
+    data = await readTimetableDataFromGeneratedJson();
+  }
+
+  // Wenn Supabase keine Daten hat, prebuild-JSON als Fallback nutzen
+  if (data.files.length === 0 && Object.keys(data.schedules).length === 0) {
+    const fallback = await readTimetableDataFromGeneratedJson();
+    if (fallback.files.length > 0) {
+      data = fallback;
+    }
+  }
+
   const latest = await hydrateLatestMeta(data);
   cachedContext = { data, latest };
   lastCheckedAt = now;
@@ -143,7 +176,12 @@ export function invalidateTimetableCache(): void {
 }
 
 export async function getLatestTimetable(): Promise<TimetableMeta | null> {
-  return (await loadTimetableContext()).latest;
+  try {
+    return (await loadTimetableContext()).latest;
+  } catch (error) {
+    console.warn('[timetable] Konnte neuesten Stundenplan nicht laden.', error);
+    return null;
+  }
 }
 
 export function getTimetableVersion(latest: TimetableMeta | null): string {

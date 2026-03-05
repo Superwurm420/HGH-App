@@ -108,7 +108,7 @@ class LocalContentStore implements ContentStore {
     }
   }
 
-  async putObject(key: string, data: Buffer | string): Promise<ContentStorePutResult> {
+  async putObject(key: string, data: Buffer | string, contentType: string): Promise<ContentStorePutResult> {
     const filePath = this.localPathForKey(key);
     const payload = toBuffer(data);
     try {
@@ -117,6 +117,7 @@ class LocalContentStore implements ContentStore {
       return {
         key: normalizeKey(key),
         size: payload.byteLength,
+        contentType,
       };
     } catch (error) {
       throw new ContentStoreUnavailableError(`Lokaler Store konnte ${key} nicht schreiben.`, error instanceof Error ? { cause: error } : undefined);
