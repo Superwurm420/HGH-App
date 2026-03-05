@@ -5,6 +5,11 @@ import { invalidateTimetableCache } from '@/lib/timetable/server';
 import { parseTimetableFilename } from '@/lib/timetable/selectLatest';
 import { parseTimetablePdfBuffer } from '@/lib/timetable/upload-parser';
 import {
+  listLocalTimetables,
+  saveLocalTimetable,
+  deleteLocalTimetable,
+} from '@/lib/timetable/local-store';
+import {
   uploadContent,
   deleteContent,
   listContentItems,
@@ -24,6 +29,10 @@ type ManagedFileEntry = {
   size: number;
   updatedAt: string | null;
 };
+
+function isSupabaseConfigured(): boolean {
+  return Boolean(process.env.SUPABASE_URL?.trim() && process.env.SUPABASE_SERVICE_ROLE_KEY?.trim());
+}
 
 function asManagedFile(item: ContentItemRow): ManagedFileEntry {
   return {
@@ -60,6 +69,20 @@ export async function OPTIONS(): Promise<NextResponse> {
 }
 
 export async function GET(): Promise<NextResponse> {
+  // Lokaler Fallback wenn kein Supabase konfiguriert
+  if (!isSupabaseConfigured()) {
+    try {
+      const localFiles = await listLocalTimetables();
+      const filesByCategory = {
+        stundenplan: localFiles.map((f) => ({ ...f, category: 'stundenplan' as const })),
+      };
+      return NextResponse.json({ categories: ['stundenplan'], filesByCategory });
+    } catch (error) {
+      console.error('[admin/files] Lokaler Store konnte nicht gelesen werden.', error);
+      return NextResponse.json({ error: 'Dateien konnten nicht geladen werden.' }, { status: 500 });
+    }
+  }
+
   try {
     const items = await listContentItems('timetable');
 
@@ -104,14 +127,45 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Stundenplan muss eine PDF-Datei sein.' }, { status: 400 });
   }
 
-  try {
-    const arrayBuffer = await file.arrayBuffer();
-    const data = Buffer.from(arrayBuffer);
-    const safeFileName = path.posix.basename(fileName).replace(/\s+/g, '_');
-    const key = `${STORAGE_KEYS.timetablesPrefix}${safeFileName}`;
-    const uploadedAt = Date.now();
-    const timetableMeta = parseTimetableFilename(safeFileName, { lastModifiedMs: uploadedAt });
+  const arrayBuffer = await file.arrayBuffer();
+  const data = Buffer.from(arrayBuffer);
+  const safeFileName = path.posix.basename(fileName).replace(/\s+/g, '_');
+  const key = `${STORAGE_KEYS.timetablesPrefix}${safeFileName}`;
+  const uploadedAt = Date.now();
+  const timetableMeta = parseTimetableFilename(safeFileName, { lastModifiedMs: uploadedAt });
 
+  // PDF parsen (für beide Speicherpfade benötigt)
+  let schedule = null;
+  let parsed = false;
+  try {
+    schedule = await parseTimetablePdfBuffer(new Uint8Array(data));
+    parsed = true;
+  } catch (parseError) {
+    console.warn(`[admin/files] Parsing fehlgeschlagen für ${safeFileName}.`, parseError);
+  }
+
+  // Lokaler Fallback wenn kein Supabase konfiguriert
+  if (!isSupabaseConfigured()) {
+    // parseTimetableFilename gibt null zurück, wenn kein lastModifiedMs und kein Muster erkannt.
+    // Da wir lastModifiedMs immer übergeben, ist timetableMeta hier nie null.
+    if (!timetableMeta) {
+      return NextResponse.json({ error: 'Dateiname konnte nicht verarbeitet werden.' }, { status: 400 });
+    }
+    try {
+      await saveLocalTimetable(safeFileName, data, timetableMeta, schedule);
+      invalidateTimetableCache();
+
+      console.info(`[admin/files] Stundenplan lokal gespeichert: ${safeFileName}`);
+
+      const warning = parsed ? null : 'Datei gespeichert, aber der Stundenplan konnte nicht gelesen werden. Bitte PDF-Format prüfen.';
+      return NextResponse.json({ ok: true, key, indexed: true, parsed, warning });
+    } catch (error) {
+      console.error('[admin/files] Lokales Speichern fehlgeschlagen.', error);
+      return NextResponse.json({ error: 'Datei konnte nicht lokal gespeichert werden.' }, { status: 500 });
+    }
+  }
+
+  try {
     await uploadContent({
       key,
       data,
@@ -125,32 +179,32 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     console.info(`[admin/files] Stundenplan hochgeladen: ${key}`);
 
-    let parsed = false;
     const indexed = true;
 
     try {
-      const schedule = await parseTimetablePdfBuffer(new Uint8Array(data));
-      await updateContentItem(key, {
-        timetable_json: schedule as unknown as Record<string, unknown>,
-        timetable_version: String(uploadedAt),
-        meta: {
-          originalName: fileName,
-          timetable: timetableMeta,
-          parsing: { ok: true },
-        },
-      });
-      parsed = true;
-    } catch (error) {
-      console.warn(`[admin/files] Parsing fehlgeschlagen für ${key}. Datei bleibt gespeichert.`, error);
-      await updateContentItem(key, {
-        timetable_json: null,
-        timetable_version: null,
-        meta: {
-          originalName: fileName,
-          timetable: timetableMeta,
-          parsing: { ok: false },
-        },
-      });
+      if (schedule) {
+        await updateContentItem(key, {
+          timetable_json: schedule as unknown as Record<string, unknown>,
+          timetable_version: String(uploadedAt),
+          meta: {
+            originalName: fileName,
+            timetable: timetableMeta,
+            parsing: { ok: true },
+          },
+        });
+      } else {
+        await updateContentItem(key, {
+          timetable_json: null,
+          timetable_version: null,
+          meta: {
+            originalName: fileName,
+            timetable: timetableMeta,
+            parsing: { ok: false },
+          },
+        });
+      }
+    } catch (updateError) {
+      console.warn(`[admin/files] Metadaten-Update fehlgeschlagen für ${key}.`, updateError);
     }
 
     invalidateTimetableCache();
@@ -172,6 +226,23 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
   const key = payload.key?.trim();
   if (!key || !key.startsWith(STORAGE_KEYS.timetablesPrefix)) {
     return NextResponse.json({ error: 'Ungültiger Stundenplan-Key.' }, { status: 400 });
+  }
+
+  const filename = key.slice(STORAGE_KEYS.timetablesPrefix.length);
+
+  // Lokaler Fallback wenn kein Supabase konfiguriert
+  if (!isSupabaseConfigured()) {
+    try {
+      await deleteLocalTimetable(filename);
+      invalidateTimetableCache();
+
+      console.info(`[admin/files] Stundenplan lokal gelöscht: ${filename}`);
+
+      return NextResponse.json({ ok: true });
+    } catch (error) {
+      console.error('[admin/files] Lokales Löschen fehlgeschlagen.', error);
+      return NextResponse.json({ error: 'Datei konnte nicht gelöscht werden.' }, { status: 500 });
+    }
   }
 
   try {

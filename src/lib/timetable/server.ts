@@ -1,10 +1,15 @@
 import { weekdayForToday } from './pdfParser';
 import { compareTimetable, parseTimetableFilename } from './selectLatest';
 import { ParsedSchedule, SchoolClass, TimetableMeta } from './types';
+import { getLocalTimetableData } from './local-store';
 import crypto from 'node:crypto';
 import { listContentItems } from '@/lib/supabase/content-store';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+
+function isSupabaseConfigured(): boolean {
+  return Boolean(process.env.SUPABASE_URL?.trim() && process.env.SUPABASE_SERVICE_ROLE_KEY?.trim());
+}
 
 type TimetableGeneratedData = {
   files: TimetableMeta[];
@@ -149,14 +154,20 @@ async function loadTimetableContext(): Promise<TimetableContext> {
   }
 
   let data: TimetableGeneratedData;
-  try {
-    data = await readTimetableDataFromContentItems();
-  } catch (error) {
-    console.warn('[timetable] Supabase nicht erreichbar, nutze prebuild-JSON als Fallback.', error);
-    data = await readTimetableDataFromGeneratedJson();
+
+  if (isSupabaseConfigured()) {
+    try {
+      data = await readTimetableDataFromContentItems();
+    } catch (error) {
+      console.warn('[timetable] Supabase nicht erreichbar, nutze lokalen Store als Fallback.', error);
+      data = await readLocalOrGeneratedData();
+    }
+  } else {
+    // Kein Supabase konfiguriert → lokalen Store verwenden
+    data = await readLocalOrGeneratedData();
   }
 
-  // Wenn Supabase keine Daten hat, prebuild-JSON als Fallback nutzen
+  // Wenn noch keine Daten, prebuild-JSON als letzten Fallback nutzen
   if (data.files.length === 0 && Object.keys(data.schedules).length === 0) {
     const fallback = await readTimetableDataFromGeneratedJson();
     if (fallback.files.length > 0) {
@@ -168,6 +179,18 @@ async function loadTimetableContext(): Promise<TimetableContext> {
   cachedContext = { data, latest };
   lastCheckedAt = now;
   return cachedContext;
+}
+
+async function readLocalOrGeneratedData(): Promise<TimetableGeneratedData> {
+  try {
+    const localData = await getLocalTimetableData();
+    if (localData.files.length > 0) {
+      return localData;
+    }
+  } catch {
+    // Lokaler Store nicht lesbar
+  }
+  return readTimetableDataFromGeneratedJson();
 }
 
 export function invalidateTimetableCache(): void {
