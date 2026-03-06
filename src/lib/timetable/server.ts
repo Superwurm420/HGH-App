@@ -2,7 +2,7 @@ import { weekdayForToday } from './pdfParser';
 import { compareTimetable, parseTimetableFilename } from './selectLatest';
 import { ParsedSchedule, SchoolClass, TimetableMeta } from './types';
 import crypto from 'node:crypto';
-import { listContentItems } from '@/lib/supabase/content-store';
+import { getContentStore } from '@/lib/storage/content-store';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
@@ -27,7 +27,8 @@ async function hydrateLatestMeta(data: TimetableGeneratedData): Promise<Timetabl
   if (candidates.length === 0) return null;
 
   try {
-    const items = await listContentItems('timetable');
+    const store = getContentStore();
+    const items = await store.listItems('timetable');
     const byName = new Map(
       items
         .map((item) => {
@@ -104,7 +105,8 @@ function parseMetaFromItem(item: { key: string; created_at: string; meta: Record
 }
 
 async function readTimetableDataFromContentItems(): Promise<TimetableGeneratedData> {
-  const items = await listContentItems('timetable');
+  const store = getContentStore();
+  const items = await store.listItems('timetable');
 
   const files: TimetableMeta[] = [];
   const schedules: Record<string, ParsedSchedule> = {};

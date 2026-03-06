@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { STORAGE_KEYS } from '@/lib/storage/object-keys';
-import { getContentItem } from '@/lib/supabase/content-store';
-import { downloadFromStorage } from '@/lib/supabase/content-store';
+import { getContentStore } from '@/lib/storage/content-store';
 
 type Params = {
   filename: string;
@@ -25,12 +24,13 @@ export async function GET(_request: NextRequest, context: { params: Promise<Para
   const key = `${STORAGE_KEYS.timetablesPrefix}${filename}`;
 
   try {
-    const item = await getContentItem(key);
-    if (item?.url) {
+    const store = getContentStore();
+    const item = await store.getItem(key);
+    if (item?.url && !item.url.startsWith('file://')) {
       return NextResponse.redirect(item.url, { status: 302 });
     }
 
-    const result = await downloadFromStorage(key);
+    const result = await store.getObject(key);
     if (!result) {
       return NextResponse.json({ error: 'Datei nicht gefunden.' }, { status: 404 });
     }

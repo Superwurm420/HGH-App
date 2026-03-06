@@ -1,17 +1,16 @@
 import { NextResponse } from 'next/server';
+import {
+  getContentStore,
+  ContentStoreConfigurationError,
+  ContentStoreError,
+} from '@/lib/storage/content-store';
 import { invalidateTimetableCache } from '@/lib/timetable/server';
 import { parseTimetablePdfBuffer } from '@/lib/timetable/upload-parser';
-import {
-  listContentItems,
-  downloadFromStorage,
-  updateContentItem,
-  SupabaseContentError,
-} from '@/lib/supabase/content-store';
-import { SupabaseConfigurationError } from '@/lib/supabase/client';
 
 export async function POST(): Promise<NextResponse> {
   try {
-    const items = await listContentItems('timetable');
+    const store = getContentStore();
+    const items = await store.listItems('timetable');
     const pdfItems = items.filter((item) => item.key.toLowerCase().endsWith('.pdf'));
 
     let processed = 0;
@@ -22,10 +21,10 @@ export async function POST(): Promise<NextResponse> {
       processed += 1;
 
       try {
-        const file = await downloadFromStorage(item.key);
+        const file = await store.getObject(item.key);
         if (!file) {
           failed += 1;
-          await updateContentItem(item.key, {
+          await store.updateItem(item.key, {
             timetable_json: null,
             timetable_version: null,
             meta: {
@@ -37,7 +36,7 @@ export async function POST(): Promise<NextResponse> {
         }
 
         const schedule = await parseTimetablePdfBuffer(new Uint8Array(file.data));
-        await updateContentItem(item.key, {
+        await store.updateItem(item.key, {
           timetable_json: schedule as unknown as Record<string, unknown>,
           timetable_version: String(Date.now()),
           meta: {
@@ -49,7 +48,7 @@ export async function POST(): Promise<NextResponse> {
       } catch (error) {
         failed += 1;
         console.warn(`[admin/files] Rebuild Parsing fehlgeschlagen für ${item.key}.`, error);
-        await updateContentItem(item.key, {
+        await store.updateItem(item.key, {
           timetable_json: null,
           timetable_version: null,
           meta: {
@@ -70,14 +69,14 @@ export async function POST(): Promise<NextResponse> {
 
     return NextResponse.json({ ok: true, counts });
   } catch (error) {
-    if (error instanceof SupabaseConfigurationError) {
+    if (error instanceof ContentStoreConfigurationError) {
       return NextResponse.json(
-        { error: `Server-Konfiguration unvollständig: ${error.variableName} fehlt.` },
+        { error: `Server-Konfiguration unvollständig: ${error.reason}` },
         { status: 500 },
       );
     }
 
-    if (error instanceof SupabaseContentError) {
+    if (error instanceof ContentStoreError) {
       return NextResponse.json({ error: `Storage-Fehler: ${error.reason}` }, { status: 503 });
     }
     return NextResponse.json({ error: 'Index konnte nicht geladen werden.' }, { status: 500 });

@@ -1,18 +1,16 @@
 import path from 'node:path';
 import { NextRequest, NextResponse } from 'next/server';
 import { STORAGE_KEYS } from '@/lib/storage/object-keys';
+import {
+  getContentStore,
+  ContentStoreConfigurationError,
+  ContentStoreUnavailableError,
+  ContentStoreError,
+  type ContentStoreItemRow,
+} from '@/lib/storage/content-store';
 import { invalidateTimetableCache } from '@/lib/timetable/server';
 import { parseTimetableFilename } from '@/lib/timetable/selectLatest';
 import { parseTimetablePdfBuffer } from '@/lib/timetable/upload-parser';
-import {
-  uploadContent,
-  deleteContent,
-  listContentItems,
-  updateContentItem,
-  SupabaseContentError,
-} from '@/lib/supabase/content-store';
-import type { ContentItemRow } from '@/lib/supabase/db-types';
-import { SupabaseConfigurationError } from '@/lib/supabase/client';
 
 export const runtime = 'nodejs';
 
@@ -25,7 +23,7 @@ type ManagedFileEntry = {
   updatedAt: string | null;
 };
 
-function asManagedFile(item: ContentItemRow): ManagedFileEntry {
+function asManagedFile(item: ContentStoreItemRow): ManagedFileEntry {
   return {
     key: item.key,
     name: path.posix.basename(item.key),
@@ -36,14 +34,14 @@ function asManagedFile(item: ContentItemRow): ManagedFileEntry {
 }
 
 function handleStoreError(error: unknown): NextResponse {
-  if (error instanceof SupabaseConfigurationError) {
+  if (error instanceof ContentStoreConfigurationError) {
     return NextResponse.json(
-      { error: `Server-Konfiguration unvollständig: ${error.variableName} fehlt.` },
+      { error: `Server-Konfiguration unvollständig: ${error.reason}` },
       { status: 500 },
     );
   }
 
-  if (error instanceof SupabaseContentError) {
+  if (error instanceof ContentStoreUnavailableError || error instanceof ContentStoreError) {
     return NextResponse.json({ error: `Storage-Fehler: ${error.reason}` }, { status: 503 });
   }
 
@@ -61,7 +59,8 @@ export async function OPTIONS(): Promise<NextResponse> {
 
 export async function GET(): Promise<NextResponse> {
   try {
-    const items = await listContentItems('timetable');
+    const store = getContentStore();
+    const items = await store.listItems('timetable');
 
     const filesByCategory = {
       stundenplan: items
@@ -105,6 +104,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
+    const store = getContentStore();
     const arrayBuffer = await file.arrayBuffer();
     const data = Buffer.from(arrayBuffer);
     const safeFileName = path.posix.basename(fileName).replace(/\s+/g, '_');
@@ -112,10 +112,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const uploadedAt = Date.now();
     const timetableMeta = parseTimetableFilename(safeFileName, { lastModifiedMs: uploadedAt });
 
-    await uploadContent({
-      key,
-      data,
-      contentType: 'application/pdf',
+    await store.putObject(key, data, 'application/pdf', {
       category: 'timetable',
       meta: {
         originalName: fileName,
@@ -130,7 +127,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     try {
       const schedule = await parseTimetablePdfBuffer(new Uint8Array(data));
-      await updateContentItem(key, {
+      await store.updateItem(key, {
         timetable_json: schedule as unknown as Record<string, unknown>,
         timetable_version: String(uploadedAt),
         meta: {
@@ -142,7 +139,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       parsed = true;
     } catch (error) {
       console.warn(`[admin/files] Parsing fehlgeschlagen für ${key}. Datei bleibt gespeichert.`, error);
-      await updateContentItem(key, {
+      await store.updateItem(key, {
         timetable_json: null,
         timetable_version: null,
         meta: {
@@ -175,7 +172,8 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    await deleteContent(key);
+    const store = getContentStore();
+    await store.deleteObject(key);
     invalidateTimetableCache();
 
     console.info(`[admin/files] Stundenplan gelöscht: ${key}`);
