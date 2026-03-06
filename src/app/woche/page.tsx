@@ -1,12 +1,19 @@
-import { getWeeklyPlanForClass } from '@/lib/timetable/server';
 import { ClassFromStorage } from '@/components/schedule/ClassFromStorage';
 import { ClassSelector } from '@/components/schedule/ClassSelector';
 import { WeekSchedule } from '@/components/schedule/WeekSchedule';
+import { fetchTimetable } from '@/lib/api/client';
+import { Weekday, WeekPlan } from '@/lib/timetable/types';
 
 export default async function WochePage({ searchParams }: { searchParams: { klasse?: string } }) {
-  const plan = await getWeeklyPlanForClass(searchParams.klasse);
+  let plan: Awaited<ReturnType<typeof fetchTimetable>> | null = null;
 
-  if (!plan) {
+  try {
+    plan = await fetchTimetable(searchParams.klasse);
+  } catch {
+    /* ignore */
+  }
+
+  if (!plan || !plan.upload || plan.classes.length === 0) {
     return (
       <div className="card surface">
         <h2 className="text-lg font-bold">Wochenübersicht</h2>
@@ -15,24 +22,30 @@ export default async function WochePage({ searchParams }: { searchParams: { klas
     );
   }
 
+  const selectedClass = searchParams.klasse && plan.entries[searchParams.klasse]
+    ? searchParams.klasse
+    : plan.classes[0];
+
+  const week = plan.entries[selectedClass] as WeekPlan;
+  const todayKey = plan.todayKey as Weekday;
+
   return (
     <>
-      <ClassFromStorage classes={plan.availableClasses} />
+      <ClassFromStorage classes={plan.classes} />
       <div className="card surface">
         <div className="section-header">
           <h2 className="section-title">Wochenübersicht</h2>
           <div className="section-actions">
-            <ClassSelector classes={plan.availableClasses} />
-            <a className="btn secondary text-sm" href={plan.latest.href} target="_blank" rel="noreferrer">
-              PDF
-            </a>
+            <ClassSelector classes={plan.classes} />
           </div>
         </div>
 
-        <WeekSchedule schoolClass={plan.schoolClass} week={plan.week} todayKey={plan.todayKey} />
+        <WeekSchedule schoolClass={selectedClass} week={week} todayKey={todayKey} />
 
-        {plan.updatedAt && (
-          <p className="meta-note">Aktualisiert am: {plan.updatedAt}</p>
+        {plan.upload?.updated_at && (
+          <p className="meta-note">
+            Aktualisiert: {new Date(plan.upload.updated_at).toLocaleDateString('de-DE')}
+          </p>
         )}
       </div>
     </>

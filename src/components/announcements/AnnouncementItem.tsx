@@ -2,24 +2,34 @@
 
 import { useEffect, useState } from 'react';
 import { ExpiryCountdown } from './ExpiryCountdown';
-import { parseBerlinDate } from '@/lib/announcements/parser';
 import styles from './AnnouncementItem.module.css';
 
 type AnnouncementItemProps = {
-  file: string;
-  title?: string;
-  date?: string;
+  id: string;
+  title: string;
+  date: string;
   expires?: string;
   body: string;
-  warnings: string[];
 };
 
-export function AnnouncementItem({ file, title, date, expires, body, warnings }: AnnouncementItemProps) {
+function parseDateString(dateStr: string): Date | null {
+  // Versuche deutsches Format DD.MM.YYYY HH:mm
+  const deMatch = dateStr.match(/^(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}):(\d{2})$/);
+  if (deMatch) {
+    const [, day, month, year, hour, minute] = deMatch;
+    return new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute));
+  }
+  // Fallback: ISO format
+  const iso = new Date(dateStr);
+  return Number.isNaN(iso.getTime()) ? null : iso;
+}
+
+export function AnnouncementItem({ id, title, date, expires, body }: AnnouncementItemProps) {
   const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
     if (!expires) return;
-    const target = parseBerlinDate(expires);
+    const target = parseDateString(expires);
     if (!target) return;
     const remaining = target.getTime() - Date.now();
     if (remaining <= 0) {
@@ -33,9 +43,9 @@ export function AnnouncementItem({ file, title, date, expires, body, warnings }:
   if (hidden) return null;
 
   return (
-    <article key={file} className={styles.card}>
+    <article key={id} className={styles.card}>
       <div className="flex items-start justify-between gap-2 mb-1">
-        <h3 className="text-sm font-bold">{title ?? 'Ohne Titel'}</h3>
+        <h3 className="text-sm font-bold">{title || 'Ohne Titel'}</h3>
         {date && <span className="text-xs text-muted whitespace-nowrap">{date}</span>}
       </div>
 
@@ -45,12 +55,6 @@ export function AnnouncementItem({ file, title, date, expires, body, warnings }:
         <div className="flex items-center gap-2 mt-2">
           <span className="text-xs text-muted">Gültig bis {expires}</span>
           <ExpiryCountdown expires={expires} />
-        </div>
-      )}
-
-      {warnings.length > 0 && (
-        <div className={`mt-2 text-xs ${styles.card} ${styles.warningBox}`}>
-          {warnings.join(' ')}
         </div>
       )}
     </article>

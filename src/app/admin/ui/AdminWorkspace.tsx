@@ -2,10 +2,15 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { AdminAnnouncementEditor } from './AdminAnnouncementEditor';
-import { AdminCalendarEditor } from './AdminCalendarEditor';
-import { AdminHolidayEditor } from './AdminHolidayEditor';
-import { AdminMessagesEditor } from './AdminMessagesEditor';
-import { AdminFileManager } from './AdminFileManager';
+import { AdminUploadManager } from './AdminUploadManager';
+import { AdminEventEditor } from './AdminEventEditor';
+import {
+  adminLogin,
+  adminLogout,
+  checkAdminSession,
+} from '@/lib/api/client';
+
+type Tab = 'uploads' | 'announcements' | 'events';
 
 export function AdminWorkspace() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -13,47 +18,41 @@ export function AdminWorkspace() {
   const [password, setPassword] = useState('');
   const [isLoginPending, setIsLoginPending] = useState(false);
   const [status, setStatus] = useState('Bitte anmelden.');
+  const [activeTab, setActiveTab] = useState<Tab>('uploads');
 
-  const checkSession = useCallback(async () => {
-    const response = await fetch('/api/admin/session', { cache: 'no-store' });
-    if (!response.ok) return;
-
-    const payload = (await response.json()) as { authenticated: boolean };
-    setIsAuthenticated(payload.authenticated);
-    if (payload.authenticated) {
-      setStatus('Angemeldet.');
+  const doCheckSession = useCallback(async () => {
+    try {
+      const res = await checkAdminSession();
+      setIsAuthenticated(res.authenticated);
+      if (res.authenticated) setStatus('Angemeldet.');
+    } catch {
+      setStatus('Fehler beim Laden der Admin-Sitzung.');
     }
   }, []);
 
   useEffect(() => {
-    checkSession().catch(() => setStatus('Fehler beim Laden der Admin-Sitzung.'));
-  }, [checkSession]);
+    doCheckSession();
+  }, [doCheckSession]);
 
   async function login() {
     setIsLoginPending(true);
-
-    const response = await fetch('/api/admin/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-    });
-
-    const payload = (await response.json()) as { error?: string };
-    if (!response.ok) {
-      setStatus(payload.error ?? 'Anmeldung fehlgeschlagen.');
+    try {
+      await adminLogin(username, password);
+      setUsername('');
+      setPassword('');
+      setIsAuthenticated(true);
+      setStatus('Anmeldung erfolgreich.');
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : 'Anmeldung fehlgeschlagen.');
+    } finally {
       setIsLoginPending(false);
-      return;
     }
-
-    setUsername('');
-    setPassword('');
-    setIsAuthenticated(true);
-    setStatus('Anmeldung erfolgreich.');
-    setIsLoginPending(false);
   }
 
   async function logout() {
-    await fetch('/api/admin/logout', { method: 'POST' });
+    try {
+      await adminLogout();
+    } catch { /* ignore */ }
     setIsAuthenticated(false);
     setStatus('Abgemeldet.');
   }
@@ -62,13 +61,15 @@ export function AdminWorkspace() {
     return (
       <section className="mx-auto max-w-md rounded-lg border border-gray-300 p-6 dark:border-gray-700">
         <h2 className="mb-2 text-lg font-semibold">Admin-Anmeldung</h2>
-        <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">Bitte Benutzername und Passwort eingeben, um den Adminbereich zu öffnen.</p>
+        <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">
+          Bitte Benutzername und Passwort eingeben, um den Adminbereich zu öffnen.
+        </p>
         <label className="block text-sm font-medium">
           Benutzername
           <input
             type="text"
             value={username}
-            onChange={(event) => setUsername(event.target.value)}
+            onChange={(e) => setUsername(e.target.value)}
             className="mt-1 w-full rounded border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-900"
           />
         </label>
@@ -77,19 +78,14 @@ export function AdminWorkspace() {
           <input
             type="password"
             value={password}
-            onChange={(event) => setPassword(event.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
             className="mt-1 w-full rounded border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-900"
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                event.preventDefault();
-                login().catch(() => setStatus('Anmeldung fehlgeschlagen.'));
-              }
-            }}
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); login(); } }}
           />
         </label>
         <button
           type="button"
-          onClick={() => login().catch(() => setStatus('Anmeldung fehlgeschlagen.'))}
+          onClick={login}
           disabled={isLoginPending}
           className="mt-4 rounded bg-blue-600 px-3 py-2 text-white disabled:opacity-50"
         >
@@ -100,25 +96,44 @@ export function AdminWorkspace() {
     );
   }
 
+  const tabs: { key: Tab; label: string }[] = [
+    { key: 'uploads', label: 'Stundenplan' },
+    { key: 'announcements', label: 'Ankündigungen' },
+    { key: 'events', label: 'Termine' },
+  ];
+
   return (
     <section className="space-y-4">
-      <div className="flex justify-end">
-        <button type="button" onClick={() => logout().catch(() => setStatus('Abmelden fehlgeschlagen.'))} className="rounded border border-gray-300 px-3 py-2 text-sm dark:border-gray-700">
+      <div className="flex items-center justify-between">
+        <nav className="flex gap-1">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              className={`rounded px-3 py-2 text-sm font-medium ${
+                activeTab === tab.key
+                  ? 'bg-blue-600 text-white'
+                  : 'border border-gray-300 dark:border-gray-700'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+
+        <button
+          type="button"
+          onClick={logout}
+          className="rounded border border-gray-300 px-3 py-2 text-sm dark:border-gray-700"
+        >
           Abmelden
         </button>
       </div>
 
-      <div className="grid gap-8 xl:grid-cols-2 xl:items-start">
-        <div className="space-y-8">
-          <AdminAnnouncementEditor />
-          <AdminMessagesEditor />
-        </div>
-        <div className="space-y-8">
-          <AdminCalendarEditor />
-          <AdminHolidayEditor />
-          <AdminFileManager />
-        </div>
-      </div>
+      {activeTab === 'uploads' && <AdminUploadManager />}
+      {activeTab === 'announcements' && <AdminAnnouncementEditor />}
+      {activeTab === 'events' && <AdminEventEditor />}
     </section>
   );
 }
