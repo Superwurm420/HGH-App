@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
-import { listContentItems, SupabaseContentError } from '@/lib/supabase/content-store';
+import { getContentStore, ContentStoreError } from '@/lib/storage/content-store';
 
 export async function GET(): Promise<NextResponse> {
   try {
-    const items = await listContentItems();
+    const store = getContentStore();
+    const items = await store.listItems();
     return NextResponse.json(
       { items },
       {
@@ -13,7 +14,7 @@ export async function GET(): Promise<NextResponse> {
       },
     );
   } catch (error) {
-    const message = error instanceof SupabaseContentError
+    const message = error instanceof ContentStoreError
       ? error.reason
       : 'Index konnte nicht geladen werden.';
     return NextResponse.json({ error: message }, { status: 503 });

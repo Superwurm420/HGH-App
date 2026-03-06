@@ -1,6 +1,6 @@
 // Automatisch generiert von scripts/prebuild.mjs – NICHT manuell bearbeiten!
 // BUILD_VERSION wird bei jedem Build neu gesetzt, damit der Browser Updates erkennt.
-const BUILD_VERSION = '2026-03-05T21-00-00-533Z';
+const BUILD_VERSION = '2026-03-06T07-47-44-593Z';
 const CACHE = 'hgh-pwa-v3-' + BUILD_VERSION;
 
 // HTML-Routen: network-first (immer frische Inhalte wenn online)

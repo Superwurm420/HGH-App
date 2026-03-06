@@ -1,27 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/lib/supabase/client', () => ({
-  SupabaseConfigurationError: class SupabaseConfigurationError extends Error {
-    variableName: string;
-    constructor(variableName: string) {
-      super(`Fehlende oder leere Umgebungsvariable: ${variableName}`);
-      this.variableName = variableName;
-    }
-  },
-}));
+const mockStore = {
+  getObject: vi.fn(),
+  putObject: vi.fn(),
+  deleteObject: vi.fn(),
+  listItems: vi.fn(),
+  getItem: vi.fn(),
+  updateItem: vi.fn(),
+};
 
-vi.mock('@/lib/supabase/content-store', () => ({
-  listContentItems: vi.fn(),
-  downloadFromStorage: vi.fn(),
-  updateContentItem: vi.fn(),
-  SupabaseContentError: class SupabaseContentError extends Error {
-    reason: string;
-    constructor(reason: string) {
-      super(reason);
-      this.reason = reason;
-    }
-  },
-}));
+vi.mock('@/lib/storage/content-store', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/storage/content-store')>('@/lib/storage/content-store');
+  return {
+    ...actual,
+    getContentStore: () => mockStore,
+  };
+});
 
 vi.mock('@/lib/timetable/upload-parser', () => ({
   parseTimetablePdfBuffer: vi.fn(),
@@ -33,48 +27,42 @@ vi.mock('@/lib/timetable/server', () => ({
 
 import { POST } from './route';
 import { invalidateTimetableCache } from '@/lib/timetable/server';
-import {
-  downloadFromStorage,
-  listContentItems,
-  updateContentItem,
-} from '@/lib/supabase/content-store';
+import { ContentStoreConfigurationError } from '@/lib/storage/content-store';
 import { parseTimetablePdfBuffer } from '@/lib/timetable/upload-parser';
-import { SupabaseConfigurationError } from '@/lib/supabase/client';
 
 describe('POST /api/admin/files/rebuild-index', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('returns 500 when Supabase configuration is missing', async () => {
-    vi.mocked(listContentItems).mockRejectedValue(new SupabaseConfigurationError('SUPABASE_SERVICE_ROLE_KEY'));
+  it('returns 500 when store configuration is missing', async () => {
+    mockStore.listItems.mockRejectedValue(new ContentStoreConfigurationError('SUPABASE_URL fehlt'));
 
     const response = await POST();
     const payload = await response.json();
 
     expect(response.status).toBe(500);
     expect(payload.error).toContain('Server-Konfiguration unvollständig');
-    expect(payload.error).toContain('SUPABASE_SERVICE_ROLE_KEY');
   });
 
   it('continues on partial failures and returns processed/parsed/failed counts', async () => {
-    vi.mocked(listContentItems).mockResolvedValue([
+    mockStore.listItems.mockResolvedValue([
       { key: 'timetables/ok.pdf', meta: { source: 'a' } },
       { key: 'timetables/missing.pdf', meta: { source: 'b' } },
       { key: 'timetables/broken.pdf', meta: { source: 'c' } },
       { key: 'timetables/readme.txt', meta: null },
-    ] as never);
+    ]);
 
-    vi.mocked(downloadFromStorage)
-      .mockResolvedValueOnce({ data: Buffer.from([1, 2]), contentType: 'application/pdf' } as never)
+    mockStore.getObject
+      .mockResolvedValueOnce({ key: 'timetables/ok.pdf', data: Buffer.from([1, 2]), contentType: 'application/pdf' })
       .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce({ data: Buffer.from([3, 4]), contentType: 'application/pdf' } as never);
+      .mockResolvedValueOnce({ key: 'timetables/broken.pdf', data: Buffer.from([3, 4]), contentType: 'application/pdf' });
 
     vi.mocked(parseTimetablePdfBuffer)
       .mockResolvedValueOnce({ CLS1: { MO: [] } } as never)
       .mockRejectedValueOnce(new Error('cannot parse'));
 
-    vi.mocked(updateContentItem).mockResolvedValue({} as never);
+    mockStore.updateItem.mockResolvedValue(undefined);
 
     const response = await POST();
     const payload = await response.json();
@@ -83,9 +71,9 @@ describe('POST /api/admin/files/rebuild-index', () => {
     expect(payload.ok).toBe(true);
     expect(payload.counts).toEqual({ processed: 3, parsed: 1, failed: 2, total: 3 });
 
-    expect(downloadFromStorage).toHaveBeenCalledTimes(3);
+    expect(mockStore.getObject).toHaveBeenCalledTimes(3);
     expect(parseTimetablePdfBuffer).toHaveBeenCalledTimes(2);
-    expect(updateContentItem).toHaveBeenCalledTimes(3);
+    expect(mockStore.updateItem).toHaveBeenCalledTimes(3);
     expect(invalidateTimetableCache).toHaveBeenCalledTimes(1);
   });
 });

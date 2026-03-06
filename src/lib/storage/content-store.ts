@@ -6,7 +6,11 @@ import {
   downloadFromStorage,
   insertContentItem,
   deleteContentItem,
+  listContentItems,
+  getContentItem,
+  updateContentItem,
 } from '@/lib/supabase/content-store';
+import type { ContentCategory } from '@/lib/supabase/db-types';
 
 
 export type ContentStoreObject = {
@@ -29,10 +33,43 @@ export type ContentStorePutResult = {
   contentType?: string;
 };
 
+/** Zeile aus dem Content-Index (entspricht content_items in Supabase). */
+export type ContentStoreItemRow = {
+  key: string;
+  url: string;
+  category: ContentCategory;
+  content_type: string | null;
+  size: number | null;
+  created_at: string;
+  meta: Record<string, unknown> | null;
+  timetable_json: Record<string, unknown> | null;
+  timetable_version: string | null;
+};
+
+/** Felder, die beim Aktualisieren eines Items übergeben werden können. */
+export type ContentStoreItemUpdate = {
+  meta?: Record<string, unknown> | null;
+  timetable_json?: Record<string, unknown> | null;
+  timetable_version?: string | null;
+};
+
+/** Optionen für putObject mit erweiterten Metadaten. */
+export type ContentStorePutOptions = {
+  category?: ContentCategory;
+  meta?: Record<string, unknown>;
+};
+
 export interface ContentStore {
   getObject(key: string): Promise<ContentStoreObject | null>;
-  putObject(key: string, data: Buffer | string, contentType: string): Promise<ContentStorePutResult>;
+  putObject(key: string, data: Buffer | string, contentType: string, options?: ContentStorePutOptions): Promise<ContentStorePutResult>;
   deleteObject(key: string, options?: { url?: string }): Promise<void>;
+
+  /** Listet alle Index-Einträge, optional gefiltert nach Kategorie. */
+  listItems(category?: ContentCategory): Promise<ContentStoreItemRow[]>;
+  /** Gibt einen einzelnen Index-Eintrag zurück. */
+  getItem(key: string): Promise<ContentStoreItemRow | null>;
+  /** Aktualisiert Meta-/Timetable-Daten eines bestehenden Eintrags. */
+  updateItem(key: string, updates: ContentStoreItemUpdate): Promise<void>;
 }
 
 export class ContentStoreError extends Error {
@@ -67,7 +104,7 @@ function toBuffer(data: Buffer | string): Buffer {
   return typeof data === 'string' ? Buffer.from(data, 'utf8') : data;
 }
 
-function detectCategory(key: string, contentType: string): 'timetable' | 'announcement' | 'image' | 'config' | 'other' {
+function detectCategory(key: string, contentType: string): ContentCategory {
   if (key.startsWith('timetables/') || contentType === 'application/pdf') return 'timetable';
   if (key.startsWith('announcements/')) return 'announcement';
   if (key.startsWith('images/') || contentType.startsWith('image/')) return 'image';
@@ -79,6 +116,12 @@ function detectCategory(key: string, contentType: string): 'timetable' | 'announ
 // Lokaler Fallback-Store (für Development ohne Supabase)
 // ---------------------------------------------------------------------------
 
+const LOCAL_INDEX_FILE = '_index.json';
+
+type LocalIndex = {
+  items: ContentStoreItemRow[];
+};
+
 class LocalContentStore implements ContentStore {
   private readonly localRoot: string;
 
@@ -89,6 +132,42 @@ class LocalContentStore implements ContentStore {
   private localPathForKey(key: string): string {
     const normalized = normalizeKey(key);
     return path.join(this.localRoot, ...normalized.split('/'));
+  }
+
+  private get indexPath(): string {
+    return path.join(this.localRoot, LOCAL_INDEX_FILE);
+  }
+
+  private async readIndex(): Promise<LocalIndex> {
+    try {
+      const raw = await fs.readFile(this.indexPath, 'utf8');
+      const parsed = JSON.parse(raw) as Partial<LocalIndex>;
+      return { items: Array.isArray(parsed.items) ? parsed.items : [] };
+    } catch {
+      return { items: [] };
+    }
+  }
+
+  private async writeIndex(index: LocalIndex): Promise<void> {
+    await fs.mkdir(this.localRoot, { recursive: true });
+    await fs.writeFile(this.indexPath, JSON.stringify(index, null, 2) + '\n', 'utf8');
+  }
+
+  private async upsertIndexEntry(entry: ContentStoreItemRow): Promise<void> {
+    const index = await this.readIndex();
+    const existing = index.items.findIndex((item) => item.key === entry.key);
+    if (existing >= 0) {
+      index.items[existing] = entry;
+    } else {
+      index.items.push(entry);
+    }
+    await this.writeIndex(index);
+  }
+
+  private async removeIndexEntry(key: string): Promise<void> {
+    const index = await this.readIndex();
+    index.items = index.items.filter((item) => item.key !== key);
+    await this.writeIndex(index);
   }
 
   async getObject(key: string): Promise<ContentStoreObject | null> {
@@ -108,14 +187,30 @@ class LocalContentStore implements ContentStore {
     }
   }
 
-  async putObject(key: string, data: Buffer | string, contentType: string): Promise<ContentStorePutResult> {
-    const filePath = this.localPathForKey(key);
+  async putObject(key: string, data: Buffer | string, contentType: string, options?: ContentStorePutOptions): Promise<ContentStorePutResult> {
+    const normalizedKey = normalizeKey(key);
+    const filePath = this.localPathForKey(normalizedKey);
     const payload = toBuffer(data);
     try {
       await fs.mkdir(path.dirname(filePath), { recursive: true });
       await fs.writeFile(filePath, payload);
+
+      const category = options?.category ?? detectCategory(normalizedKey, contentType);
+
+      await this.upsertIndexEntry({
+        key: normalizedKey,
+        url: `file://${filePath}`,
+        category,
+        content_type: contentType,
+        size: payload.byteLength,
+        created_at: new Date().toISOString(),
+        meta: options?.meta ?? null,
+        timetable_json: null,
+        timetable_version: null,
+      });
+
       return {
-        key: normalizeKey(key),
+        key: normalizedKey,
         size: payload.byteLength,
         contentType,
       };
@@ -125,12 +220,39 @@ class LocalContentStore implements ContentStore {
   }
 
   async deleteObject(key: string): Promise<void> {
-    const filePath = this.localPathForKey(key);
+    const normalizedKey = normalizeKey(key);
+    const filePath = this.localPathForKey(normalizedKey);
     try {
       await fs.rm(filePath, { force: true });
+      await this.removeIndexEntry(normalizedKey);
     } catch (error) {
       throw new ContentStoreUnavailableError(`Lokaler Store konnte ${key} nicht löschen.`, error instanceof Error ? { cause: error } : undefined);
     }
+  }
+
+  async listItems(category?: ContentCategory): Promise<ContentStoreItemRow[]> {
+    const index = await this.readIndex();
+    const items = category ? index.items.filter((item) => item.category === category) : index.items;
+    return items.map((item) => ({ ...item }));
+  }
+
+  async getItem(key: string): Promise<ContentStoreItemRow | null> {
+    const normalizedKey = normalizeKey(key);
+    const index = await this.readIndex();
+    return index.items.find((item) => item.key === normalizedKey) ?? null;
+  }
+
+  async updateItem(key: string, updates: ContentStoreItemUpdate): Promise<void> {
+    const normalizedKey = normalizeKey(key);
+    const index = await this.readIndex();
+    const entry = index.items.find((item) => item.key === normalizedKey);
+    if (!entry) return;
+
+    if (updates.meta !== undefined) entry.meta = updates.meta;
+    if (updates.timetable_json !== undefined) entry.timetable_json = updates.timetable_json;
+    if (updates.timetable_version !== undefined) entry.timetable_version = updates.timetable_version;
+
+    await this.writeIndex(index);
   }
 }
 
@@ -157,18 +279,20 @@ class SupabaseContentStore implements ContentStore {
     }
   }
 
-  async putObject(key: string, data: Buffer | string, contentType: string): Promise<ContentStorePutResult> {
+  async putObject(key: string, data: Buffer | string, contentType: string, options?: ContentStorePutOptions): Promise<ContentStorePutResult> {
     const normalizedKey = normalizeKey(key);
     const payload = toBuffer(data);
     try {
       const url = await uploadToStorage(normalizedKey, payload, contentType);
+      const category = options?.category ?? detectCategory(normalizedKey, contentType);
 
       await insertContentItem({
         key: normalizedKey,
         url,
-        category: detectCategory(normalizedKey, contentType),
+        category,
         content_type: contentType,
         size: payload.byteLength,
+        meta: options?.meta ?? null,
       });
 
       return {
@@ -195,6 +319,64 @@ class SupabaseContentStore implements ContentStore {
     } catch (error) {
       throw new ContentStoreUnavailableError(
         `Supabase konnte ${normalizedKey} nicht löschen.`,
+        error instanceof Error ? { cause: error } : undefined,
+      );
+    }
+  }
+
+  async listItems(category?: ContentCategory): Promise<ContentStoreItemRow[]> {
+    try {
+      const items = await listContentItems(category);
+      return items.map((item) => ({
+        key: item.key,
+        url: item.url,
+        category: item.category,
+        content_type: item.content_type,
+        size: item.size,
+        created_at: item.created_at,
+        meta: item.meta,
+        timetable_json: item.timetable_json,
+        timetable_version: item.timetable_version,
+      }));
+    } catch (error) {
+      throw new ContentStoreUnavailableError(
+        'Supabase konnte die Einträge nicht auflisten.',
+        error instanceof Error ? { cause: error } : undefined,
+      );
+    }
+  }
+
+  async getItem(key: string): Promise<ContentStoreItemRow | null> {
+    const normalizedKey = normalizeKey(key);
+    try {
+      const item = await getContentItem(normalizedKey);
+      if (!item) return null;
+      return {
+        key: item.key,
+        url: item.url,
+        category: item.category,
+        content_type: item.content_type,
+        size: item.size,
+        created_at: item.created_at,
+        meta: item.meta,
+        timetable_json: item.timetable_json,
+        timetable_version: item.timetable_version,
+      };
+    } catch (error) {
+      throw new ContentStoreUnavailableError(
+        `Supabase konnte ${normalizedKey} nicht abrufen.`,
+        error instanceof Error ? { cause: error } : undefined,
+      );
+    }
+  }
+
+  async updateItem(key: string, updates: ContentStoreItemUpdate): Promise<void> {
+    const normalizedKey = normalizeKey(key);
+    try {
+      await updateContentItem(normalizedKey, updates);
+    } catch (error) {
+      throw new ContentStoreUnavailableError(
+        `Supabase konnte ${normalizedKey} nicht aktualisieren.`,
         error instanceof Error ? { cause: error } : undefined,
       );
     }

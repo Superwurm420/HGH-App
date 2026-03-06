@@ -1,10 +1,22 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/lib/supabase/content-store', () => ({
-  listContentItems: vi.fn(),
-}));
+const mockStore = {
+  getObject: vi.fn(),
+  putObject: vi.fn(),
+  deleteObject: vi.fn(),
+  listItems: vi.fn(),
+  getItem: vi.fn(),
+  updateItem: vi.fn(),
+};
 
-import { listContentItems } from '@/lib/supabase/content-store';
+vi.mock('@/lib/storage/content-store', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/storage/content-store')>('@/lib/storage/content-store');
+  return {
+    ...actual,
+    getContentStore: () => mockStore,
+  };
+});
+
 import { getLatestTimetable, getWeeklyPlanForClass, invalidateTimetableCache } from './server';
 
 describe('timetable loading from content_items', () => {
@@ -14,16 +26,15 @@ describe('timetable loading from content_items', () => {
   });
 
   it('selects latest timetable based on content_items metadata and parsed schedule', async () => {
-    vi.mocked(listContentItems).mockResolvedValue([
+    mockStore.listItems.mockResolvedValue([
       {
-        id: '1',
         key: 'timetables/Stundenplan_kw_10_Hj2_2024_25.pdf',
         url: 'https://example.com/old.pdf',
         category: 'timetable',
         content_type: 'application/pdf',
         size: 1,
         created_at: '2025-02-01T09:00:00.000Z',
-        hash: null,
+
         meta: {
           timetable: {
             filename: 'Stundenplan_kw_10_Hj2_2024_25.pdf',
@@ -42,14 +53,13 @@ describe('timetable loading from content_items', () => {
         timetable_version: 'v1',
       },
       {
-        id: '2',
         key: 'timetables/Stundenplan_kw_11_Hj2_2024_25.pdf',
         url: 'https://example.com/new.pdf',
         category: 'timetable',
         content_type: 'application/pdf',
         size: 1,
         created_at: '2025-02-02T09:00:00.000Z',
-        hash: null,
+
         meta: {
           timetable: {
             filename: 'Stundenplan_kw_11_Hj2_2024_25.pdf',
