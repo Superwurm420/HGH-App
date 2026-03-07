@@ -87,12 +87,27 @@ export function weekdayForToday(date: Date = new Date()): string {
 
 /**
  * Parst ein deutsches Datum (DD.MM.YYYY HH:mm) in Berlin-Zeitzone.
+ * Ermittelt den korrekten UTC-Offset (CET +01:00 / CEST +02:00) dynamisch.
  */
 export function parseBerlinDate(dateStr: string): Date | null {
   const match = dateStr.match(/^(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}):(\d{2})$/);
   if (!match) return null;
-  const [, day, month, year, hour, minute] = match;
-  // Einfache Näherung: UTC-Offset für Berlin (CET=+1, CEST=+2)
-  const utcDate = new Date(`${year}-${month}-${day}T${hour}:${minute}:00+01:00`);
-  return Number.isNaN(utcDate.getTime()) ? null : utcDate;
+  const [, day, month, year, hourStr, minuteStr] = match;
+  const hour = Number(hourStr);
+
+  // Erst mit CET (+01:00) als Näherung starten
+  const approx = new Date(`${year}-${month}-${day}T${hourStr}:${minuteStr}:00+01:00`);
+  if (Number.isNaN(approx.getTime())) return null;
+
+  // Tatsächlichen Berlin-Offset für dieses Datum ermitteln
+  const parts = berlinFullFormatter.formatToParts(approx);
+  const berlinHour = Number(parts.find((p) => p.type === 'hour')?.value ?? 0);
+
+  // Korrektur falls Offset abweicht (z.B. CEST statt CET)
+  const hourDiff = hour - berlinHour;
+  if (hourDiff !== 0) {
+    approx.setTime(approx.getTime() + hourDiff * 3600_000);
+  }
+
+  return approx;
 }

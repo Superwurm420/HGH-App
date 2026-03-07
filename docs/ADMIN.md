@@ -1,110 +1,105 @@
-# Admin Setup — Supabase Content-System
+# Admin Setup — Cloudflare D1 + R2
 
 ## Übersicht
 
-Die App nutzt **Supabase** als Content-Backend:
-- **Supabase Storage** (Bucket: `content`, public) speichert Dateien (PDFs, JSON).
-- **Supabase Postgres** (Tabelle: `content_items`) dient als Index / Quelle der Wahrheit.
+Die App nutzt **Cloudflare** als Backend:
+- **D1 (SQLite)** speichert alle strukturierten Daten (Stundenpläne, Ankündigungen, Termine, Sessions, Settings).
+- **R2** speichert hochgeladene PDF-Dateien.
+- **Cloudflare Worker** (`worker/src/`) stellt die API bereit.
 
-Die Schüler-UI macht **keine** Storage-`list()`- oder `head()`-Aufrufe.
-Stattdessen liest sie ausschließlich aus `content_items` (DB-Query) und nutzt die
-dort gespeicherten URLs, um Dateien direkt abzurufen.
+## 1. Cloudflare-Projekt einrichten
 
-## 1. Supabase-Projekt einrichten
+1. Erstelle ein Cloudflare-Konto unter https://dash.cloudflare.com
+2. Installiere Wrangler: `npm install -g wrangler`
+3. Authentifiziere: `wrangler login`
 
-1. Erstelle ein Supabase-Projekt unter https://supabase.com/dashboard
-2. Notiere:
-   - **Project URL** → `SUPABASE_URL`
-   - **anon/public key** → `SUPABASE_ANON_KEY`
-   - **service_role key** → `SUPABASE_SERVICE_ROLE_KEY`
-
-## 2. Datenbank-Migration
-
-Führe die SQL-Migration im Supabase SQL-Editor aus:
-
-```sql
--- Datei: supabase/migrations/001_content_items.sql
-
-create table if not exists content_items (
-  id              uuid primary key default gen_random_uuid(),
-  key             text unique not null,
-  url             text not null,
-  category        text not null check (category in ('timetable','announcement','image','config','other')),
-  content_type    text,
-  size            int,
-  created_at      timestamptz not null default now(),
-  hash            text,
-  meta            jsonb,
-  timetable_json  jsonb,
-  timetable_version text
-);
-
-create index if not exists idx_content_items_category on content_items (category);
-create index if not exists idx_content_items_created_at on content_items (created_at desc);
-```
-
-## 3. Storage-Bucket erstellen
-
-Im Supabase Dashboard → Storage → „New Bucket":
-- **Name**: `content`
-- **Public**: ✅ (damit URLs ohne Auth abrufbar sind)
-
-Alternativ per SQL:
-```sql
-insert into storage.buckets (id, name, public)
-values ('content', 'content', true)
-on conflict (id) do nothing;
-```
-
-## 4. Umgebungsvariablen setzen
-
-In `.env` (lokal) oder im Hosting-Dashboard (Vercel, etc.):
+## 2. D1-Datenbank erstellen
 
 ```bash
-SUPABASE_URL=https://xyz.supabase.co
-SUPABASE_ANON_KEY=eyJ...
-SUPABASE_SERVICE_ROLE_KEY=eyJ...
-
-ADMIN_USER=redaktion
-ADMIN_PASSWORD=<sicheres-passwort>
-SESSION_SECRET=<langes-zufaelliges-secret>
+wrangler d1 create hgh-app-db
 ```
 
-**Wichtig**: `SUPABASE_SERVICE_ROLE_KEY` wird nur serverseitig genutzt und
-darf niemals ins Client-Bundle gelangen. Next.js stellt sicher, dass env vars
-ohne `NEXT_PUBLIC_`-Prefix nur serverseitig verfügbar sind.
+Die Ausgabe enthält eine `database_id`. Trage diese in `wrangler.toml` ein:
 
-## 5. Lokale Entwicklung ohne Supabase
+```toml
+[[d1_databases]]
+binding = "DB"
+database_name = "hgh-app-db"
+database_id = "<deine-database-id>"
+```
 
-Für lokale Entwicklung kann Supabase umgangen werden:
+## 3. Migration anwenden
 
 ```bash
-CONTENT_STORE_PROVIDER=local
-LOCAL_CONTENT_STORE_DIR=data/content-store
+# Lokal (für Entwicklung)
+npm run db:migrate:local
+
+# Remote (für Produktion)
+npm run db:migrate
 ```
 
-In diesem Modus werden Dateien im lokalen Dateisystem gespeichert.
-Der Supabase-DB-Index wird nicht genutzt.
+Die Migration (`migrations/0001_initial_schema.sql`) erstellt alle Tabellen:
+`users`, `sessions`, `classes`, `timetable_uploads`, `timetable_entries`,
+`announcements`, `events`, `media_files`, `app_settings`, `audit_logs`.
 
-## Operationen bei normaler Nutzung
+## 4. R2-Bucket erstellen
+
+```bash
+wrangler r2 bucket create hgh-app-content
+```
+
+Der Bucket-Name muss mit `wrangler.toml` übereinstimmen:
+
+```toml
+[[r2_buckets]]
+binding = "STORAGE"
+bucket_name = "hgh-app-content"
+```
+
+## 5. Secrets setzen
+
+```bash
+wrangler secret put ADMIN_PASSWORD
+wrangler secret put SESSION_SECRET
+```
+
+`ADMIN_USER` ist als `[vars]` in `wrangler.toml` gesetzt (Default: `redaktion`).
+
+## 6. Deployment
+
+```bash
+npm run deploy
+```
+
+## 7. Erster Login
+
+Beim ersten Login mit `ADMIN_USER` + `ADMIN_PASSWORD` wird automatisch
+ein Admin-User in der D1-Datenbank angelegt (Auto-Setup).
+
+## Lokale Entwicklung
+
+```bash
+# Terminal 1: Worker starten (D1 + R2 lokal)
+npm run dev:worker
+
+# Terminal 2: Next.js Frontend starten
+npm run dev
+```
+
+Next.js proxied `/api/*` automatisch an `http://localhost:8787`.
+
+## Operationen
 
 ### Schüler-UI (lesend)
-1. **`/api/content-index`** → `SELECT * FROM content_items ORDER BY created_at DESC`
-   - Ein einziger DB-Read, gecached (s-maxage=60, stale-while-revalidate=600)
-2. **Dateiabruf** → Direkte HTTP-Requests an die in `content_items.url` gespeicherten
-   öffentlichen Supabase-Storage-URLs (CDN-cached, kein API-Call)
-3. **Kein `list()`, kein `head()`**, keine Storage-Scans
+1. **`/api/bootstrap`** → Aktiver Stundenplan + Ankündigungen (ETag-basiert)
+2. **`/api/timetable?klasse=HT11`** → Stundenplan für eine Klasse
+3. **`/api/announcements`** → Aktive Ankündigungen
+4. **`/api/settings`** → Öffentliche Einstellungen (Kalender-URLs, Meldungen, Ferien)
 
 ### Admin-UI (schreibend)
-1. **Upload**: Datei → Supabase Storage `upload()` + `INSERT INTO content_items`
-2. **Delete**: `DELETE FROM content_items` + Supabase Storage `remove()`
-3. **Config-Updates** (Kalender, Meldungen, Ferien, Ankündigungen):
-   JSON → Supabase Storage `upload()` + `UPSERT INTO content_items`
+1. **PDF-Upload**: Datei → R2 + D1 `timetable_uploads` → Automatisches Parsing → D1 `timetable_entries`
+2. **Aktivierung**: Upload als aktiven Stundenplan setzen
+3. **Ankündigungen/Termine**: CRUD direkt in D1
+4. **Settings**: Key-Value-Paare in D1 `app_settings`
 
-### Warum das stabil ist
-- **Keine teuren Operationen**: Die UI macht nur DB-Reads (billig, schnell) und
-  direkte File-Downloads über public URLs (CDN-cached).
-- **Kein Scanning**: Storage `list()`/`head()` werden nur bei Admin-Uploads genutzt,
-  nicht bei normalen Seitenaufrufen.
-- **Supabase Free Tier**: DB-Queries und Storage-Downloads aus dem public Bucket
-  verbrauchen keine „Advanced Ops".
+Alle Admin-Aktionen werden im `audit_logs`-Table protokolliert.
