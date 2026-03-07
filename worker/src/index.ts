@@ -11,14 +11,12 @@ import { handleAdminEvents, handleAdminEventById } from './routes/admin/events';
 import { handleAdminUploads, handleAdminUploadById, handleAdminUploadActivate } from './routes/admin/uploads';
 import { handleAdminSettings } from './routes/admin/settings';
 import { handleAdminAuditLogs } from './routes/admin/audit';
-import { requireAuth } from './middleware/auth';
-
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const router = new Router();
 
     // ── CORS preflight ──────────────────────────────────────────
-    router.options('/api/*', () => corsResponse());
+    router.options('/api/*', (req) => corsResponse(req));
 
     // ── Public API ──────────────────────────────────────────────
     router.get('/api/bootstrap', (req) => handleApiBootstrap(req, env));
@@ -36,32 +34,32 @@ export default {
     router.post('/api/admin/logout', (req) => handleAdminLogout(req, env));
     router.get('/api/admin/session', (req) => handleAdminSession(req, env));
 
-    // ── Admin API (protected) ───────────────────────────────────
-    router.get('/api/admin/announcements', (req) => withAuth(req, env, () => handleAdminAnnouncements(req, env)));
-    router.post('/api/admin/announcements', (req) => withAuth(req, env, () => handleAdminAnnouncements(req, env)));
-    router.put('/api/admin/announcements/:id', (req, params) => withAuth(req, env, () => handleAdminAnnouncementById(req, env, params.id)));
-    router.delete('/api/admin/announcements/:id', (req, params) => withAuth(req, env, () => handleAdminAnnouncementById(req, env, params.id)));
+    // ── Admin API (Auth wird in den Handlern selbst geprüft) ──
+    router.get('/api/admin/announcements', (req) => handleAdminAnnouncements(req, env));
+    router.post('/api/admin/announcements', (req) => handleAdminAnnouncements(req, env));
+    router.put('/api/admin/announcements/:id', (req, params) => handleAdminAnnouncementById(req, env, params.id));
+    router.delete('/api/admin/announcements/:id', (req, params) => handleAdminAnnouncementById(req, env, params.id));
 
-    router.get('/api/admin/events', (req) => withAuth(req, env, () => handleAdminEvents(req, env)));
-    router.post('/api/admin/events', (req) => withAuth(req, env, () => handleAdminEvents(req, env)));
-    router.put('/api/admin/events/:id', (req, params) => withAuth(req, env, () => handleAdminEventById(req, env, params.id)));
-    router.delete('/api/admin/events/:id', (req, params) => withAuth(req, env, () => handleAdminEventById(req, env, params.id)));
+    router.get('/api/admin/events', (req) => handleAdminEvents(req, env));
+    router.post('/api/admin/events', (req) => handleAdminEvents(req, env));
+    router.put('/api/admin/events/:id', (req, params) => handleAdminEventById(req, env, params.id));
+    router.delete('/api/admin/events/:id', (req, params) => handleAdminEventById(req, env, params.id));
 
-    router.get('/api/admin/uploads', (req) => withAuth(req, env, () => handleAdminUploads(req, env)));
-    router.post('/api/admin/uploads', (req) => withAuth(req, env, () => handleAdminUploads(req, env)));
-    router.get('/api/admin/uploads/:id', (req, params) => withAuth(req, env, () => handleAdminUploadById(req, env, params.id)));
-    router.delete('/api/admin/uploads/:id', (req, params) => withAuth(req, env, () => handleAdminUploadById(req, env, params.id)));
-    router.post('/api/admin/uploads/:id/activate', (req, params) => withAuth(req, env, () => handleAdminUploadActivate(req, env, params.id)));
+    router.get('/api/admin/uploads', (req) => handleAdminUploads(req, env));
+    router.post('/api/admin/uploads', (req) => handleAdminUploads(req, env));
+    router.get('/api/admin/uploads/:id', (req, params) => handleAdminUploadById(req, env, params.id));
+    router.delete('/api/admin/uploads/:id', (req, params) => handleAdminUploadById(req, env, params.id));
+    router.post('/api/admin/uploads/:id/activate', (req, params) => handleAdminUploadActivate(req, env, params.id));
 
-    router.get('/api/admin/settings', (req) => withAuth(req, env, () => handleAdminSettings(req, env)));
-    router.put('/api/admin/settings', (req) => withAuth(req, env, () => handleAdminSettings(req, env)));
+    router.get('/api/admin/settings', (req) => handleAdminSettings(req, env));
+    router.put('/api/admin/settings', (req) => handleAdminSettings(req, env));
 
-    router.get('/api/admin/audit', (req) => withAuth(req, env, () => handleAdminAuditLogs(req, env)));
+    router.get('/api/admin/audit', (req) => handleAdminAuditLogs(req, env));
 
     // ── Static assets from R2 or site bucket ────────────────────
     const response = await router.handle(request);
     if (response) {
-      return addCorsHeaders(response);
+      return addCorsHeaders(response, request);
     }
 
     // Serve static assets from site bucket (Next.js export)
@@ -69,31 +67,33 @@ export default {
   },
 };
 
-async function withAuth(req: Request, env: Env, handler: () => Promise<Response>): Promise<Response> {
-  const authResult = await requireAuth(req, env);
-  if (authResult instanceof Response) return authResult;
-  return handler();
-}
-
-function corsResponse(): Response {
+function corsResponse(request: Request): Response {
   return new Response(null, {
     status: 204,
-    headers: corsHeaders(),
+    headers: corsHeaders(request),
   });
 }
 
-function corsHeaders(): Record<string, string> {
+function corsHeaders(request?: Request): Record<string, string> {
+  const origin = request?.headers.get('Origin') ?? '';
+
+  // Für Admin-Endpoints: nur Same-Origin erlauben (Origin muss gesetzt sein)
+  // Für öffentliche Endpoints: alle Origins erlauben
+  const allowOrigin = origin || '*';
+
   return {
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': allowOrigin,
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, Cookie',
+    'Access-Control-Allow-Credentials': 'true',
     'Access-Control-Max-Age': '86400',
+    ...(allowOrigin !== '*' ? { Vary: 'Origin' } : {}),
   };
 }
 
-function addCorsHeaders(response: Response): Response {
+function addCorsHeaders(response: Response, request?: Request): Response {
   const newResponse = new Response(response.body, response);
-  for (const [key, value] of Object.entries(corsHeaders())) {
+  for (const [key, value] of Object.entries(corsHeaders(request))) {
     newResponse.headers.set(key, value);
   }
   return newResponse;

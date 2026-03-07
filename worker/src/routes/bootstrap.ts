@@ -27,10 +27,27 @@ export async function handleApiBootstrap(request: Request, env: Env): Promise<Re
     updatedAt: null,
   };
 
-  if (activeSetting?.value) {
-    const upload = await env.DB.prepare(
-      'SELECT * FROM timetable_uploads WHERE id = ? AND status = ?'
-    ).bind(activeSetting.value, 'active').first<TimetableUpload>();
+  // Aktiven Stundenplan laden, mit Fallback auf letzten geparsten/archivierten
+  {
+    let upload: TimetableUpload | null = null;
+
+    if (activeSetting?.value) {
+      upload = await env.DB.prepare(
+        'SELECT * FROM timetable_uploads WHERE id = ? AND status = ?'
+      ).bind(activeSetting.value, 'active').first<TimetableUpload>();
+    }
+
+    // Fallback: letzten verfügbaren Stundenplan nehmen
+    if (!upload) {
+      upload = await env.DB.prepare(
+        `SELECT * FROM timetable_uploads
+         WHERE status IN ('active', 'parsed', 'archived')
+         ORDER BY
+           CASE status WHEN 'active' THEN 0 WHEN 'parsed' THEN 1 WHEN 'archived' THEN 2 END,
+           updated_at DESC
+         LIMIT 1`
+      ).first<TimetableUpload>();
+    }
 
     if (upload) {
       const rows = await env.DB.prepare(

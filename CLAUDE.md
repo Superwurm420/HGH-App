@@ -4,7 +4,10 @@
 
 HGH-App is a **Progressive Web App (PWA)** for the **Holztechnik und Gestaltung Hildesheim** vocational school (BBS). It displays weekly timetables parsed from PDF files, school announcements, a calendar, daily messages, and a countdown timer. The entire UI is in **German**.
 
-- **Framework**: Next.js 14 (App Router) with React 18
+- **Frontend**: Next.js 14 (App Router) with React 18
+- **Backend**: Cloudflare Worker (custom router, D1, R2)
+- **Database**: Cloudflare D1 (SQLite)
+- **File Storage**: Cloudflare R2
 - **Language**: TypeScript (strict mode)
 - **Styling**: Tailwind CSS + CSS Modules (`.module.css`) + custom CSS tokens
 - **Dark mode**: class-based (`darkMode: 'class'` in Tailwind config)
@@ -14,42 +17,64 @@ HGH-App is a **Progressive Web App (PWA)** for the **Holztechnik und Gestaltung 
 ## Quick Reference — Commands
 
 ```bash
-npm run dev              # Start dev server (runs prebuild first)
-npm run build            # Production build (runs prebuild first)
+npm run dev              # Start Next.js dev server
+npm run dev:worker       # Start Cloudflare Worker dev server (wrangler dev)
+npm run build            # Production build (Next.js)
+npm run build:worker     # Worker dry-run deploy
 npm run lint             # ESLint check
 npm run test:unit        # Run unit tests with Vitest
-npm run prebuild         # Parse PDFs + content into src/generated/*.json
-npm run validate-content # Validate content files
+npm run db:migrate       # Apply D1 migrations (remote)
+npm run db:migrate:local # Apply D1 migrations (local)
+npm run deploy           # Deploy Worker to Cloudflare
 ```
 
 ## Repository Structure
 
 ```
 ├── CLAUDE.md
-├── middleware.ts              # Auth middleware for /api/admin/* routes
-├── next.config.mjs            # Rewrites (favicons), caching headers
+├── wrangler.toml              # Cloudflare Worker config (D1, R2, site bucket)
+├── next.config.mjs            # Rewrites (favicons, dev API proxy), caching headers
 ├── tailwind.config.ts         # Custom colors, border-radius tokens
 ├── tsconfig.json              # Strict TS, path alias @/* → ./src/*
 ├── package.json
 │
-├── scripts/                   # Node.js build-time scripts (.mjs)
-│   ├── prebuild.mjs           # Main prebuild: parses PDFs, announcements, calendar, holidays → JSON
-│   ├── lib/timetable-selection.mjs  # Shared timetable filename parsing & sort logic
-│   ├── parse-timetable-pdf.mjs
-│   ├── select-latest-timetable.mjs
-│   ├── validate-content.mjs
-│   └── migrate-announcements-to-store.mjs
+├── worker/                    # Cloudflare Worker Backend
+│   └── src/
+│       ├── index.ts           # Worker entry: fetch handler, router setup, CORS
+│       ├── router.ts          # URLPattern-based router
+│       ├── types.ts           # Env bindings, DB types (Announcement, TimetableUpload, etc.)
+│       ├── middleware/
+│       │   └── auth.ts        # Session-Cookie-Prüfung (requireAuth, getOptionalAuth)
+│       ├── routes/
+│       │   ├── bootstrap.ts   # GET /api/bootstrap — Stundenplan + Ankündigungen + ETag
+│       │   ├── timetable.ts   # GET /api/timetable, /api/timetable/classes
+│       │   ├── announcements.ts # GET /api/announcements
+│       │   ├── events.ts      # GET /api/events
+│       │   ├── settings.ts    # GET /api/settings (public keys only)
+│       │   └── admin/
+│       │       ├── auth.ts    # POST login/logout, GET session, auto-setup
+│       │       ├── announcements.ts # CRUD Ankündigungen
+│       │       ├── events.ts  # CRUD Termine
+│       │       ├── uploads.ts # PDF-Upload → R2 + Parsing → D1 timetable_entries
+│       │       ├── settings.ts # GET/PUT app_settings
+│       │       └── audit.ts   # GET audit_logs
+│       ├── pdf-parser/
+│       │   └── index.ts       # Stundenplan-PDF-Parser (pdfjs-dist), Dateiname-Parsing
+│       └── services/
+│           ├── audit.ts       # logAudit() — non-blocking D1 insert
+│           ├── berlin-time.ts # Berlin-Zeitzone-Utilities
+│           └── password.ts    # PBKDF2-SHA256 Hashing + Verifikation
+│
+├── migrations/
+│   └── 0001_initial_schema.sql  # D1-Schema: users, sessions, classes, timetable_uploads,
+│                                #   timetable_entries, announcements, events, media_files,
+│                                #   app_settings, audit_logs
 │
 ├── public/
 │   ├── content/
-│   │   ├── timetables/        # PDF timetable files (Stundenplan_kw_XX_HjY_YYYY_YY.pdf)
-│   │   ├── announcements/     # Legacy .txt announcement files (migrated to store)
-│   │   ├── branding/          # Logo, favicons, PWA icons
-│   │   ├── kalender.txt       # Google Calendar embed URLs (one per line)
-│   │   ├── messages.json      # Daily messages config (by time-of-day / class)
-│   │   └── schulferien-nds.json  # Lower Saxony school holidays
+│   │   └── branding/          # Logo, favicons, PWA icons
 │   ├── manifest.webmanifest   # PWA manifest
-│   └── sw.js                  # Service worker (auto-generated by prebuild)
+│   └── sw.js                  # Service worker
 │
 ├── src/
 │   ├── app/                   # Next.js App Router pages
@@ -61,16 +86,9 @@ npm run validate-content # Validate content files
 │   │   ├── einstellungen/     # Settings page
 │   │   ├── weiteres/          # "More" page
 │   │   ├── tv/                # TV display mode (full-screen timetable grid)
-│   │   ├── admin/             # Admin panel for announcement CRUD
+│   │   ├── admin/             # Admin panel (Ankündigungen, Termine, Uploads)
 │   │   │   ├── page.tsx
-│   │   │   └── ui/AdminAnnouncementEditor.tsx
-│   │   ├── api/
-│   │   │   ├── bootstrap/route.ts    # GET — returns latest timetable + announcements + ETag
-│   │   │   └── admin/
-│   │   │       ├── login/route.ts    # POST — password auth, sets session cookie
-│   │   │       ├── logout/route.ts   # POST — clears session cookie
-│   │   │       ├── session/route.ts  # GET — validates current session
-│   │   │       └── announcements/route.ts  # CRUD for announcements (GET/POST/PUT/DELETE)
+│   │   │   └── ui/            # AdminAnnouncementEditor, AdminEventEditor, AdminUploadManager, AdminWorkspace
 │   │   ├── error.tsx
 │   │   ├── loading.tsx
 │   │   └── not-found.tsx
@@ -81,30 +99,16 @@ npm run validate-content # Validate content files
 │   │   ├── tv/                # TvPageController
 │   │   └── ui/                # BottomNav, Topbar, Clock, Countdown, DailyMessage, GoogleCalendar, MiniCalendar, NetworkDot, ThemeScript, ThemeToggle, ServiceWorkerRegister, TimetableAutoRefresh, UpdateNotice
 │   │
-│   ├── generated/             # Auto-generated JSON (by prebuild, do NOT edit manually)
-│   │   ├── timetable-data.json
-│   │   ├── announcements-data.json
-│   │   ├── calendar-data.json
-│   │   ├── messages-data.json
-│   │   └── school-holidays-data.json
-│   │
 │   ├── lib/
-│   │   ├── admin/auth.ts           # HMAC session tokens, password validation
+│   │   ├── api/client.ts      # API-Client für Worker-Backend (fetch-basiert)
 │   │   ├── announcements/
-│   │   │   ├── parser.ts           # Parse announcement text format, expiry logic
-│   │   │   ├── editor.ts           # Form data types, serialization, validation
-│   │   │   ├── repository.ts       # JSON file store (data/announcements-store.json) with memory fallback
-│   │   │   ├── repository.test.ts  # Vitest tests
-│   │   │   ├── admin-store.ts      # Admin CRUD helpers
-│   │   │   └── server.ts           # Server-side announcement loading
+│   │   │   └── parser.ts      # parseBerlinDate für Client-Seite
 │   │   ├── timetable/
-│   │   │   ├── types.ts            # SchoolClass, Weekday, LessonEntry, WeekPlan, ParsedSchedule, SpecialEvent
-│   │   │   ├── server.ts           # Loads timetable-data.json with auto-rebuild on PDF change
-│   │   │   ├── pdfParser.ts        # Runtime PDF parsing helpers
-│   │   │   ├── selectLatest.ts     # Timetable comparison/sorting
-│   │   │   └── selection-core.ts   # Shared selection logic
-│   │   ├── berlin-time.ts          # Berlin timezone utilities
-│   │   ├── calendar/               # Lower Saxony school holiday calendar
+│   │   │   └── types.ts       # SchoolClass, Weekday, LessonEntry, WeekPlan, ParsedSchedule, SpecialEvent
+│   │   ├── calendar/
+│   │   │   └── lowerSaxonySchoolFreeDays.ts  # Feiertage + Schulferien Niedersachsen
+│   │   ├── berlin-time.ts     # Berlin timezone utilities (Client-Seite)
+│   │   ├── validation/content-schemas.ts  # Validierungsfunktionen
 │   │   └── storage/preferences.ts  # Client-side localStorage preferences
 │   │
 │   └── styles/
@@ -116,9 +120,6 @@ npm run validate-content # Validate content files
 │       ├── features-week.css       # Week view styles
 │       └── layout.css              # Layout utilities
 │
-├── data/                      # Runtime data directory (gitignored)
-│   └── announcements-store.json   # Persistent announcement storage
-│
 └── docs/
     ├── CONTENT_FORMATS.md     # Documentation for content file formats
     └── templates/             # Announcement templates
@@ -126,55 +127,41 @@ npm run validate-content # Validate content files
 
 ## Architecture & Key Patterns
 
-### Prebuild Pipeline
+### Dual-System Architecture
 
-The `scripts/prebuild.mjs` script runs before every `dev` and `build`. It:
+Das Projekt besteht aus zwei getrennten Systemen:
 
-1. Parses timetable PDFs from `public/content/timetables/` using `pdfjs-dist`
-2. Reads announcement `.txt` files from `public/content/announcements/`
-3. Loads calendar URLs from `public/content/kalender.txt`
-4. Loads school holidays from `public/content/schulferien-nds.json`
-5. Loads daily messages from `public/content/messages.json`
-6. Generates the service worker (`public/sw.js`) with a build version hash
-7. Writes all results to `src/generated/*.json`
+1. **Cloudflare Worker** (`worker/src/`) — API-Backend mit D1-Datenbank und R2-Storage
+2. **Next.js Frontend** (`src/`) — UI, ruft Worker-API per `src/lib/api/client.ts` auf
 
-**PDF naming convention**: `Stundenplan_kw_XX_HjY_YYYY_YY.pdf` where XX = calendar week, Y = half-year (1 or 2), YYYY_YY = school year (e.g., 2025_26).
+In der Entwicklung: Next.js auf Port 3000 proxied `/api/*` an den Worker auf Port 8787 (konfiguriert in `next.config.mjs`).
 
 ### Data Flow
 
-- **Storage**: Supabase Storage (Bucket: `content`, public) für Dateien. Supabase Postgres (`content_items`) als Index.
-- **Build time**: PDFs + content files → `scripts/prebuild.mjs` → `src/generated/*.json`
-- **Runtime (timetable)**: `src/lib/timetable/server.ts` reads from generated JSON, hydrates metadata from `content_items` DB
-- **Runtime (announcements)**: `src/lib/announcements/repository.ts` manages a JSON store in Supabase Storage with local fallback
-- **Runtime (UI reads)**: Nur DB-Reads aus `content_items` + direkte Storage-URL-Abrufe. Kein `list()`/`head()` im normalen Betrieb.
-- **Client-side**: Pages are server-rendered (RSC). Class selection is stored in `localStorage` and synced via `?klasse=` search param
+- **Storage**: D1 (SQLite) für strukturierte Daten, R2 für PDF-Dateien
+- **PDF-Upload**: Admin lädt PDF hoch → R2 + D1 `timetable_uploads` → Parser extrahiert Stunden → D1 `timetable_entries`
+- **Runtime (timetable)**: Worker liest aus D1 `timetable_entries` für den aktiven Upload
+- **Runtime (announcements)**: Worker liest aus D1 `announcements`
+- **Fallback**: Wenn kein aktiver Stundenplan existiert, wird automatisch der letzte geparste/archivierte verwendet
+- **Client-side**: Class selection in `localStorage`, synced via `?klasse=` search param
 
 ### Admin System
 
-- Password-based authentication via env vars (`ADMIN_USER`, `ADMIN_PASSWORD`)
-- HMAC-signed session cookies (12-hour expiry)
-- Middleware at `middleware.ts` protects `/admin` and all `/api/admin/*` routes except `/login` and `/session`
-- Admin panel at `/admin` provides CRUD for announcements
+- Password-based authentication (PBKDF2-SHA256)
+- Session tokens in D1 `sessions` table (12-hour expiry)
+- Auto-Setup: Erster Login mit `ADMIN_USER`/`ADMIN_PASSWORD` env vars erstellt automatisch den Admin-User
+- Auth wird in jedem Admin-Handler via `requireAuth()` geprüft
+- Admin panel at `/admin` provides CRUD for announcements, events, and timetable uploads
+- Audit-Log: Alle Admin-Aktionen werden in `audit_logs` protokolliert
 
-### Announcement Format
+### PDF Parsing
 
-Announcements use a header/body text format separated by `---`:
+Der Stundenplan-Parser (`worker/src/pdf-parser/index.ts`) verarbeitet PDF-Dateien:
+- Erkennt Klassen-Header, Wochentag-Sektionen, Stunden/Zeiten
+- Unterstützt Doppelstunden-Erkennung und Block-Sondereinträge
+- Ergebnis wird in D1 `timetable_entries` gespeichert (Batch-Insert, max 100 Statements)
 
-```
-title: Projektwoche Holztechnik
-date: 15.03.2026 08:00
-expires: 19.03.2026 16:00
-audience: alle
-classes: HT11, HT12
-anzeige: ja
----
-Body text here describing the announcement.
-```
-
-Key fields:
-- `anzeige: ja` → shown above timetable + on bulletin board; `nein` → bulletin board only
-- `classes` → comma-separated class codes (e.g., `HT11, G21`)
-- Dates use German format: `DD.MM.YYYY HH:mm`
+**PDF naming convention**: `Stundenplan_kw_XX_HjY_YYYY_YY.pdf` where XX = calendar week, Y = half-year (1 or 2), YYYY_YY = school year (e.g., 2025_26).
 
 ### Pages / Routes
 
@@ -187,17 +174,27 @@ Key fields:
 | `/einstellungen` | Settings (class selection, theme) |
 | `/weiteres` | Additional info / links |
 | `/tv` | TV display mode for wall-mounted screens |
-| `/admin` | Admin panel for managing announcements |
+| `/admin` | Admin panel for managing announcements, events, uploads |
 
-### API Routes
+### API Routes (Worker)
 
 | Endpoint | Method | Description |
 |---|---|---|
-| `/api/bootstrap` | GET | Returns latest timetable, announcements, version hash (supports ETag/304) |
-| `/api/admin/login` | POST | Username + password login, returns session cookie |
-| `/api/admin/logout` | POST | Clears session cookie |
-| `/api/admin/session` | GET | Validates current session |
-| `/api/admin/announcements` | GET/POST/PUT/DELETE | Announcement CRUD (protected) |
+| `/api/bootstrap` | GET | Aktiver Stundenplan + Ankündigungen + Version (ETag/304) |
+| `/api/timetable` | GET | Stundenplan, optional `?klasse=` Filter |
+| `/api/timetable/classes` | GET | Alle Klassen im aktiven Stundenplan |
+| `/api/announcements` | GET | Aktive Ankündigungen, optional `?klasse=` Filter |
+| `/api/events` | GET | Aktive Termine |
+| `/api/settings` | GET | Öffentliche App-Settings |
+| `/api/admin/login` | POST | Login (Username + Passwort) |
+| `/api/admin/logout` | POST | Logout |
+| `/api/admin/session` | GET | Session-Validierung |
+| `/api/admin/announcements` | GET/POST/PUT/DELETE | Ankündigungen CRUD |
+| `/api/admin/events` | GET/POST/PUT/DELETE | Termine CRUD |
+| `/api/admin/uploads` | GET/POST/DELETE | PDF-Upload + Parsing |
+| `/api/admin/uploads/:id/activate` | POST | Stundenplan aktivieren |
+| `/api/admin/settings` | GET/PUT | App-Settings |
+| `/api/admin/audit` | GET | Audit-Logs |
 
 ## Coding Conventions
 
@@ -205,7 +202,8 @@ Key fields:
 
 - **Strict mode** enabled. Do not use `any` unless absolutely necessary.
 - Path alias: `@/*` maps to `./src/*`. Always use `@/` imports, never relative `../` from deep paths.
-- No JavaScript files in `src/` — only TypeScript (`.ts`, `.tsx`). Scripts in `scripts/` use `.mjs`.
+- No JavaScript files in `src/` — only TypeScript (`.ts`, `.tsx`).
+- Worker code lives in `worker/src/` with separate type system.
 
 ### Styling
 
@@ -227,36 +225,25 @@ Key fields:
 - Error messages returned by the API are in German.
 - Variable names and function names are in English.
 
-### File Organization
-
-- **Do not manually edit files in `src/generated/`** — they are overwritten by the prebuild script.
-- Content files go in `public/content/`.
-- Runtime data (announcement store) goes in `data/` (gitignored).
-
 ## Environment Variables
 
 ```bash
-ADMIN_USER=redaktion              # Admin username
-ADMIN_PASSWORD=...                # Admin password (required, with ADMIN_USER, for /admin access)
-SESSION_SECRET=...                # HMAC secret for session cookies (falls back to ADMIN_PASSWORD)
-SUPABASE_URL=...                  # Supabase project URL
-SUPABASE_ANON_KEY=...             # Supabase anon key (optional)
-SUPABASE_SERVICE_ROLE_KEY=...     # Supabase service role key (server-only!)
+ADMIN_USER=redaktion              # Admin username (wrangler.toml [vars])
+ADMIN_PASSWORD=...                # Admin password (wrangler secret)
+SESSION_SECRET=...                # HMAC secret for session cookies (wrangler secret)
 ```
 
-Copy `.env.example` to `.env` and set secure values. See `docs/ADMIN.md` for Supabase setup.
+Secrets werden via `wrangler secret put` gesetzt, nicht in `.env`.
 
 ## Testing
 
 - **Test runner**: Vitest (`npm run test:unit`)
-- Test files use the `.test.ts` suffix and live next to their source files.
-- Tests use temp directories and `process.chdir()` for filesystem isolation.
-- Currently there are tests for `src/lib/announcements/repository.test.ts` covering store reading, error handling, quarantine behavior, and read-only filesystem fallback.
+- Test files use the `.test.ts` / `.test.tsx` suffix and live next to their source files.
 
 ## Important Notes
 
-- The service worker (`public/sw.js`) is **auto-generated** by `prebuild.mjs`. Do not edit it manually.
-- Timetable data auto-refreshes at runtime: `server.ts` checks the PDF directory every 5 seconds and re-runs prebuild if files changed.
 - The app targets the **Europe/Berlin** timezone for all date logic.
-- Class codes follow the pattern `[A-Z]{1,3}\d{2}` (e.g., `HT11`, `G21`, `GT01`).
-- The announcement store (`data/announcements-store.json`) has an in-memory fallback when the filesystem is read-only (e.g., on certain hosting platforms).
+- Class codes follow the pattern `[A-Z]{1,5}\d{1,2}[A-Z]?` (e.g., `HT11`, `G21`, `GT01`).
+- D1 hat ein Batch-Limit von 100 Statements pro `batch()` Aufruf.
+- PDF-Parsing läuft im selben Worker-Request wie der Upload — bei großen PDFs kann das CPU-Zeitlimit erreicht werden.
+- Der Stundenplan hat einen Fallback: Wenn kein aktiver Plan gesetzt ist, wird der letzte geparste/archivierte verwendet.
