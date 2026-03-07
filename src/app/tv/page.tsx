@@ -1,15 +1,26 @@
-import { getAnnouncements } from '@/lib/announcements/server';
-import { getWeeklyPlanForAllClasses } from '@/lib/timetable/server';
 import { Clock } from '@/components/ui/Clock';
 import { TvTimetableGrid } from '@/components/schedule/TvTimetableGrid';
-import { parseBerlinDate } from '@/lib/announcements/parser';
 import { TvPageController } from '@/components/tv/TvPageController';
+import { fetchTimetable, fetchAnnouncements, type AnnouncementData } from '@/lib/api/client';
+import { Weekday } from '@/lib/timetable/types';
 
 export const dynamic = 'force-dynamic';
 export default async function TvPage() {
-  const plan = await getWeeklyPlanForAllClasses();
+  let allEntries: Record<string, Record<string, unknown>> = {};
+  let todayKey = 'MO';
+  let updatedAt: string | null = null;
+  let announcements: AnnouncementData[] = [];
 
-  if (!plan) {
+  try {
+    const plan = await fetchTimetable();
+    allEntries = plan.entries as Record<string, Record<string, unknown>>;
+    todayKey = plan.todayKey;
+    updatedAt = plan.upload?.updated_at ?? null;
+  } catch {
+    /* ignore */
+  }
+
+  if (Object.keys(allEntries).length === 0) {
     return (
       <div className="card surface">
         <h1 className="section-title">TV-Ansicht</h1>
@@ -18,12 +29,15 @@ export default async function TvPage() {
     );
   }
 
-  const announcements = await getAnnouncements();
+  try {
+    const res = await fetchAnnouncements();
+    announcements = res.announcements;
+  } catch {
+    /* ignore */
+  }
 
   const sortedAnnouncements = [...announcements].sort((a, b) => {
-    const aDate = parseBerlinDate(a.date)?.getTime() ?? 0;
-    const bDate = parseBerlinDate(b.date)?.getTime() ?? 0;
-    return bDate - aDate;
+    return new Date(b.date).getTime() - new Date(a.date).getTime();
   });
 
   return (
@@ -45,7 +59,7 @@ export default async function TvPage() {
             <Clock variant="tv" />
           </div>
 
-          {plan.updatedAt && <p className="text-sm text-muted">Stand Stundenplan: {plan.updatedAt}</p>}
+          {updatedAt && <p className="text-sm text-muted">Stand Stundenplan: {new Date(updatedAt).toLocaleDateString('de-DE')}</p>}
         </article>
 
         <article className="tv-panel">
@@ -55,7 +69,7 @@ export default async function TvPage() {
           ) : (
             <div className="tv-list">
               {sortedAnnouncements.slice(0, 8).map((item) => (
-                <article key={item.file} className="tv-list-item">
+                <article key={item.id} className="tv-list-item">
                   <div className="tv-list-head">
                     <strong>{item.title ?? 'Ohne Titel'}</strong>
                     {item.date ? <span>{item.date}</span> : null}
@@ -70,7 +84,7 @@ export default async function TvPage() {
       </section>
 
       <section className="tv-panel tv-timetable-panel">
-        <TvTimetableGrid schedulesByClass={plan.schedulesByClass} day={plan.todayKey} />
+        <TvTimetableGrid schedulesByClass={allEntries} day={todayKey as Weekday} />
       </section>
     </div>
   );

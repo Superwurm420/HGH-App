@@ -1,26 +1,27 @@
 {
   "name": "hgh-app",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
-    "dev": "node scripts/prebuild.mjs && next dev",
-    "build": "node scripts/prebuild.mjs && next build",
+    "dev": "next dev",
+    "dev:worker": "wrangler dev",
+    "build": "next build",
+    "build:worker": "wrangler deploy --dry-run",
     "start": "next start",
     "lint": "next lint",
-    "prebuild": "node scripts/prebuild.mjs",
-    "validate-content": "node scripts/validate-content.mjs",
-    "select-latest-timetable": "node scripts/select-latest-timetable.mjs",
-    "migrate-announcements": "node scripts/migrate-announcements-to-store.mjs",
-    "test:unit": "vitest run"
+    "test:unit": "vitest run",
+    "db:migrate": "wrangler d1 migrations apply hgh-app-db",
+    "db:migrate:local": "wrangler d1 migrations apply hgh-app-db --local",
+    "deploy": "wrangler deploy"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.98.0",
     "next": "14.2.32",
     "pdfjs-dist": "^5.4.624",
     "react": "18.3.1",
     "react-dom": "18.3.1"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241205.0",
     "@types/node": "20.17.19",
     "@types/react": "18.3.18",
     "@types/react-dom": "18.3.5",
@@ -30,6 +31,7 @@
     "postcss": "8.5.3",
     "tailwindcss": "3.4.17",
     "typescript": "5.8.2",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.8",
+    "wrangler": "^3.99.0"
   }
 }

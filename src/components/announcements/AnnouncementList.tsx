@@ -1,7 +1,15 @@
-import { Announcement } from '@/lib/announcements/parser';
 import { AnnouncementItem } from './AnnouncementItem';
 
-export function AnnouncementList({ items }: { items: Announcement[] }) {
+export type DisplayAnnouncement = {
+  id: string;
+  title: string;
+  date: string;
+  expires?: string;
+  body: string;
+  highlight: boolean;
+};
+
+export function AnnouncementList({ items }: { items: DisplayAnnouncement[] }) {
   if (items.length === 0) {
     return <p className="text-sm text-muted">Keine aktiven Beiträge vorhanden.</p>;
   }
@@ -9,7 +17,7 @@ export function AnnouncementList({ items }: { items: Announcement[] }) {
   return (
     <div className="space-y-2">
       {items.map((item) => (
-        <AnnouncementItem key={item.file} {...item} />
+        <AnnouncementItem key={item.id} {...item} />
       ))}
     </div>
   );
