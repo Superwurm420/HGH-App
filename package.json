@@ -12,6 +12,7 @@
     "test:unit": "vitest run",
     "db:migrate": "wrangler d1 migrations apply hgh-app-db",
     "db:migrate:local": "wrangler d1 migrations apply hgh-app-db --local",
+    "setup": "bash scripts/setup.sh",
     "deploy": "wrangler deploy"
   },
   "dependencies": {
