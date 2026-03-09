@@ -1,204 +1,60 @@
 # Admin-Handbuch — HGH-App
 
-Diese Anleitung erklärt Schritt für Schritt, wie man die HGH-App einrichtet und den Adminbereich nutzt. Sie richtet sich an alle, die die App betreiben — auch ohne tiefe Programmierkenntnisse.
+Diese Anleitung erklärt, wie man die HGH-App einrichtet und den Adminbereich nutzt. Auch ohne Programmierkenntnisse.
 
 ---
 
 ## Inhaltsverzeichnis
 
-1. [Was wird gebraucht?](#1-was-wird-gebraucht)
-2. [Cloudflare-Konto einrichten](#2-cloudflare-konto-einrichten)
-3. [Wrangler installieren und anmelden](#3-wrangler-installieren-und-anmelden)
-4. [Datenbank erstellen (D1)](#4-datenbank-erstellen-d1)
-5. [Dateispeicher erstellen (R2)](#5-dateispeicher-erstellen-r2)
-6. [Passwort und Geheimnisse setzen](#6-passwort-und-geheimnisse-setzen)
-7. [App bereitstellen (Deployment)](#7-app-bereitstellen-deployment)
-8. [Erster Login — Admin-Konto wird automatisch erstellt](#8-erster-login--admin-konto-wird-automatisch-erstellt)
-9. [Den Adminbereich nutzen](#9-den-adminbereich-nutzen)
-10. [Lokale Entwicklung](#10-lokale-entwicklung)
-11. [Häufige Probleme und Lösungen](#11-häufige-probleme-und-lösungen)
+1. [Einrichtung](#1-einrichtung)
+2. [Erster Login](#2-erster-login)
+3. [Den Adminbereich nutzen](#3-den-adminbereich-nutzen)
+4. [Lokale Entwicklung](#4-lokale-entwicklung)
+5. [Häufige Probleme und Lösungen](#5-häufige-probleme-und-lösungen)
+6. [Manuelle Einrichtung (Referenz)](#6-manuelle-einrichtung-referenz)
 
 ---
 
-## 1. Was wird gebraucht?
+## 1. Einrichtung
 
-Bevor es losgeht, brauchst du folgende Dinge auf deinem Computer:
+### Was du brauchst
 
-| Was? | Wozu? | Installation |
-|------|-------|--------------|
-| **Node.js** (Version 18+) | Führt die App und Werkzeuge aus | [nodejs.org](https://nodejs.org) |
-| **npm** | Installiert Abhängigkeiten (kommt mit Node.js) | Wird mit Node.js installiert |
-| **Ein Cloudflare-Konto** | Hostet die App, Datenbank und Dateien | [dash.cloudflare.com](https://dash.cloudflare.com) — kostenlos |
+- **Node.js** (Version 18 oder neuer) — [nodejs.org](https://nodejs.org) herunterladen und installieren
+- Ein **Cloudflare-Konto** (kostenlos) — auf [dash.cloudflare.com](https://dash.cloudflare.com) registrieren
 
-> **Tipp:** Du kannst prüfen, ob Node.js installiert ist, indem du in einem Terminal `node --version` eingibst. Es sollte eine Versionsnummer erscheinen (z. B. `v20.11.0`).
+> **Tipp:** Prüfe ob Node.js installiert ist: Öffne ein Terminal und tippe `node --version`. Es sollte eine Versionsnummer erscheinen (z. B. `v20.11.0`).
 
----
+### Setup-Skript ausführen
 
-## 2. Cloudflare-Konto einrichten
-
-1. Öffne [dash.cloudflare.com](https://dash.cloudflare.com) in deinem Browser.
-2. Klicke auf **Sign Up** und erstelle ein Konto mit deiner E-Mail-Adresse.
-3. Bestätige deine E-Mail-Adresse über den zugesendeten Link.
-
-Das Konto ist kostenlos. Die Dienste, die wir nutzen (Workers, D1, R2), sind im kostenlosen Kontingent enthalten.
-
----
-
-## 3. Wrangler installieren und anmelden
-
-**Wrangler** ist das Kommandozeilen-Werkzeug von Cloudflare. Damit wird die App bereitgestellt und konfiguriert.
-
-Öffne ein Terminal (z. B. PowerShell unter Windows, Terminal unter macOS/Linux) und führe aus:
+Das Setup-Skript erledigt alles automatisch für dich:
 
 ```bash
-# Wrangler global installieren
-npm install -g wrangler
-
-# Bei Cloudflare anmelden (öffnet einen Browser)
-wrangler login
+npm run setup
 ```
 
-Nach `wrangler login` öffnet sich dein Browser. Melde dich dort mit deinem Cloudflare-Konto an und erlaube den Zugriff. Danach kannst du das Browserfenster schließen.
+**Was passiert dabei?**
 
-> **Prüfen ob es geklappt hat:**
-> ```bash
-> wrangler whoami
-> ```
-> Hier sollte dein Cloudflare-Kontoname erscheinen.
+1. Abhängigkeiten werden installiert
+2. Dein Browser öffnet sich zur Cloudflare-Anmeldung (falls nötig)
+3. Die Datenbank wird erstellt und eingerichtet
+4. Der Dateispeicher für PDFs wird erstellt
+5. Ein Session-Geheimnis wird automatisch generiert
+6. Du wirst nach einem **Admin-Passwort** gefragt — merke es dir!
+7. Die lokale Entwicklungsumgebung wird vorbereitet
 
----
-
-## 4. Datenbank erstellen (D1)
-
-Die App speichert alle Daten (Stundenpläne, Ankündigungen, Termine, Benutzer) in einer **D1-Datenbank**. Das ist eine SQLite-Datenbank, die bei Cloudflare läuft.
-
-### Datenbank anlegen
+### App veröffentlichen
 
 ```bash
-wrangler d1 create hgh-app-db
-```
-
-Die Ausgabe sieht ungefähr so aus:
-
-```
-✅ Successfully created DB 'hgh-app-db'
-
-[[d1_databases]]
-binding = "DB"
-database_name = "hgh-app-db"
-database_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
-```
-
-### Database-ID in die Konfiguration eintragen
-
-Öffne die Datei `wrangler.toml` im Hauptverzeichnis des Projekts und ersetze den Platzhalter bei `database_id` durch die ID aus der Ausgabe oben:
-
-```toml
-[[d1_databases]]
-binding = "DB"
-database_name = "hgh-app-db"
-database_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"  # ← Deine echte ID hier einsetzen
-```
-
-### Tabellen erstellen (Migration)
-
-Die Datenbank ist noch leer. Die Tabellen werden durch eine Migration erstellt:
-
-```bash
-# Für die Produktion (auf Cloudflare):
-npm run db:migrate
-
-# Für lokale Entwicklung (auf deinem Computer):
-npm run db:migrate:local
-```
-
-> **Was passiert hier?** Der Befehl führt die Datei `migrations/0001_initial_schema.sql` aus. Diese erstellt alle nötigen Tabellen: Benutzer, Sitzungen, Klassen, Stundenpläne, Ankündigungen, Termine und mehr.
-
----
-
-## 5. Dateispeicher erstellen (R2)
-
-Hochgeladene PDF-Stundenpläne werden in einem **R2-Bucket** gespeichert. Das ist ein Dateispeicher bei Cloudflare.
-
-```bash
-wrangler r2 bucket create hgh-app-content
-```
-
-Der Name `hgh-app-content` muss mit dem Eintrag in `wrangler.toml` übereinstimmen (ist bereits vorkonfiguriert):
-
-```toml
-[[r2_buckets]]
-binding = "STORAGE"
-bucket_name = "hgh-app-content"
-```
-
----
-
-## 6. Passwort und Geheimnisse setzen
-
-Die App braucht ein Admin-Passwort und einen geheimen Schlüssel für Sitzungen. Diese werden als **Secrets** gespeichert — sie sind nur auf dem Server verfügbar und nie im Code sichtbar.
-
-### Admin-Passwort setzen
-
-```bash
-wrangler secret put ADMIN_PASSWORD
-```
-
-Du wirst aufgefordert, das Passwort einzugeben. **Dieses Passwort brauchst du später für den ersten Login.** Wähle ein sicheres Passwort und merke es dir.
-
-> **Hinweis:** Das Passwort erscheint nicht auf dem Bildschirm während du es eingibst — das ist normal und ein Sicherheitsmerkmal.
-
-### Session-Geheimnis setzen
-
-```bash
-wrangler secret put SESSION_SECRET
-```
-
-Gib hier eine beliebige, lange Zeichenkette ein (z. B. 32+ zufällige Zeichen). Dieser Schlüssel wird intern zur Absicherung der Admin-Sitzungen verwendet.
-
-> **Tipp:** Du kannst mit diesem Befehl einen zufälligen Schlüssel erzeugen und kopieren:
-> ```bash
-> node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-> ```
-
-### Admin-Benutzername (optional ändern)
-
-Der Benutzername ist standardmäßig auf `redaktion` gesetzt. Du findest ihn in der Datei `wrangler.toml`:
-
-```toml
-[vars]
-ADMIN_USER = "redaktion"
-```
-
-Falls du einen anderen Benutzernamen möchtest, ändere den Wert hier. Für die meisten Fälle ist `redaktion` passend.
-
-### Zusammenfassung der Konfiguration
-
-| Einstellung | Wo? | Standard | Beschreibung |
-|-------------|-----|----------|--------------|
-| `ADMIN_USER` | `wrangler.toml` → `[vars]` | `redaktion` | Benutzername für den Admin-Login |
-| `ADMIN_PASSWORD` | Cloudflare Secret | — (muss gesetzt werden) | Passwort für den Admin-Login |
-| `SESSION_SECRET` | Cloudflare Secret | — (muss gesetzt werden) | Geheimer Schlüssel für Sitzungscookies |
-
----
-
-## 7. App bereitstellen (Deployment)
-
-Wenn alles konfiguriert ist, kann die App auf Cloudflare veröffentlicht werden:
-
-```bash
-# 1. Abhängigkeiten installieren (falls noch nicht geschehen)
-npm install
-
-# 2. App bereitstellen
 npm run deploy
 ```
 
-Nach erfolgreichem Deployment zeigt Wrangler die URL an, unter der die App erreichbar ist.
+Danach zeigt dir das Terminal die URL, unter der die App erreichbar ist.
+
+> **Hinweis:** Der Admin-Benutzername ist standardmäßig `redaktion`. Falls du ihn ändern möchtest, bearbeite die Datei `wrangler.toml` und ändere den Wert bei `ADMIN_USER`.
 
 ---
 
-## 8. Erster Login — Admin-Konto wird automatisch erstellt
+## 2. Erster Login
 
 Beim allerersten Login erstellt die App automatisch das Admin-Konto. Du musst keinen Benutzer manuell anlegen.
 
@@ -209,7 +65,7 @@ Beim allerersten Login erstellt die App automatisch das Admin-Konto. Du musst ke
 
 2. Du siehst das Anmeldeformular:
    - **Benutzername:** `redaktion` (oder was du in `wrangler.toml` eingestellt hast)
-   - **Passwort:** Das Passwort, das du mit `wrangler secret put ADMIN_PASSWORD` gesetzt hast
+   - **Passwort:** Das Passwort, das du beim Setup eingegeben hast
 
 3. Klicke auf **Anmelden**.
 
@@ -229,7 +85,7 @@ Nach dem Login bist du **12 Stunden** angemeldet. Danach musst du dich erneut ei
 
 ---
 
-## 9. Den Adminbereich nutzen
+## 3. Den Adminbereich nutzen
 
 Nach dem Login siehst du den Adminbereich mit drei Reitern (Tabs):
 
@@ -307,57 +163,40 @@ Für jeden Termin kannst du festlegen:
 
 ---
 
-## 10. Lokale Entwicklung
+## 4. Lokale Entwicklung
 
-Für die Entwicklung auf deinem eigenen Computer brauchst du zwei Terminals.
-
-### Terminal 1 — Backend starten
+Wenn du `npm run setup` ausgeführt hast, ist die lokale Entwicklung bereits vorbereitet. Du brauchst nur zwei Terminals:
 
 ```bash
+# Terminal 1 — Backend
 npm run dev:worker
-```
 
-Startet den Cloudflare Worker lokal auf `http://localhost:8787`. Dabei werden D1 und R2 lokal simuliert.
-
-> **Wichtig:** Für die lokale Entwicklung musst du vorher die lokale Migration ausführen:
-> ```bash
-> npm run db:migrate:local
-> ```
-
-### Terminal 2 — Frontend starten
-
-```bash
+# Terminal 2 — Frontend
 npm run dev
 ```
 
-Startet das Next.js-Frontend auf `http://localhost:3000`. API-Aufrufe (`/api/*`) werden automatisch an den Worker auf Port 8787 weitergeleitet.
+Dann öffne [http://localhost:3000](http://localhost:3000).
 
 ### Lokaler Admin-Login
 
-Für den lokalen Login musst du `ADMIN_PASSWORD` als Umgebungsvariable setzen. Da lokale Worker keine Cloudflare Secrets haben, nutze eine `.dev.vars`-Datei im Projektverzeichnis:
+Das Setup-Skript erstellt automatisch eine `.dev.vars`-Datei mit einem lokalen Passwort. Logge dich ein mit:
+- **Benutzername:** `redaktion`
+- **Passwort:** `admin123`
 
-1. Erstelle eine Datei `.dev.vars` im Hauptverzeichnis:
-   ```
-   ADMIN_PASSWORD=dein-lokales-passwort
-   SESSION_SECRET=ein-beliebiger-geheimer-schluessel
-   ```
-
-2. Starte den Worker neu (`npm run dev:worker`).
-
-3. Logge dich unter `http://localhost:3000/admin` ein mit:
-   - Benutzername: `redaktion`
-   - Passwort: `dein-lokales-passwort`
-
-> **Hinweis:** Die Datei `.dev.vars` sollte **nicht** in Git eingecheckt werden (sie ist in `.gitignore` aufgeführt).
+> **Hinweis:** Falls du die `.dev.vars`-Datei manuell erstellen musst:
+> ```
+> ADMIN_PASSWORD=admin123
+> SESSION_SECRET=ein-beliebiger-geheimer-schluessel
+> ```
 
 ---
 
-## 11. Häufige Probleme und Lösungen
+## 5. Häufige Probleme und Lösungen
 
 ### „Ungültige Anmeldedaten" beim ersten Login
 
 - **Benutzername prüfen:** Ist er genau `redaktion` (oder der Wert in `wrangler.toml`)? Groß-/Kleinschreibung beachten.
-- **Passwort prüfen:** Stimmt es mit dem Wert überein, den du bei `wrangler secret put ADMIN_PASSWORD` eingegeben hast?
+- **Passwort prüfen:** Stimmt es mit dem Passwort überein, das du beim Setup eingegeben hast?
 - **Migration ausgeführt?** Ohne Migration existiert die `users`-Tabelle nicht. Führe `npm run db:migrate` aus.
 
 ### „Ungültige Anmeldedaten" nach dem ersten Login
@@ -397,3 +236,42 @@ Wenn du dein Admin-Passwort vergessen hast:
 
 - Hast du den neuen Stundenplan **aktiviert**? Nur der aktive Plan wird Schülern angezeigt.
 - Browser-Cache leeren oder eine harte Aktualisierung durchführen (Strg+Shift+R / Cmd+Shift+R).
+
+---
+
+## 6. Manuelle Einrichtung (Referenz)
+
+Falls das Setup-Skript nicht funktioniert oder du die Schritte einzeln ausführen willst:
+
+```bash
+# 1. Abhängigkeiten installieren
+npm install
+
+# 2. Bei Cloudflare anmelden
+npx wrangler login
+
+# 3. Datenbank erstellen
+npx wrangler d1 create hgh-app-db
+#    → Die angezeigte database_id in wrangler.toml eintragen
+
+# 4. Dateispeicher erstellen
+npx wrangler r2 bucket create hgh-app-content
+
+# 5. Tabellen anlegen
+npm run db:migrate
+
+# 6. Session-Geheimnis setzen (beliebige lange Zeichenkette)
+npx wrangler secret put SESSION_SECRET
+
+# 7. Admin-Passwort setzen
+npx wrangler secret put ADMIN_PASSWORD
+
+# 8. App veröffentlichen
+npm run deploy
+```
+
+| Einstellung | Wo? | Beschreibung |
+|-------------|-----|--------------|
+| `ADMIN_USER` | `wrangler.toml` → `[vars]` | Benutzername (Standard: `redaktion`) |
+| `ADMIN_PASSWORD` | Cloudflare Secret | Passwort für den Admin-Login |
+| `SESSION_SECRET` | Cloudflare Secret | Geheimer Schlüssel für Sitzungscookies |
