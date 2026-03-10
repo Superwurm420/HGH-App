@@ -73,11 +73,17 @@ export function AdminEventEditor() {
 
     setIsBusy(true);
     try {
+      const payload = {
+        ...form,
+        end_date: form.end_date || undefined,
+        all_day: form.all_day ? 1 : 0,
+      };
+
       if (selectedId) {
-        await adminUpdateEvent(selectedId, form);
+        await adminUpdateEvent(selectedId, payload);
         setStatus(`Termin "${form.title}" aktualisiert.`);
       } else {
-        await adminCreateEvent(form);
+        await adminCreateEvent(payload);
         setStatus(`Termin "${form.title}" erstellt.`);
         setForm(EMPTY_FORM);
         setSelectedId(null);
