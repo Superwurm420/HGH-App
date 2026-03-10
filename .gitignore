@@ -1,6 +1,5 @@
 node_modules
 .next
-out
 .DS_Store
 npm-debug.log*
 .env
@@ -10,3 +9,5 @@ npm-debug.log*
 
 # zentrale Persistenz (laufzeitgeneriert)
 data/announcements-store.json
+
+.open-next

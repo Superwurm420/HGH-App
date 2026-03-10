@@ -37,11 +37,12 @@ Das war's! Danach öffne `/admin` im Browser und melde dich an:
 
 ## Cloudflare-Projekt richtig konfigurieren
 
-Diese App ist für **Cloudflare Workers** ausgelegt (Wrangler + `wrangler.toml`), **nicht** für Cloudflare Pages/OpenNext.
+Diese App läuft als **Next.js auf Cloudflare Workers** mit **OpenNext für Cloudflare**.
 
-- Nutze im Dashboard ein **Workers-Projekt** mit `npm run deploy` (oder Git-Integration für Workers).
-- Falls ein Pages-Projekt existiert, nicht für dieses Repo verwenden bzw. Build dort deaktivieren.
-- Build-Command für CI/Cloudflare: `npm clean-install && npm run build` (lokale Prüfung) und Deployment über `npm run deploy`.
+- Nutze im Dashboard ein **Workers-Projekt** (kein Pages-Static-Export).
+- Build-Command für CI/Cloudflare: `npm clean-install && npm run build:worker`
+- Deploy-Command: `npm run deploy`
+- Falls ein altes Pages-Projekt existiert, nicht mehr für dieses Repo verwenden.
 
 ## Lokal entwickeln
 
