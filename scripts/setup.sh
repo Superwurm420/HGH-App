@@ -108,18 +108,8 @@ npx wrangler d1 migrations apply hgh-app-db --remote -c worker/wrangler.toml 2>&
 }
 info "Tabellen erstellt"
 
-# ── Secrets setzen ─────────────────────────────────────────
-step "Geheimnisse setzen"
-
-# SESSION_SECRET automatisch generieren
-echo ""
-echo "    Das Session-Geheimnis wird automatisch generiert..."
-SESSION_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
-echo "$SESSION_SECRET" | npx wrangler secret put SESSION_SECRET -c worker/wrangler.toml 2>&1 || {
-  warn "SESSION_SECRET konnte nicht gesetzt werden. Setze es manuell mit:"
-  echo "    npx wrangler secret put SESSION_SECRET"
-}
-info "SESSION_SECRET automatisch gesetzt"
+# ── Admin-Passwort setzen ─────────────────────────────────
+step "Admin-Passwort setzen"
 
 # ADMIN_PASSWORD vom Benutzer abfragen
 echo ""
@@ -145,10 +135,8 @@ fi
 step "Lokale Entwicklung vorbereiten"
 
 if [ ! -f ".dev.vars" ]; then
-  LOCAL_SESSION_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
   cat > .dev.vars <<EOF
 ADMIN_PASSWORD=admin123
-SESSION_SECRET=$LOCAL_SESSION_SECRET
 EOF
   info ".dev.vars erstellt (lokales Passwort: admin123)"
 else

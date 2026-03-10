@@ -21,7 +21,6 @@ cd HGH-App
 #    ✓ Bei Cloudflare anmelden (Browser öffnet sich)
 #    ✓ Datenbank + Dateispeicher erstellen
 #    ✓ Tabellen anlegen
-#    ✓ Session-Geheimnis generieren
 #    ✓ Admin-Passwort abfragen
 #    ✓ Lokale Entwicklung vorbereiten
 npm run setup

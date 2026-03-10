@@ -38,8 +38,7 @@ npm run setup
 2. Dein Browser öffnet sich zur Cloudflare-Anmeldung (falls nötig)
 3. Die Datenbank wird erstellt und eingerichtet
 4. Der Dateispeicher für PDFs wird erstellt
-5. Ein Session-Geheimnis wird automatisch generiert
-6. Du wirst nach einem **Admin-Passwort** gefragt — merke es dir!
+5. Du wirst nach einem **Admin-Passwort** gefragt — merke es dir!
 7. Die lokale Entwicklungsumgebung wird vorbereitet
 
 ### App veröffentlichen
@@ -169,7 +168,7 @@ Wenn du `npm run setup` ausgeführt hast, ist die lokale Entwicklung bereits vor
 
 ```bash
 # Terminal 1 — Backend
-npm run dev:worker
+npm run dev:api
 
 # Terminal 2 — Frontend
 npm run dev
@@ -183,7 +182,7 @@ Dann öffne [http://localhost:3000](http://localhost:3000).
 
 Wenn du in Codespaces arbeitest, richte zuerst die **lokale Entwicklung** ein (nicht direkt `deploy`):
 
-1. Terminal 1: `npm run dev:worker`
+1. Terminal 1: `npm run dev:api`
 2. Terminal 2: `npm run dev`
 3. Öffne anschließend den freigegebenen Port **3000** (Codespaces-URL).
 
@@ -198,7 +197,6 @@ Das Setup-Skript erstellt automatisch eine `.dev.vars`-Datei mit einem lokalen P
 > **Hinweis:** Falls du die `.dev.vars`-Datei manuell erstellen musst:
 > ```
 > ADMIN_PASSWORD=admin123
-> SESSION_SECRET=ein-beliebiger-geheimer-schluessel
 > ```
 
 ---
@@ -272,13 +270,10 @@ npx wrangler r2 bucket create hgh-app-content
 # 5. Tabellen anlegen
 npm run db:migrate
 
-# 6. Session-Geheimnis setzen (beliebige lange Zeichenkette)
-npx wrangler secret put SESSION_SECRET
-
-# 7. Admin-Passwort setzen
+# 6. Admin-Passwort setzen
 npx wrangler secret put ADMIN_PASSWORD
 
-# 8. App veröffentlichen
+# 7. App veröffentlichen
 npm run deploy
 ```
 
@@ -286,4 +281,3 @@ npm run deploy
 |-------------|-----|--------------|
 | `ADMIN_USER` | `wrangler.toml` → `[vars]` | Benutzername (Standard: `redaktion`) |
 | `ADMIN_PASSWORD` | Cloudflare Secret | Passwort für den Admin-Login |
-| `SESSION_SECRET` | Cloudflare Secret | Geheimer Schlüssel für Sitzungscookies |
