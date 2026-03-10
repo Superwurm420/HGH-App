@@ -3,12 +3,13 @@
 import { useEffect, useState } from 'react';
 import { loadTheme, saveTheme, ThemeMode } from '@/lib/storage/preferences';
 
-export function ThemeToggle() {
-  const [mode, setMode] = useState<ThemeMode>('system');
+function initialThemeMode(): ThemeMode {
+  if (typeof window === 'undefined') return 'system';
+  return loadTheme();
+}
 
-  useEffect(() => {
-    setMode(loadTheme());
-  }, []);
+export function ThemeToggle() {
+  const [mode, setMode] = useState<ThemeMode>(initialThemeMode);
 
   useEffect(() => {
     const isDark = mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);

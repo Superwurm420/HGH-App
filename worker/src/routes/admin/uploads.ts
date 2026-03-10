@@ -1,4 +1,4 @@
-import { Env, TimetableUpload, Weekday, LessonEntry, ParsedSchedule } from '../../types';
+import { Env, TimetableUpload, Weekday } from '../../types';
 import { jsonResponse, errorResponse } from '../../router';
 import { logAudit } from '../../services/audit';
 import { requireAuth } from '../../middleware/auth';
