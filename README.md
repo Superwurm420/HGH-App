@@ -1,4 +1,4 @@
-# HGH-App — Stundenplan & Infos für die BBS Holztechnik und Gestaltung Hildesheim
+# HGH-App — Stundenplan & Infos für die HGH Holztechnik und Gestaltung Hildesheim
 
 Eine Web-App (PWA), die den Schülern Stundenpläne, Ankündigungen, Termine und mehr anzeigt.
 
