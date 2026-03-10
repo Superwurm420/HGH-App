@@ -1,8 +1,10 @@
-import { defineCloudflareConfig } from "@opennextjs/cloudflare";
+import { defineCloudflareConfig } from '@opennextjs/cloudflare';
 
-const config = defineCloudflareConfig();
+const baseConfig = defineCloudflareConfig();
 
-export default {
-  ...config,
-  buildCommand: "npm run build:next",
+const config = {
+  ...baseConfig,
+  buildCommand: 'npm run build:next',
 };
+
+export default config;

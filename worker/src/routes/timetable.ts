@@ -1,5 +1,5 @@
 import { Env, TimetableUpload, LessonEntry, Weekday } from '../types';
-import { jsonResponse, errorResponse } from '../router';
+import { jsonResponse } from '../router';
 import { weekdayForToday } from '../services/berlin-time';
 
 /**

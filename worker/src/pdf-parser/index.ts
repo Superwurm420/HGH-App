@@ -607,7 +607,7 @@ export async function parseTimetablePdf(
         return { ...lesson, subject: promoted, detail: undefined };
       });
 
-      let filtered = normalized
+      const filtered = normalized
         .map((lesson) => ({ ...lesson, subject: normalizeSubjectText(lesson.subject) }))
         .filter((l) => {
           if (!l.subject || l.subject === 'R' || isNoValue(l.subject)) return false;
