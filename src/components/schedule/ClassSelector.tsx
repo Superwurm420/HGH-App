@@ -1,29 +1,22 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { loadSelectedClass, saveSelectedClass } from '@/lib/storage/preferences';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 
+function resolveSelectedClass(classes: string[], fromUrl: string | null, stored: string | null): string {
+  if (fromUrl && classes.includes(fromUrl)) return fromUrl;
+  if (stored && classes.includes(stored)) return stored;
+  return classes[0] ?? '';
+}
+
 export function ClassSelector({ classes }: { classes: string[] }) {
-  const [selected, setSelected] = useState<string>('');
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  useEffect(() => {
-    const stored = loadSelectedClass();
-    const fromUrl = searchParams.get('klasse');
-    if (fromUrl && classes.includes(fromUrl)) {
-      setSelected(fromUrl);
-    } else if (stored && classes.includes(stored)) {
-      setSelected(stored);
-    } else if (classes.length > 0) {
-      setSelected(classes[0]);
-    }
-  }, [classes, searchParams]);
+  const selected = resolveSelectedClass(classes, searchParams.get('klasse'), loadSelectedClass());
 
   const onChange = (value: string) => {
-    setSelected(value);
     saveSelectedClass(value);
     const params = new URLSearchParams(searchParams.toString());
     params.set('klasse', value);

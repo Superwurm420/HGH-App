@@ -55,7 +55,7 @@ info "Bei Cloudflare angemeldet"
 # ── D1-Datenbank erstellen ─────────────────────────────────
 step "Datenbank erstellen (D1)"
 
-WRANGLER_TOML="wrangler.toml"
+WRANGLER_TOML="worker/wrangler.toml"
 CURRENT_DB_ID=$(grep 'database_id' "$WRANGLER_TOML" | head -1 | sed 's/.*= *"\(.*\)"/\1/')
 
 if [ "$CURRENT_DB_ID" = "placeholder-replace-after-creation" ]; then
@@ -103,7 +103,7 @@ fi
 step "Datenbank-Tabellen erstellen"
 
 echo "    Migration wird auf Cloudflare ausgeführt..."
-npx wrangler d1 migrations apply hgh-app-db --remote 2>&1 || {
+npx wrangler d1 migrations apply hgh-app-db --remote -c worker/wrangler.toml 2>&1 || {
   warn "Remote-Migration fehlgeschlagen — wird bei 'npm run db:migrate' erneut versucht."
 }
 info "Tabellen erstellt"
@@ -115,7 +115,7 @@ step "Geheimnisse setzen"
 echo ""
 echo "    Das Session-Geheimnis wird automatisch generiert..."
 SESSION_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
-echo "$SESSION_SECRET" | npx wrangler secret put SESSION_SECRET 2>&1 || {
+echo "$SESSION_SECRET" | npx wrangler secret put SESSION_SECRET -c worker/wrangler.toml 2>&1 || {
   warn "SESSION_SECRET konnte nicht gesetzt werden. Setze es manuell mit:"
   echo "    npx wrangler secret put SESSION_SECRET"
 }
@@ -134,7 +134,7 @@ if [ -z "$ADMIN_PW" ]; then
   error "Kein Passwort eingegeben. Setze es später manuell mit:"
   echo "    npx wrangler secret put ADMIN_PASSWORD"
 else
-  echo "$ADMIN_PW" | npx wrangler secret put ADMIN_PASSWORD 2>&1 || {
+  echo "$ADMIN_PW" | npx wrangler secret put ADMIN_PASSWORD -c worker/wrangler.toml 2>&1 || {
     warn "ADMIN_PASSWORD konnte nicht gesetzt werden. Setze es manuell mit:"
     echo "    npx wrangler secret put ADMIN_PASSWORD"
   }
@@ -156,7 +156,7 @@ else
 fi
 
 echo "    Lokale Datenbank-Migration..."
-npx wrangler d1 migrations apply hgh-app-db --local 2>&1 || {
+npx wrangler d1 migrations apply hgh-app-db --local -c worker/wrangler.toml 2>&1 || {
   warn "Lokale Migration fehlgeschlagen."
 }
 info "Lokale Datenbank bereit"
@@ -173,7 +173,7 @@ echo -e "  ${BOLD}App auf Cloudflare veröffentlichen:${NC}"
 echo "    npm run deploy"
 echo ""
 echo -e "  ${BOLD}Lokal entwickeln:${NC}"
-echo "    npm run dev:worker    (Terminal 1 — Backend)"
+echo "    npm run dev:api       (Terminal 1 — Backend-API)"
 echo "    npm run dev           (Terminal 2 — Frontend)"
 echo "    Dann öffne: http://localhost:3000"
 echo ""

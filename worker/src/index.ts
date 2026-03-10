@@ -11,7 +11,7 @@ import { handleAdminEvents, handleAdminEventById } from './routes/admin/events';
 import { handleAdminUploads, handleAdminUploadById, handleAdminUploadActivate } from './routes/admin/uploads';
 import { handleAdminSettings } from './routes/admin/settings';
 import { handleAdminAuditLogs } from './routes/admin/audit';
-export default {
+const worker = {
   async fetch(request: Request, env: Env): Promise<Response> {
     const router = new Router();
 
@@ -98,3 +98,5 @@ function addCorsHeaders(response: Response, request?: Request): Response {
   }
   return newResponse;
 }
+
+export default worker;
