@@ -40,7 +40,7 @@ Das war's! Danach öffne `/admin` im Browser und melde dich an:
 Diese App läuft als **Next.js auf Cloudflare Workers** mit **OpenNext für Cloudflare**.
 
 - Nutze im Dashboard ein **Workers-Projekt** (kein Pages-Static-Export).
-- Build-Command für CI/Cloudflare: `npm clean-install && npm run build:worker`
+- Build-Command für CI/Cloudflare (Web): `npm clean-install && npm run build:web`
 - Deploy-Command: `npm run deploy`
 - Falls ein altes Pages-Projekt existiert, nicht mehr für dieses Repo verwenden.
 
@@ -49,8 +49,8 @@ Diese App läuft als **Next.js auf Cloudflare Workers** mit **OpenNext für Clou
 Du brauchst zwei Terminals:
 
 ```bash
-# Terminal 1 — Backend
-npm run dev:worker
+# Terminal 1 — API-Worker
+npm run dev:api
 
 # Terminal 2 — Frontend
 npm run dev
@@ -64,7 +64,7 @@ Wenn du die App in einem Codespace testest, starte sie **lokal im Codespace** (o
 
 ```bash
 # Terminal 1
-npm run dev:worker
+npm run dev:api
 
 # Terminal 2
 npm run dev
@@ -82,9 +82,12 @@ Danach in der Ports-Ansicht den Port **3000** auf „Öffentlich“ stellen und 
 |--------|-------------|
 | `npm run setup` | Ersteinrichtung (einmalig) |
 | `npm run dev` | Frontend starten |
-| `npm run dev:worker` | Backend starten |
-| `npm run deploy` | App auf Cloudflare veröffentlichen |
-| `npm run build` | Frontend bauen (ohne Veröffentlichung) |
+| `npm run dev:api` | API-Worker lokal starten |
+| `npm run dev:worker` | OpenNext-Worker lokal testen |
+| `npm run deploy:web` | Web-Worker (OpenNext) deployen |
+| `npm run deploy:api` | API-Worker deployen |
+| `npm run deploy` | Web + API gemeinsam deployen |
+| `npm run build` | Produktions-Build (Web/OpenNext) |
 | `npm run lint` | Code auf Fehler prüfen |
 | `npm run test:unit` | Tests ausführen |
 
@@ -92,3 +95,19 @@ Danach in der Ports-Ansicht den Port **3000** auf „Öffentlich“ stellen und 
 
 - **[Admin-Handbuch](docs/ADMIN.md)** — Stundenpläne hochladen, Ankündigungen und Termine verwalten, Probleme lösen
 - **[Inhaltsformate](docs/CONTENT_FORMATS.md)** — Technische Details zu Datenformaten
+
+
+## Deployment-Architektur
+
+Die App nutzt **zwei Worker** mit klarer Trennung:
+
+1. **Web-Worker (OpenNext)** aus `wrangler.toml` im Repo-Root (`npm run deploy:web`)
+2. **API-Worker** aus `worker/wrangler.toml` (`npm run deploy:api`)
+
+Damit die Web-App API-Aufrufe unter `/api/*` korrekt an den API-Worker weiterleitet, setze im Web-Worker die Variable:
+
+```bash
+API_ORIGIN=https://<dein-api-worker>.workers.dev
+```
+
+Lokal ist `API_ORIGIN` nicht nötig, da automatisch auf `http://localhost:8787` weitergeleitet wird.

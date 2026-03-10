@@ -2,6 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
   async rewrites() {
+    const apiOrigin = process.env.API_ORIGIN || (process.env.NODE_ENV === 'development' ? 'http://localhost:8787' : '');
+
     return [
       // Favicon rewrites
       { source: '/favicon.ico', destination: '/content/branding/favicon.ico' },
@@ -9,10 +11,7 @@ const nextConfig = {
       { source: '/apple-touch-icon.png', destination: '/content/branding/apple-touch-icon.png' },
       { source: '/web-app-manifest-192x192.png', destination: '/content/branding/web-app-manifest-192x192.png' },
       { source: '/web-app-manifest-512x512.png', destination: '/content/branding/web-app-manifest-512x512.png' },
-      // API-Proxy: In der Entwicklung wird /api/* an den lokalen Worker weitergeleitet
-      ...(process.env.NODE_ENV === 'development'
-        ? [{ source: '/api/:path*', destination: 'http://localhost:8787/api/:path*' }]
-        : []),
+      ...(apiOrigin ? [{ source: '/api/:path*', destination: `${apiOrigin}/api/:path*` }] : []),
     ];
   },
   async headers() {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ExpiryCountdown } from './ExpiryCountdown';
 import styles from './AnnouncementItem.module.css';
 
@@ -13,34 +13,33 @@ type AnnouncementItemProps = {
 };
 
 function parseDateString(dateStr: string): Date | null {
-  // Versuche deutsches Format DD.MM.YYYY HH:mm
   const deMatch = dateStr.match(/^(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}):(\d{2})$/);
   if (deMatch) {
     const [, day, month, year, hour, minute] = deMatch;
     return new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute));
   }
-  // Fallback: ISO format
   const iso = new Date(dateStr);
   return Number.isNaN(iso.getTime()) ? null : iso;
 }
 
 export function AnnouncementItem({ id, title, date, expires, body }: AnnouncementItemProps) {
-  const [hidden, setHidden] = useState(false);
+  const [nowTs, setNowTs] = useState(() => Date.now());
 
-  useEffect(() => {
-    if (!expires) return;
-    const target = parseDateString(expires);
-    if (!target) return;
-    const remaining = target.getTime() - Date.now();
-    if (remaining <= 0) {
-      setHidden(true);
-      return;
-    }
-    const timeout = setTimeout(() => setHidden(true), remaining);
-    return () => clearTimeout(timeout);
+  const expiresAt = useMemo(() => {
+    if (!expires) return null;
+    return parseDateString(expires);
   }, [expires]);
 
-  if (hidden) return null;
+  useEffect(() => {
+    if (!expiresAt) return;
+    const remaining = expiresAt.getTime() - Date.now();
+    if (remaining <= 0) return;
+    const timeout = setTimeout(() => setNowTs(Date.now()), remaining);
+    return () => clearTimeout(timeout);
+  }, [expiresAt]);
+
+  const isHidden = Boolean(expiresAt && expiresAt.getTime() <= nowTs);
+  if (isHidden) return null;
 
   return (
     <article key={id} className={styles.card}>
