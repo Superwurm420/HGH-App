@@ -77,17 +77,24 @@ function corsResponse(request: Request): Response {
 function corsHeaders(request?: Request): Record<string, string> {
   const origin = request?.headers.get('Origin') ?? '';
 
-  // Für Admin-Endpoints: nur Same-Origin erlauben (Origin muss gesetzt sein)
-  // Für öffentliche Endpoints: alle Origins erlauben
-  const allowOrigin = origin || '*';
+  // Ohne Origin-Header: öffentlicher Zugriff ohne Credentials
+  if (!origin) {
+    return {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, Cookie',
+      'Access-Control-Max-Age': '86400',
+    };
+  }
 
+  // Mit Origin-Header: konkreten Origin spiegeln + Credentials erlauben
   return {
-    'Access-Control-Allow-Origin': allowOrigin,
+    'Access-Control-Allow-Origin': origin,
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, Cookie',
     'Access-Control-Allow-Credentials': 'true',
     'Access-Control-Max-Age': '86400',
-    ...(allowOrigin !== '*' ? { Vary: 'Origin' } : {}),
+    'Vary': 'Origin',
   };
 }
 

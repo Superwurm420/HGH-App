@@ -230,7 +230,6 @@ Der Stundenplan-Parser (`worker/src/pdf-parser/index.ts`) verarbeitet PDF-Dateie
 ```bash
 ADMIN_USER=redaktion              # Admin username (wrangler.toml [vars])
 ADMIN_PASSWORD=...                # Admin password (wrangler secret)
-SESSION_SECRET=...                # HMAC secret for session cookies (wrangler secret)
 ```
 
 Secrets werden via `wrangler secret put` gesetzt, nicht in `.env`.

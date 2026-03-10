@@ -1,15 +1,21 @@
+# Inhaltsformate
 
+Dokumentation der Datenformate, die von der HGH-App verwendet werden.
 
-Sondertermine
+---
+
+## Sondertermine
+
 Sondertermine sind alle Abweichungen vom Standardunterricht und dürfen:
 - nur eine Klasse betreffen,
 - mehrere Klassen betreffen,
 - einzelne Blöcke, halbe Tage oder längere Zeiträume abdecken.
 
+---
 
-Tagesmeldungen (`messages.json`)
+## Tagesmeldungen (`messages.json`)
 
-Datei: `public/content/messages.json`
+**Datei:** `public/content/messages.json`
 
 ### Ziel
 - Meldungen auf der Startseite passend zur ausgewählten Klasse und zum aktuellen Tageszeitfenster.
@@ -40,11 +46,35 @@ Datei: `public/content/messages.json`
    - Gesetzlicher Feiertag in Niedersachsen → `feiertag`
    - Alle übrigen unterrichtsfreien Wochentage → `freierTag`
    - Ferienbereiche aus `public/content/schulferien-nds.json` werden zusätzlich als `freierTag` erkannt.
-7. Die Meldung aktualisiert sich laufend (spätestens alle 10 Minute), 
+7. Die Meldung aktualisiert sich laufend (spätestens alle 10 Minuten).
 
+---
 
+## Schulferien (Niedersachsen)
 
-Schulferien (Niedersachsen):
+**Datei:** `public/content/schulferien-nds.json`
 
-Datei: `public/content/schulferien-nds.json`
+### Ziel
+- Definiert schulfreie Zeiträume (Ferien) für Niedersachsen.
+- An Wochentagen innerhalb dieser Zeiträume zeigt die App `freierTag`-Meldungen.
 
+### Struktur
+```json
+{
+  "_hinweis": "Freitext-Hinweis für Redakteure",
+  "ranges": [
+    { "start": "2025-10-13", "end": "2025-10-25" },
+    { "start": "2025-12-22", "end": "2026-01-05" }
+  ]
+}
+```
+
+### Felder
+| Feld | Format | Beschreibung |
+|------|--------|--------------|
+| `start` | `YYYY-MM-DD` | Erster Tag des Ferienzeitraums (inklusive) |
+| `end` | `YYYY-MM-DD` | Letzter Tag des Ferienzeitraums (inklusive) |
+
+### Pflege
+- Neue Schuljahre erfordern neue Einträge — die App zeigt nur für vorhandene Zeiträume `freierTag`-Meldungen.
+- Gesetzliche Feiertage werden separat über `src/lib/calendar/lowerSaxonySchoolFreeDays.ts` erkannt und müssen hier nicht eingetragen werden.

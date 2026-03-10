@@ -74,10 +74,13 @@ export async function handleAdminLogin(request: Request, env: Env): Promise<Resp
 
   await logAudit(env, user.id, 'login', 'user', user.id);
 
+  const isSecure = new URL(request.url).protocol === 'https:';
+  const securePart = isSecure ? ' Secure;' : '';
+
   const response = jsonResponse({ ok: true, username: user.username });
   const newResponse = new Response(response.body, response);
   newResponse.headers.set('Set-Cookie',
-    `${COOKIE_NAME}=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_MAX_AGE_SECONDS}`
+    `${COOKIE_NAME}=${token}; Path=/; HttpOnly;${securePart} SameSite=Lax; Max-Age=${SESSION_MAX_AGE_SECONDS}`
   );
   return newResponse;
 }
@@ -117,10 +120,13 @@ export async function handleAdminLogout(request: Request, env: Env): Promise<Res
     await env.DB.prepare('DELETE FROM sessions WHERE token = ?').bind(token).run();
   }
 
+  const isSecure = new URL(request.url).protocol === 'https:';
+  const securePart = isSecure ? ' Secure;' : '';
+
   const response = jsonResponse({ ok: true });
   const newResponse = new Response(response.body, response);
   newResponse.headers.set('Set-Cookie',
-    `${COOKIE_NAME}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`
+    `${COOKIE_NAME}=; Path=/; HttpOnly;${securePart} SameSite=Lax; Max-Age=0`
   );
   return newResponse;
 }
