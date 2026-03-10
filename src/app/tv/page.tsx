@@ -2,18 +2,18 @@ import { Clock } from '@/components/ui/Clock';
 import { TvTimetableGrid } from '@/components/schedule/TvTimetableGrid';
 import { TvPageController } from '@/components/tv/TvPageController';
 import { fetchTimetable, fetchAnnouncements, type AnnouncementData } from '@/lib/api/client';
-import { Weekday } from '@/lib/timetable/types';
+import { Weekday, type ParsedSchedule } from '@/lib/timetable/types';
 
 export const dynamic = 'force-dynamic';
 export default async function TvPage() {
-  let allEntries: Record<string, Record<string, unknown>> = {};
+  let allEntries: ParsedSchedule = {};
   let todayKey = 'MO';
   let updatedAt: string | null = null;
   let announcements: AnnouncementData[] = [];
 
   try {
     const plan = await fetchTimetable();
-    allEntries = plan.entries as Record<string, Record<string, unknown>>;
+    allEntries = plan.entries;
     todayKey = plan.todayKey;
     updatedAt = plan.upload?.updated_at ?? null;
   } catch {

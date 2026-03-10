@@ -9,6 +9,7 @@ import { DailyMessage } from '@/components/ui/DailyMessage';
 import { GoogleCalendar } from '@/components/ui/GoogleCalendar';
 import { fetchTimetable, fetchAnnouncements, fetchSettings, type AnnouncementData } from '@/lib/api/client';
 import { Weekday } from '@/lib/timetable/types';
+import type { SchoolHolidayRange } from '@/lib/calendar/lowerSaxonySchoolFreeDays';
 
 export const dynamic = 'force-dynamic';
 const MAX_HOME_ANNOUNCEMENTS = 2;
@@ -29,7 +30,7 @@ export default async function HomePage({ searchParams }: { searchParams: { klass
   let announcements: AnnouncementData[] = [];
   let calendarUrls: string[] = [];
   let messagesData: Record<string, unknown> = {};
-  let schoolHolidays: { ranges: Array<{ start: string; end: string }> } = { ranges: [] };
+  let schoolHolidays: SchoolHolidayRange[] = [];
 
   try {
     const [timetableRes, settingsRes] = await Promise.all([
@@ -45,7 +46,8 @@ export default async function HomePage({ searchParams }: { searchParams: { klass
       messagesData = JSON.parse(settingsRes.settings.messages || '{}');
     } catch { /* ignore */ }
     try {
-      schoolHolidays = JSON.parse(settingsRes.settings.school_holidays || '{"ranges":[]}');
+      const parsed = JSON.parse(settingsRes.settings.school_holidays || '[]');
+      schoolHolidays = Array.isArray(parsed) ? parsed : parsed?.ranges ?? [];
     } catch { /* ignore */ }
   } catch (error) {
     console.warn('[home] Fehler beim Laden:', error);

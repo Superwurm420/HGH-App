@@ -96,7 +96,7 @@ export function AdminAnnouncementEditor() {
         expires: form.expires || undefined,
         audience: form.audience,
         classes: form.classes,
-        highlight: form.highlight,
+        highlight: form.highlight ? 1 : 0,
       };
 
       if (selectedId) {
