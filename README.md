@@ -6,7 +6,7 @@ Eine Web-App (PWA), die den Schülern Stundenpläne, Ankündigungen, Termine und
 
 ### Was du brauchst
 
-- **Node.js** (Version 18 oder neuer) → [nodejs.org](https://nodejs.org)
+- **Node.js** (**Version 20 oder neuer**) → [nodejs.org](https://nodejs.org)
 - Ein **Cloudflare-Konto** (kostenlos) → [dash.cloudflare.com](https://dash.cloudflare.com)
 
 ### Los geht's
@@ -47,6 +47,24 @@ npm run dev
 ```
 
 Dann öffne [http://localhost:3000](http://localhost:3000). Admin-Login lokal: `redaktion` / `admin123`.
+
+## GitHub Codespaces (Firefox/Edge)
+
+Wenn du die App in einem Codespace testest, starte sie **lokal im Codespace** (ohne Deploy):
+
+```bash
+# Terminal 1
+npm run dev:worker
+
+# Terminal 2
+npm run dev
+```
+
+Danach in der Ports-Ansicht den Port **3000** auf „Öffentlich“ stellen und im Browser öffnen.
+
+- Frontend-URL öffnen: `https://<dein-codespace>-3000.app.github.dev`
+- Login lokal: `redaktion` / `admin123`
+- Wichtig: In Firefox/Edge Pop-up-/Cookie-Blocker für die Codespace-Domain deaktivieren, sonst kann der Admin-Login fehlschlagen.
 
 ## Wichtige Befehle
 
