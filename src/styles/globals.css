@@ -1,9 +1,9 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 @import './tokens.css';
 @import './base.css';
 @import './components.css';
 @import './features-timetable.css';
 @import './layout.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
