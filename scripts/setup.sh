@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ──────────────────────────────────────────────────────────
-# HGH-App — Einrichtungsskript
+# HGH-App — Einrichtungsskript (Legacy, primär für Linux/macOS)
 # Richtet alles Nötige auf Cloudflare ein (D1, R2, Secrets)
 # und bereitet die lokale Entwicklung vor.
 # ──────────────────────────────────────────────────────────
