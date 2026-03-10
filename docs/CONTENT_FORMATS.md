@@ -1,67 +1,49 @@
-# Inhaltsformate
+# Inhalte pflegen – einfach erklärt
 
-Dokumentation der Datenformate, die von der HGH-App verwendet werden.
-
----
-
-## Sondertermine
-
-Sondertermine sind alle Abweichungen vom Standardunterricht und dürfen:
-- nur eine Klasse betreffen,
-- mehrere Klassen betreffen,
-- einzelne Blöcke, halbe Tage oder längere Zeiträume abdecken.
+Diese Datei erklärt die wichtigsten Inhaltsdateien so, dass man sie ohne Programmierwissen pflegen kann.
 
 ---
 
-## Tagesmeldungen (`messages.json`)
+## 1) Tagesmeldungen (`public/content/messages.json`)
 
-**Datei:** `public/content/messages.json`
+### Wofür ist die Datei?
+Hier stehen kurze Texte, die in der App je nach Situation angezeigt werden, z. B.:
+- vor dem Unterricht,
+- in Pausen,
+- nach dem Unterricht,
+- an Wochenenden oder freien Tagen.
 
-### Ziel
-- Meldungen auf der Startseite passend zur ausgewählten Klasse und zum aktuellen Tageszeitfenster.
-- Datei soll ohne Codekenntnisse editierbar sein.
+### Einfaches Beispiel
 
-### Struktur
 ```json
 {
-  "_hinweis": "Freitext-Hinweis für Redakteure",
   "standard": {
-    "vorUnterricht": ["..."],
-    "inPause": ["..."],
-    "nachUnterricht": ["..."],
-    "wochenende": ["..."],
-    "feiertag": ["..."],
-    "freierTag": ["..."]
+    "vorUnterricht": ["Guten Morgen und einen guten Start!"],
+    "inPause": ["Zeit für eine kurze Pause."],
+    "nachUnterricht": ["Schönen Feierabend!"],
+    "wochenende": ["Schönes Wochenende!"],
+    "feiertag": ["Heute ist Feiertag."],
+    "freierTag": ["Heute ist unterrichtsfrei."]
   }
 }
 ```
 
-### Auswahllogik in der App
-1. Die App bestimmt die Zeitkategorie anhand des Stundenplans der ausgewählten Klasse.
-2. Falls für die gewählte Klasse passende Einträge in `klassen.<KLASSE>.<kategorie>` vorhanden sind, werden diese bevorzugt genutzt.
-3. Fehlen dort Einträge, fällt die App automatisch auf `standard.<kategorie>` zurück.
-4. Kategorien an Unterrichtstagen: `vorUnterricht`, `inPause`, `nachUnterricht`.
-5. Am Wochenende wird `wochenende` verwendet.
-6. An Wochentagen ohne Unterricht wird unterschieden:
-   - Gesetzlicher Feiertag in Niedersachsen → `feiertag`
-   - Alle übrigen unterrichtsfreien Wochentage → `freierTag`
-   - Ferienbereiche aus `public/content/schulferien-nds.json` werden zusätzlich als `freierTag` erkannt.
-7. Die Meldung aktualisiert sich laufend (spätestens alle 10 Minuten).
+### Wichtige Regeln
+- Immer auf gültiges JSON achten (Kommas, Klammern, Anführungszeichen).
+- Jede Kategorie enthält eine **Liste** (`[...]`) mit möglichen Texten.
+- Die App nimmt automatisch passende Meldungen je nach Tag/Uhrzeit.
 
 ---
 
-## Schulferien (Niedersachsen)
+## 2) Ferienzeiten (`public/content/schulferien-nds.json`)
 
-**Datei:** `public/content/schulferien-nds.json`
+### Wofür ist die Datei?
+Hier trägst du Ferienzeiträume ein. Dann erkennt die App diese Tage als unterrichtsfrei.
 
-### Ziel
-- Definiert schulfreie Zeiträume (Ferien) für Niedersachsen.
-- An Wochentagen innerhalb dieser Zeiträume zeigt die App `freierTag`-Meldungen.
+### Beispiel
 
-### Struktur
 ```json
 {
-  "_hinweis": "Freitext-Hinweis für Redakteure",
   "ranges": [
     { "start": "2025-10-13", "end": "2025-10-25" },
     { "start": "2025-12-22", "end": "2026-01-05" }
@@ -69,12 +51,26 @@ Sondertermine sind alle Abweichungen vom Standardunterricht und dürfen:
 }
 ```
 
-### Felder
-| Feld | Format | Beschreibung |
-|------|--------|--------------|
-| `start` | `YYYY-MM-DD` | Erster Tag des Ferienzeitraums (inklusive) |
-| `end` | `YYYY-MM-DD` | Letzter Tag des Ferienzeitraums (inklusive) |
+### Wichtige Regeln
+- Datumsformat immer: `YYYY-MM-DD`
+- `start` und `end` zählen jeweils mit (inklusive)
+- Für jedes neue Schuljahr neue Zeiträume ergänzen
 
-### Pflege
-- Neue Schuljahre erfordern neue Einträge — die App zeigt nur für vorhandene Zeiträume `freierTag`-Meldungen.
-- Gesetzliche Feiertage werden separat über `src/lib/calendar/lowerSaxonySchoolFreeDays.ts` erkannt und müssen hier nicht eingetragen werden.
+---
+
+## 3) Tipps für sicheres Bearbeiten
+
+1. Vor Änderungen eine Sicherheitskopie anlegen.
+2. Nach Änderungen prüfen, ob die Datei noch gültiges JSON ist.
+3. Kleine Änderungen machen und direkt testen.
+4. Wenn etwas nicht angezeigt wird: zuerst auf fehlende Kommas/Anführungszeichen prüfen.
+
+---
+
+## 4) Was macht die App automatisch?
+
+- Sie erkennt Wochenenden selbst.
+- Sie unterscheidet Feiertag und andere freie Tage.
+- Sie wählt je nach Situation die passende Meldung aus.
+
+Du musst also vor allem nur die Texte und Ferienbereiche aktuell halten.
