@@ -34,6 +34,15 @@ Das war's! Danach öffne `/admin` im Browser und melde dich an:
 - **Benutzername:** `redaktion`
 - **Passwort:** das eben eingegebene Passwort
 
+
+## Cloudflare-Projekt richtig konfigurieren
+
+Diese App ist für **Cloudflare Workers** ausgelegt (Wrangler + `wrangler.toml`), **nicht** für Cloudflare Pages/OpenNext.
+
+- Nutze im Dashboard ein **Workers-Projekt** mit `npm run deploy` (oder Git-Integration für Workers).
+- Falls ein Pages-Projekt existiert, nicht für dieses Repo verwenden bzw. Build dort deaktivieren.
+- Build-Command für CI/Cloudflare: `npm clean-install && npm run build` (lokale Prüfung) und Deployment über `npm run deploy`.
+
 ## Lokal entwickeln
 
 Du brauchst zwei Terminals:
