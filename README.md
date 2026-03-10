@@ -34,6 +34,26 @@ Das war's! Danach öffne `/admin` im Browser und melde dich an:
 - **Benutzername:** `redaktion`
 - **Passwort:** das eben eingegebene Passwort
 
+## GitHub Codespace
+
+Am einfachsten geht's mit einem Codespace — alles wird automatisch eingerichtet:
+
+1. Klicke auf **"Code" → "Codespaces" → "Create codespace on main"** auf GitHub
+2. Warte bis der Codespace fertig ist (Abhängigkeiten + Datenbank werden automatisch eingerichtet)
+3. Starte die App:
+   ```bash
+   # Terminal 1 — Backend
+   npm run dev:worker
+
+   # Terminal 2 — Frontend
+   npm run dev
+   ```
+4. Der Frontend-Port (3000) öffnet sich automatisch im Browser
+
+**Admin-Login im Codespace:** `redaktion` / `admin123`
+
+> **Tipp:** Wenn du den Codespace nicht nutzen kannst oder willst, funktioniert `npm run setup:local` genauso — es überspringt die Cloudflare-Anmeldung und richtet nur die lokale Entwicklung ein.
+
 ## Lokal entwickeln
 
 Du brauchst zwei Terminals:
@@ -52,7 +72,8 @@ Dann öffne [http://localhost:3000](http://localhost:3000). Admin-Login lokal: `
 
 | Befehl | Was passiert |
 |--------|-------------|
-| `npm run setup` | Ersteinrichtung (einmalig) |
+| `npm run setup` | Ersteinrichtung mit Cloudflare (einmalig) |
+| `npm run setup:local` | Nur lokale Entwicklung einrichten (kein Cloudflare nötig) |
 | `npm run dev` | Frontend starten |
 | `npm run dev:worker` | Backend starten |
 | `npm run deploy` | App auf Cloudflare veröffentlichen |

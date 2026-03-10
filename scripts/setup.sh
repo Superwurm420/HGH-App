@@ -6,6 +6,14 @@
 # ──────────────────────────────────────────────────────────
 set -euo pipefail
 
+# ── Modus erkennen ───────────────────────────────────────
+LOCAL_ONLY=false
+for arg in "$@"; do
+  case "$arg" in
+    --local) LOCAL_ONLY=true ;;
+  esac
+done
+
 # Farben
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -42,103 +50,110 @@ else
   info "Abhängigkeiten bereits vorhanden"
 fi
 
-# ── Wrangler-Login prüfen ─────────────────────────────────
-step "Cloudflare-Anmeldung prüfen"
+if [ "$LOCAL_ONLY" = true ]; then
+  # ── Nur lokale Entwicklung (Codespace / kein Cloudflare) ──
+  step "Lokale Entwicklung vorbereiten (--local Modus)"
+  info "Cloudflare-Anmeldung übersprungen"
+  info "Remote-Ressourcen übersprungen"
+else
+  # ── Wrangler-Login prüfen ─────────────────────────────────
+  step "Cloudflare-Anmeldung prüfen"
 
-if ! npx wrangler whoami &> /dev/null; then
-  warn "Du bist nicht bei Cloudflare angemeldet."
-  echo "    Dein Browser öffnet sich jetzt — melde dich dort an."
-  npx wrangler login
-fi
-info "Bei Cloudflare angemeldet"
-
-# ── D1-Datenbank erstellen ─────────────────────────────────
-step "Datenbank erstellen (D1)"
-
-WRANGLER_TOML="wrangler.toml"
-CURRENT_DB_ID=$(grep 'database_id' "$WRANGLER_TOML" | head -1 | sed 's/.*= *"\(.*\)"/\1/')
-
-if [ "$CURRENT_DB_ID" = "placeholder-replace-after-creation" ]; then
-  echo "    Erstelle D1-Datenbank 'hgh-app-db'..."
-  DB_OUTPUT=$(npx wrangler d1 create hgh-app-db 2>&1) || true
-
-  # Datenbank-ID aus der Ausgabe extrahieren
-  DB_ID=$(echo "$DB_OUTPUT" | grep 'database_id' | sed 's/.*= *"\(.*\)"/\1/')
-
-  if [ -n "$DB_ID" ]; then
-    # ID in wrangler.toml eintragen
-    sed -i "s/placeholder-replace-after-creation/$DB_ID/" "$WRANGLER_TOML"
-    info "Datenbank erstellt (ID: $DB_ID)"
-    info "wrangler.toml automatisch aktualisiert"
-  else
-    # Vielleicht existiert die DB schon
-    if echo "$DB_OUTPUT" | grep -qi "already exists"; then
-      warn "Datenbank 'hgh-app-db' existiert bereits."
-      echo "    Bitte trage die database_id manuell in wrangler.toml ein."
-      echo "    Du findest sie mit: npx wrangler d1 list"
-    else
-      error "Konnte Datenbank nicht erstellen. Ausgabe:"
-      echo "$DB_OUTPUT"
-      exit 1
-    fi
+  if ! npx wrangler whoami &> /dev/null; then
+    warn "Du bist nicht bei Cloudflare angemeldet."
+    echo "    Dein Browser öffnet sich jetzt — melde dich dort an."
+    npx wrangler login
   fi
-else
-  info "Datenbank-ID bereits in wrangler.toml eingetragen ($CURRENT_DB_ID)"
-fi
+  info "Bei Cloudflare angemeldet"
 
-# ── R2-Bucket erstellen ───────────────────────────────────
-step "Dateispeicher erstellen (R2)"
+  # ── D1-Datenbank erstellen ─────────────────────────────────
+  step "Datenbank erstellen (D1)"
 
-R2_OUTPUT=$(npx wrangler r2 bucket create hgh-app-content 2>&1) || true
+  WRANGLER_TOML="wrangler.toml"
+  CURRENT_DB_ID=$(grep 'database_id' "$WRANGLER_TOML" | head -1 | sed 's/.*= *"\(.*\)"/\1/')
 
-if echo "$R2_OUTPUT" | grep -qi "already exists"; then
-  info "R2-Bucket 'hgh-app-content' existiert bereits"
-elif echo "$R2_OUTPUT" | grep -qi "created"; then
-  info "R2-Bucket 'hgh-app-content' erstellt"
-else
-  warn "R2-Bucket Status unklar. Ausgabe: $R2_OUTPUT"
-fi
+  if [ "$CURRENT_DB_ID" = "placeholder-replace-after-creation" ]; then
+    echo "    Erstelle D1-Datenbank 'hgh-app-db'..."
+    DB_OUTPUT=$(npx wrangler d1 create hgh-app-db 2>&1) || true
 
-# ── Datenbank-Migration ausführen ──────────────────────────
-step "Datenbank-Tabellen erstellen"
+    # Datenbank-ID aus der Ausgabe extrahieren
+    DB_ID=$(echo "$DB_OUTPUT" | grep 'database_id' | sed 's/.*= *"\(.*\)"/\1/')
 
-echo "    Migration wird auf Cloudflare ausgeführt..."
-npx wrangler d1 migrations apply hgh-app-db --remote 2>&1 || {
-  warn "Remote-Migration fehlgeschlagen — wird bei 'npm run db:migrate' erneut versucht."
-}
-info "Tabellen erstellt"
+    if [ -n "$DB_ID" ]; then
+      # ID in wrangler.toml eintragen
+      sed -i "s/placeholder-replace-after-creation/$DB_ID/" "$WRANGLER_TOML"
+      info "Datenbank erstellt (ID: $DB_ID)"
+      info "wrangler.toml automatisch aktualisiert"
+    else
+      # Vielleicht existiert die DB schon
+      if echo "$DB_OUTPUT" | grep -qi "already exists"; then
+        warn "Datenbank 'hgh-app-db' existiert bereits."
+        echo "    Bitte trage die database_id manuell in wrangler.toml ein."
+        echo "    Du findest sie mit: npx wrangler d1 list"
+      else
+        error "Konnte Datenbank nicht erstellen. Ausgabe:"
+        echo "$DB_OUTPUT"
+        exit 1
+      fi
+    fi
+  else
+    info "Datenbank-ID bereits in wrangler.toml eingetragen ($CURRENT_DB_ID)"
+  fi
 
-# ── Secrets setzen ─────────────────────────────────────────
-step "Geheimnisse setzen"
+  # ── R2-Bucket erstellen ───────────────────────────────────
+  step "Dateispeicher erstellen (R2)"
 
-# SESSION_SECRET automatisch generieren
-echo ""
-echo "    Das Session-Geheimnis wird automatisch generiert..."
-SESSION_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
-echo "$SESSION_SECRET" | npx wrangler secret put SESSION_SECRET 2>&1 || {
-  warn "SESSION_SECRET konnte nicht gesetzt werden. Setze es manuell mit:"
-  echo "    npx wrangler secret put SESSION_SECRET"
-}
-info "SESSION_SECRET automatisch gesetzt"
+  R2_OUTPUT=$(npx wrangler r2 bucket create hgh-app-content 2>&1) || true
 
-# ADMIN_PASSWORD vom Benutzer abfragen
-echo ""
-echo -e "    ${BOLD}Jetzt brauchst du ein Admin-Passwort.${NC}"
-echo "    Damit loggst du dich später im Adminbereich ein."
-echo "    (Benutzername ist: redaktion)"
-echo ""
-read -sp "    Admin-Passwort eingeben: " ADMIN_PW
-echo ""
+  if echo "$R2_OUTPUT" | grep -qi "already exists"; then
+    info "R2-Bucket 'hgh-app-content' existiert bereits"
+  elif echo "$R2_OUTPUT" | grep -qi "created"; then
+    info "R2-Bucket 'hgh-app-content' erstellt"
+  else
+    warn "R2-Bucket Status unklar. Ausgabe: $R2_OUTPUT"
+  fi
 
-if [ -z "$ADMIN_PW" ]; then
-  error "Kein Passwort eingegeben. Setze es später manuell mit:"
-  echo "    npx wrangler secret put ADMIN_PASSWORD"
-else
-  echo "$ADMIN_PW" | npx wrangler secret put ADMIN_PASSWORD 2>&1 || {
-    warn "ADMIN_PASSWORD konnte nicht gesetzt werden. Setze es manuell mit:"
-    echo "    npx wrangler secret put ADMIN_PASSWORD"
+  # ── Datenbank-Migration ausführen ──────────────────────────
+  step "Datenbank-Tabellen erstellen"
+
+  echo "    Migration wird auf Cloudflare ausgeführt..."
+  npx wrangler d1 migrations apply hgh-app-db --remote 2>&1 || {
+    warn "Remote-Migration fehlgeschlagen — wird bei 'npm run db:migrate' erneut versucht."
   }
-  info "ADMIN_PASSWORD gesetzt"
+  info "Tabellen erstellt"
+
+  # ── Secrets setzen ─────────────────────────────────────────
+  step "Geheimnisse setzen"
+
+  # SESSION_SECRET automatisch generieren
+  echo ""
+  echo "    Das Session-Geheimnis wird automatisch generiert..."
+  SESSION_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
+  echo "$SESSION_SECRET" | npx wrangler secret put SESSION_SECRET 2>&1 || {
+    warn "SESSION_SECRET konnte nicht gesetzt werden. Setze es manuell mit:"
+    echo "    npx wrangler secret put SESSION_SECRET"
+  }
+  info "SESSION_SECRET automatisch gesetzt"
+
+  # ADMIN_PASSWORD vom Benutzer abfragen
+  echo ""
+  echo -e "    ${BOLD}Jetzt brauchst du ein Admin-Passwort.${NC}"
+  echo "    Damit loggst du dich später im Adminbereich ein."
+  echo "    (Benutzername ist: redaktion)"
+  echo ""
+  read -sp "    Admin-Passwort eingeben: " ADMIN_PW
+  echo ""
+
+  if [ -z "$ADMIN_PW" ]; then
+    error "Kein Passwort eingegeben. Setze es später manuell mit:"
+    echo "    npx wrangler secret put ADMIN_PASSWORD"
+  else
+    echo "$ADMIN_PW" | npx wrangler secret put ADMIN_PASSWORD 2>&1 || {
+      warn "ADMIN_PASSWORD konnte nicht gesetzt werden. Setze es manuell mit:"
+      echo "    npx wrangler secret put ADMIN_PASSWORD"
+    }
+    info "ADMIN_PASSWORD gesetzt"
+  fi
 fi
 
 # ── Lokale Entwicklung vorbereiten ─────────────────────────
