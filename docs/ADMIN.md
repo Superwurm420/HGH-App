@@ -19,7 +19,7 @@ Diese Anleitung erklärt, wie man die HGH-App einrichtet und den Adminbereich nu
 
 ### Was du brauchst
 
-- **Node.js** (Version 18 oder neuer) — [nodejs.org](https://nodejs.org) herunterladen und installieren
+- **Node.js** (**Version 20 oder neuer**) — [nodejs.org](https://nodejs.org) herunterladen und installieren
 - Ein **Cloudflare-Konto** (kostenlos) — auf [dash.cloudflare.com](https://dash.cloudflare.com) registrieren
 
 > **Tipp:** Prüfe ob Node.js installiert ist: Öffne ein Terminal und tippe `node --version`. Es sollte eine Versionsnummer erscheinen (z. B. `v20.11.0`).
@@ -176,6 +176,18 @@ npm run dev
 ```
 
 Dann öffne [http://localhost:3000](http://localhost:3000).
+
+
+
+### Nutzung in GitHub Codespaces (Firefox/Edge)
+
+Wenn du in Codespaces arbeitest, richte zuerst die **lokale Entwicklung** ein (nicht direkt `deploy`):
+
+1. Terminal 1: `npm run dev:worker`
+2. Terminal 2: `npm run dev`
+3. Öffne anschließend den freigegebenen Port **3000** (Codespaces-URL).
+
+> **Wichtig:** In Firefox und Edge blockieren strenge Tracking-/Cookie-Einstellungen manchmal den Login. Erlaube Cookies für `*.app.github.dev` bzw. teste kurz im privaten Fenster ohne strenge Blocker.
 
 ### Lokaler Admin-Login
 
