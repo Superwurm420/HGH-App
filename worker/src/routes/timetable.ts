@@ -35,7 +35,7 @@ export async function handleTimetable(request: Request, env: Env): Promise<Respo
   }
 
   if (!upload) {
-    return jsonResponse({ timetable: null, classes: [], todayKey: weekdayForToday() });
+    return jsonResponse({ upload: null, entries: {}, classes: [], todayKey: weekdayForToday() });
   }
 
   // Alle Klassen für diesen Upload
