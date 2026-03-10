@@ -1,98 +1,53 @@
-# HGH-App – einfach erklärt
+# HGH-App
 
-Die **HGH-App** zeigt Schülerinnen und Schülern:
-- den aktuellen Stundenplan,
-- Ankündigungen,
-- Termine,
-- und Tagesmeldungen.
+Die HGH-App besteht aus:
+- **Next.js-Frontend** (OpenNext/Cloudflare)
+- **Cloudflare Worker API** (`worker/`)
 
-Diese Datei ist bewusst für **Nicht-Techniker** geschrieben.
-
----
-
-## 1) Schnellstart (empfohlen)
-
-Wenn du die App neu einrichtest, brauchst du nur drei Schritte.
+## Lokal entwickeln (Windows/macOS/Linux)
 
 ### Voraussetzungen
-- **Node.js ab Version 20** (Download: https://nodejs.org)
-- **Cloudflare-Konto** (kostenlos): https://dash.cloudflare.com
+- Node.js 20+
+- npm
 
-### Schritte
-
+### Start
 ```bash
-git clone <repository-url>
-cd HGH-App
+npm install
 npm run setup
-npm run deploy
-```
-
-Danach:
-- App öffnen
-- auf `/admin` gehen
-- mit diesen Daten anmelden:
-  - Benutzername: `redaktion`
-  - Passwort: das Passwort aus dem Setup
-
----
-
-## 2) Was macht `npm run setup` genau?
-
-Das Setup erledigt automatisch:
-1. notwendige Pakete installieren,
-2. Cloudflare-Login vorbereiten,
-3. Datenbank einrichten,
-4. Speicher für Upload-Dateien anlegen,
-5. Admin-Passwort abfragen,
-6. lokale Entwicklung vorbereiten.
-
-Du musst das normalerweise nur **einmal** machen.
-
----
-
-## 3) Wichtige Befehle (einfach erklärt)
-
-| Befehl | Bedeutung |
-|---|---|
-| `npm run setup` | Ersteinrichtung (einmalig) |
-| `npm run dev:api` | Lokales Backend starten |
-| `npm run dev` | Lokales Frontend starten |
-| `npm run deploy` | App veröffentlichen |
-| `npm run lint` | Code auf typische Fehler prüfen |
-| `npm run test:unit` | Automatische Tests ausführen |
-
----
-
-## 4) Lokal testen (ohne Veröffentlichung)
-
-Du brauchst **2 Terminals**:
-
-```bash
-# Terminal 1
 npm run dev:api
-
-# Terminal 2
 npm run dev
 ```
 
-Dann im Browser öffnen: http://localhost:3000
+Dann im Browser: `http://localhost:3000`
 
-Lokaler Login:
-- Benutzername: `redaktion`
-- Passwort: `admin123`
+> `npm run setup` ist jetzt plattformunabhängig und bereitet nur die lokale Entwicklung vor (z. B. `.dev.vars`).
 
----
+## Deploy (automatisch über GitHub Actions)
 
-## 5) Wo finde ich Hilfe?
+Deploy läuft **nicht mehr über lokales Windows-Deploy**, sondern automatisch:
+- Trigger: Push auf `main`
+- Runner: `ubuntu-latest`
+- Ablauf: `npm ci` → `lint` → `test:unit` → `build` → `deploy`
+- Workflow-Datei: `.github/workflows/deploy.yml`
 
-- Für die Bedienung des Adminbereichs: **[docs/ADMIN.md](docs/ADMIN.md)**
-- Für Inhalte wie `messages.json` und Ferien-Zeiträume: **[docs/CONTENT_FORMATS.md](docs/CONTENT_FORMATS.md)**
+Der Workflow führt OpenNext + Cloudflare Deploy über diese npm-Skripte aus:
+- `npm run build`
+- `npm run deploy`
 
----
+## Erforderliche GitHub Secrets
 
-## 6) Technischer Hinweis (nur falls nötig)
+Im GitHub-Repository unter **Settings → Secrets and variables → Actions** setzen:
 
-Die App wird als zwei Worker betrieben (Web + API).
-Wenn API-Aufrufe in der veröffentlichten Version nicht funktionieren, muss im Web-Worker die Variable `API_ORIGIN` auf die URL des API-Workers zeigen.
+- `CLOUDFLARE_API_TOKEN`
+  - Cloudflare API Token mit Rechten für Workers, D1 und R2 (Deploy-Rechte)
+- `CLOUDFLARE_ACCOUNT_ID`
+  - Deine Cloudflare Account-ID
 
-Für normale Redaktionsarbeit ist das **nicht relevant**.
+## Nützliche Scripts
+
+- `npm run dev` – Next.js lokal
+- `npm run dev:api` – Worker API lokal
+- `npm run build` – OpenNext Build
+- `npm run deploy` – OpenNext Web + API deployen (primär in CI)
+- `npm run setup` – lokales, plattformunabhängiges Setup
+- `npm run setup:cloudflare` – altes Linux/macOS-Einrichtungsskript (optional, nur wenn benötigt)
