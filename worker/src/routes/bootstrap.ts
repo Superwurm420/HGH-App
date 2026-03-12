@@ -1,6 +1,7 @@
-import { Env, TimetableUpload, LessonEntry, Weekday } from '../types';
+import { Env, LessonEntry, Weekday } from '../types';
 import { jsonResponse } from '../router';
 import { weekdayForToday } from '../services/berlin-time';
+import { loadActiveUpload, buildEntriesByClass, type TimetableEntryRow } from '../services/timetable';
 
 /**
  * GET /api/bootstrap
@@ -8,13 +9,10 @@ import { weekdayForToday } from '../services/berlin-time';
  * Unterstützt ETag-basiertes Caching.
  */
 export async function handleApiBootstrap(request: Request, env: Env): Promise<Response> {
-  // Aktiven Stundenplan laden
-  const activeSetting = await env.DB.prepare(
-    "SELECT value FROM app_settings WHERE key = 'active_timetable_id'"
-  ).first<{ value: string }>();
+  const upload = await loadActiveUpload(env);
 
   let timetable: {
-    upload: TimetableUpload | null;
+    upload: typeof upload;
     entries: Record<string, Record<Weekday, LessonEntry[]>>;
     classes: string[];
     todayKey: string;
@@ -27,68 +25,20 @@ export async function handleApiBootstrap(request: Request, env: Env): Promise<Re
     updatedAt: null,
   };
 
-  // Aktiven Stundenplan laden, mit Fallback auf letzten geparsten/archivierten
-  {
-    let upload: TimetableUpload | null = null;
+  if (upload) {
+    const rows = await env.DB.prepare(
+      'SELECT * FROM timetable_entries WHERE upload_id = ? ORDER BY class_code, weekday, period'
+    ).bind(upload.id).all<TimetableEntryRow>();
 
-    if (activeSetting?.value) {
-      upload = await env.DB.prepare(
-        'SELECT * FROM timetable_uploads WHERE id = ? AND status = ?'
-      ).bind(activeSetting.value, 'active').first<TimetableUpload>();
-    }
+    const { entries, classes } = buildEntriesByClass(rows.results);
 
-    // Fallback: letzten verfügbaren Stundenplan nehmen
-    if (!upload) {
-      upload = await env.DB.prepare(
-        `SELECT * FROM timetable_uploads
-         WHERE status IN ('active', 'parsed', 'archived')
-         ORDER BY
-           CASE status WHEN 'active' THEN 0 WHEN 'parsed' THEN 1 WHEN 'archived' THEN 2 END,
-           updated_at DESC
-         LIMIT 1`
-      ).first<TimetableUpload>();
-    }
-
-    if (upload) {
-      const rows = await env.DB.prepare(
-        'SELECT * FROM timetable_entries WHERE upload_id = ? ORDER BY class_code, weekday, period'
-      ).bind(upload.id).all<{
-        class_code: string;
-        weekday: Weekday;
-        period: number;
-        period_end: number | null;
-        time_range: string;
-        subject: string | null;
-        detail: string | null;
-        room: string | null;
-      }>();
-
-      const entriesByClass: Record<string, Record<Weekday, LessonEntry[]>> = {};
-      const classSet = new Set<string>();
-
-      for (const row of rows.results) {
-        classSet.add(row.class_code);
-        if (!entriesByClass[row.class_code]) {
-          entriesByClass[row.class_code] = { MO: [], DI: [], MI: [], DO: [], FR: [] };
-        }
-        entriesByClass[row.class_code][row.weekday].push({
-          period: row.period,
-          periodEnd: row.period_end ?? undefined,
-          time: row.time_range,
-          subject: row.subject ?? undefined,
-          detail: row.detail ?? undefined,
-          room: row.room ?? undefined,
-        });
-      }
-
-      timetable = {
-        upload,
-        entries: entriesByClass,
-        classes: [...classSet].sort(),
-        todayKey: weekdayForToday(),
-        updatedAt: upload.updated_at,
-      };
-    }
+    timetable = {
+      upload,
+      entries,
+      classes,
+      todayKey: weekdayForToday(),
+      updatedAt: upload.updated_at,
+    };
   }
 
   // Aktive Ankündigungen laden

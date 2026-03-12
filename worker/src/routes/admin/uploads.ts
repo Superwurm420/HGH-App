@@ -194,20 +194,18 @@ export async function handleAdminUploadActivate(request: Request, env: Env, id: 
     return errorResponse(`Upload kann nicht aktiviert werden (Status: ${upload.status}). Nur erfolgreich geparste Uploads sind aktivierbar.`, 400);
   }
 
-  // Bisherigen aktiven Upload archivieren
-  await env.DB.prepare(
-    "UPDATE timetable_uploads SET status = 'archived', updated_at = datetime('now') WHERE status = 'active'"
-  ).run();
-
-  // Neuen aktivieren
-  await env.DB.prepare(
-    "UPDATE timetable_uploads SET status = 'active', updated_at = datetime('now') WHERE id = ?"
-  ).bind(id).run();
-
-  // Setting aktualisieren
-  await env.DB.prepare(
-    "INSERT OR REPLACE INTO app_settings (key, value, updated_at, updated_by) VALUES ('active_timetable_id', ?, datetime('now'), ?)"
-  ).bind(id, auth.userId).run();
+  // Atomar: bisherigen archivieren, neuen aktivieren, Setting aktualisieren
+  await env.DB.batch([
+    env.DB.prepare(
+      "UPDATE timetable_uploads SET status = 'archived', updated_at = datetime('now') WHERE status = 'active'"
+    ),
+    env.DB.prepare(
+      "UPDATE timetable_uploads SET status = 'active', updated_at = datetime('now') WHERE id = ?"
+    ).bind(id),
+    env.DB.prepare(
+      "INSERT OR REPLACE INTO app_settings (key, value, updated_at, updated_by) VALUES ('active_timetable_id', ?, datetime('now'), ?)"
+    ).bind(id, auth.userId),
+  ]);
 
   await logAudit(env, auth.userId, 'activate', 'timetable', id, `Stundenplan aktiviert: ${upload.filename}`);
 

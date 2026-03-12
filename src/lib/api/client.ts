@@ -89,6 +89,18 @@ export interface AnnouncementData {
   updated_at: string;
 }
 
+/** Transformiert AnnouncementData für die Anzeige-Komponenten. */
+export function toDisplayAnnouncement(a: AnnouncementData) {
+  return {
+    id: a.id,
+    title: a.title,
+    date: a.date,
+    expires: a.expires ?? undefined,
+    body: a.body,
+    highlight: a.highlight === 1,
+  };
+}
+
 export async function fetchAnnouncements(klasse?: string): Promise<{ announcements: AnnouncementData[] }> {
   const params = klasse ? `?klasse=${encodeURIComponent(klasse)}` : '';
   return apiFetch<{ announcements: AnnouncementData[] }>(`/api/announcements${params}`);

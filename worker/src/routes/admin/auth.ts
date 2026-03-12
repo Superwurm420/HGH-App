@@ -2,8 +2,8 @@ import { Env } from '../../types';
 import { jsonResponse, errorResponse } from '../../router';
 import { hashPassword, verifyPassword } from '../../services/password';
 import { logAudit } from '../../services/audit';
+import { parseCookies, COOKIE_NAME } from '../../middleware/auth';
 
-const COOKIE_NAME = 'hgh-admin';
 const SESSION_MAX_AGE_SECONDS = 12 * 60 * 60; // 12 Stunden
 
 function generateToken(): string {
@@ -11,14 +11,15 @@ function generateToken(): string {
   return Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-function parseCookies(header: string | null): Record<string, string> {
-  if (!header) return {};
-  const cookies: Record<string, string> = {};
-  for (const part of header.split(';')) {
-    const [key, ...rest] = part.trim().split('=');
-    if (key) cookies[key.trim()] = rest.join('=').trim();
-  }
-  return cookies;
+/** Erstellt eine Response mit gesetztem Session-Cookie. */
+function withSessionCookie(response: Response, request: Request, token: string, maxAge: number): Response {
+  const isSecure = new URL(request.url).protocol === 'https:';
+  const securePart = isSecure ? ' Secure;' : '';
+  const newResponse = new Response(response.body, response);
+  newResponse.headers.set('Set-Cookie',
+    `${COOKIE_NAME}=${token}; Path=/; HttpOnly;${securePart} SameSite=Lax; Max-Age=${maxAge}`
+  );
+  return newResponse;
 }
 
 /**
@@ -74,15 +75,10 @@ export async function handleAdminLogin(request: Request, env: Env): Promise<Resp
 
   await logAudit(env, user.id, 'login', 'user', user.id);
 
-  const isSecure = new URL(request.url).protocol === 'https:';
-  const securePart = isSecure ? ' Secure;' : '';
-
-  const response = jsonResponse({ ok: true, username: user.username });
-  const newResponse = new Response(response.body, response);
-  newResponse.headers.set('Set-Cookie',
-    `${COOKIE_NAME}=${token}; Path=/; HttpOnly;${securePart} SameSite=Lax; Max-Age=${SESSION_MAX_AGE_SECONDS}`
+  return withSessionCookie(
+    jsonResponse({ ok: true, username: user.username }),
+    request, token, SESSION_MAX_AGE_SECONDS,
   );
-  return newResponse;
 }
 
 /**
@@ -120,15 +116,10 @@ export async function handleAdminLogout(request: Request, env: Env): Promise<Res
     await env.DB.prepare('DELETE FROM sessions WHERE token = ?').bind(token).run();
   }
 
-  const isSecure = new URL(request.url).protocol === 'https:';
-  const securePart = isSecure ? ' Secure;' : '';
-
-  const response = jsonResponse({ ok: true });
-  const newResponse = new Response(response.body, response);
-  newResponse.headers.set('Set-Cookie',
-    `${COOKIE_NAME}=; Path=/; HttpOnly;${securePart} SameSite=Lax; Max-Age=0`
+  return withSessionCookie(
+    jsonResponse({ ok: true }),
+    request, '', 0,
   );
-  return newResponse;
 }
 
 /**

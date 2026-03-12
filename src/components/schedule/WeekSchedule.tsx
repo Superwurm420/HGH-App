@@ -1,4 +1,5 @@
 import { LessonEntry, WeekPlan, WEEKDAYS, Weekday } from '@/lib/timetable/types';
+import { formatSubject } from './format-subject';
 import styles from './WeekSchedule.module.css';
 
 const DAY_LABELS: Record<Weekday, string> = {
@@ -12,14 +13,6 @@ const DAY_FULL: Record<Weekday, string> = {
 /** "8.00 - 9.30" → "8:00" */
 function timeStart(time: string): string {
   return time.split('-')[0].trim().replace('.', ':');
-}
-
-function formatSubject(subject: string) {
-  return subject.split('/').map((part, i, arr) => (
-    <span key={i} className={styles.subjectPart}>
-      {part}{i < arr.length - 1 && <>{'/\u200B'}</>}
-    </span>
-  ));
 }
 
 type PeriodSlot = { period: number; time: string };
@@ -77,9 +70,7 @@ export function WeekSchedule({
   week,
   todayKey,
 }: {
-  schoolClass?: string;
   week: WeekPlan;
-  events?: unknown[];
   todayKey?: Weekday;
 }) {
   const slots = collectPeriodSlots(week);
@@ -139,7 +130,7 @@ export function WeekSchedule({
                     >
                       <div className={styles.cellContent}>
                         <span className={styles.subject}>
-                          {formatSubject(lesson.subject ?? '–')}
+                          {formatSubject(lesson.subject ?? '–', styles.subjectPart)}
                         </span>
                         {(lesson.room || lesson.detail) && (
                           <span className={styles.meta}>
