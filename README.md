@@ -1,6 +1,6 @@
 # HGH-App — Der digitale Stundenplan
 
-Die HGH-App ist die Stundenplan-App der **BBS Holztechnik und Gestaltung Hildesheim**. Sie zeigt den aktuellen Stundenplan, Ankündigungen, Termine und einen Kalender an — direkt im Browser, auf jedem Gerät.
+Die HGH-App ist die Stundenplan-App der **HGH Holztechnik und Gestaltung Hildesheim**. Sie zeigt den aktuellen Stundenplan, Ankündigungen, Termine und einen Kalender an — direkt im Browser, auf jedem Gerät.
 
 ---
 
