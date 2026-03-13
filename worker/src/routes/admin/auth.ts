@@ -123,6 +123,29 @@ export async function handleAdminLogout(request: Request, env: Env): Promise<Res
 }
 
 /**
+ * GET /api/admin/setup-status
+ * Gibt Diagnoseinformationen zur Ersteinrichtung zurück (unauthentifiziert).
+ */
+export async function handleAdminSetupStatus(_request: Request, env: Env): Promise<Response> {
+  let dbReady = false;
+  let hasUsers = false;
+
+  try {
+    const count = await env.DB.prepare('SELECT COUNT(*) as cnt FROM users').first<{ cnt: number }>();
+    dbReady = true;
+    hasUsers = (count?.cnt ?? 0) > 0;
+  } catch {
+    // Tabelle existiert nicht → DB nicht migriert
+  }
+
+  return jsonResponse({
+    dbReady,
+    hasUsers,
+    passwordConfigured: !!env.ADMIN_PASSWORD,
+  });
+}
+
+/**
  * GET /api/admin/session
  * Prüft ob die aktuelle Session gültig ist.
  */
