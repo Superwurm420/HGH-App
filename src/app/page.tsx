@@ -7,23 +7,12 @@ import { MiniCalendar } from '@/components/ui/MiniCalendar';
 import { AnnouncementList } from '@/components/announcements/AnnouncementList';
 import { DailyMessage } from '@/components/ui/DailyMessage';
 import { GoogleCalendar } from '@/components/ui/GoogleCalendar';
-import { fetchTimetable, fetchAnnouncements, fetchSettings, type AnnouncementData } from '@/lib/api/client';
+import { fetchTimetable, fetchAnnouncements, fetchSettings, toDisplayAnnouncement, type AnnouncementData } from '@/lib/api/client';
 import { Weekday } from '@/lib/timetable/types';
 import type { SchoolHolidayRange } from '@/lib/calendar/lowerSaxonySchoolFreeDays';
 
 export const dynamic = 'force-dynamic';
 const MAX_HOME_ANNOUNCEMENTS = 2;
-
-function toDisplayAnnouncement(a: AnnouncementData) {
-  return {
-    id: a.id,
-    title: a.title,
-    date: a.date,
-    expires: a.expires ?? undefined,
-    body: a.body,
-    highlight: a.highlight === 1,
-  };
-}
 
 export default async function HomePage({ searchParams }: { searchParams: { klasse?: string } }) {
   let plan: Awaited<ReturnType<typeof fetchTimetable>> | null = null;

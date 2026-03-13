@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { parseBerlinDate } from '@/lib/announcements/parser';
 import { ExpiryCountdown } from './ExpiryCountdown';
 import styles from './AnnouncementItem.module.css';
 
@@ -12,22 +13,12 @@ type AnnouncementItemProps = {
   body: string;
 };
 
-function parseDateString(dateStr: string): Date | null {
-  const deMatch = dateStr.match(/^(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}):(\d{2})$/);
-  if (deMatch) {
-    const [, day, month, year, hour, minute] = deMatch;
-    return new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute));
-  }
-  const iso = new Date(dateStr);
-  return Number.isNaN(iso.getTime()) ? null : iso;
-}
-
 export function AnnouncementItem({ id, title, date, expires, body }: AnnouncementItemProps) {
   const [nowTs, setNowTs] = useState(() => Date.now());
 
   const expiresAt = useMemo(() => {
     if (!expires) return null;
-    return parseDateString(expires);
+    return parseBerlinDate(expires);
   }, [expires]);
 
   useEffect(() => {

@@ -1,13 +1,6 @@
 import { LessonEntry, SpecialEvent, Weekday, eventAppliesToDay } from '@/lib/timetable/types';
+import { formatSubject } from './format-subject';
 import styles from './TodaySchedule.module.css';
-
-function formatSubject(subject: string) {
-  return subject.split('/').map((part, i, arr) => (
-    <span key={i}>
-      {part}{i < arr.length - 1 && <>{'/\u200B'}</>}
-    </span>
-  ));
-}
 
 export function TodaySchedule({
   day,

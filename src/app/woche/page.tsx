@@ -40,7 +40,7 @@ export default async function WochePage({ searchParams }: { searchParams: { klas
           </div>
         </div>
 
-        <WeekSchedule schoolClass={selectedClass} week={week} todayKey={todayKey} />
+        <WeekSchedule week={week} todayKey={todayKey} />
 
         {plan.upload?.updated_at && (
           <p className="meta-note">

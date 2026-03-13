@@ -1,9 +1,9 @@
 import { Env, AuthContext } from '../types';
 import { errorResponse } from '../router';
 
-const COOKIE_NAME = 'hgh-admin';
+export const COOKIE_NAME = 'hgh-admin';
 
-function parseCookies(header: string | null): Record<string, string> {
+export function parseCookies(header: string | null): Record<string, string> {
   if (!header) return {};
   const cookies: Record<string, string> = {};
   for (const part of header.split(';')) {

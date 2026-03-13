@@ -2,19 +2,12 @@
 
 import { useState } from 'react';
 import { LessonEntry, SpecialEvent, WeekPlan, WEEKDAYS, Weekday, eventAppliesToDay } from '@/lib/timetable/types';
+import { formatSubject } from './format-subject';
 import styles from './DayTimetable.module.css';
 
 const DAY_SHORT: Record<Weekday, string> = {
   MO: 'Mo', DI: 'Di', MI: 'Mi', DO: 'Do', FR: 'Fr',
 };
-
-function formatSubject(subject: string) {
-  return subject.split('/').map((part, i, arr) => (
-    <span key={i}>
-      {part}{i < arr.length - 1 && <>{'/\u200B'}</>}
-    </span>
-  ));
-}
 
 export function DayTimetable({
   week,

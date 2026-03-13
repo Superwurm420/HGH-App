@@ -86,6 +86,13 @@ export async function handleAdminEventById(request: Request, env: Env, id: strin
       return errorResponse('Ungültiger Request-Body.', 400);
     }
 
+    if (!body.title?.trim()) {
+      return errorResponse('Titel ist erforderlich.', 400);
+    }
+    if (!body.start_date?.trim()) {
+      return errorResponse('Startdatum ist erforderlich.', 400);
+    }
+
     const result = await env.DB.prepare(
       `UPDATE events SET
          title = ?, description = ?, start_date = ?, end_date = ?, all_day = ?, category = ?, classes = ?,

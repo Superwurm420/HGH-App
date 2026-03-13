@@ -1,20 +1,9 @@
 import { AnnouncementList } from '@/components/announcements/AnnouncementList';
 import { ClassFromStorage } from '@/components/schedule/ClassFromStorage';
 import { ClassSelector } from '@/components/schedule/ClassSelector';
-import { fetchTimetable, fetchAnnouncements, type AnnouncementData } from '@/lib/api/client';
+import { fetchTimetable, fetchAnnouncements, toDisplayAnnouncement, type AnnouncementData } from '@/lib/api/client';
 
 export const dynamic = 'force-dynamic';
-
-function toDisplayAnnouncement(a: AnnouncementData) {
-  return {
-    id: a.id,
-    title: a.title,
-    date: a.date,
-    expires: a.expires ?? undefined,
-    body: a.body,
-    highlight: a.highlight === 1,
-  };
-}
 
 export default async function PinnwandPage({ searchParams }: { searchParams: { klasse?: string } }) {
   let classes: string[] = [];

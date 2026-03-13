@@ -1,6 +1,7 @@
-import { Env, TimetableUpload, LessonEntry, Weekday } from '../types';
+import { Env } from '../types';
 import { jsonResponse } from '../router';
 import { weekdayForToday } from '../services/berlin-time';
+import { loadActiveUpload, buildEntriesByClass, type TimetableEntryRow } from '../services/timetable';
 
 /**
  * GET /api/timetable?klasse=HT11
@@ -10,29 +11,7 @@ export async function handleTimetable(request: Request, env: Env): Promise<Respo
   const url = new URL(request.url);
   const klasse = url.searchParams.get('klasse');
 
-  const activeSetting = await env.DB.prepare(
-    "SELECT value FROM app_settings WHERE key = 'active_timetable_id'"
-  ).first<{ value: string }>();
-
-  // Aktiven Stundenplan laden, mit Fallback auf letzten geparsten/archivierten
-  let upload: TimetableUpload | null = null;
-
-  if (activeSetting?.value) {
-    upload = await env.DB.prepare(
-      'SELECT * FROM timetable_uploads WHERE id = ? AND status = ?'
-    ).bind(activeSetting.value, 'active').first<TimetableUpload>();
-  }
-
-  if (!upload) {
-    upload = await env.DB.prepare(
-      `SELECT * FROM timetable_uploads
-       WHERE status IN ('active', 'parsed', 'archived')
-       ORDER BY
-         CASE status WHEN 'active' THEN 0 WHEN 'parsed' THEN 1 WHEN 'archived' THEN 2 END,
-         updated_at DESC
-       LIMIT 1`
-    ).first<TimetableUpload>();
-  }
+  const upload = await loadActiveUpload(env);
 
   if (!upload) {
     return jsonResponse({ upload: null, entries: {}, classes: [], todayKey: weekdayForToday() });
@@ -56,31 +35,9 @@ export async function handleTimetable(request: Request, env: Env): Promise<Respo
 
   query += ' ORDER BY class_code, weekday, period';
 
-  const rows = await env.DB.prepare(query).bind(...bindings).all<{
-    class_code: string;
-    weekday: Weekday;
-    period: number;
-    period_end: number | null;
-    time_range: string;
-    subject: string | null;
-    detail: string | null;
-    room: string | null;
-  }>();
+  const rows = await env.DB.prepare(query).bind(...bindings).all<TimetableEntryRow>();
 
-  const entriesByClass: Record<string, Record<Weekday, LessonEntry[]>> = {};
-  for (const row of rows.results) {
-    if (!entriesByClass[row.class_code]) {
-      entriesByClass[row.class_code] = { MO: [], DI: [], MI: [], DO: [], FR: [] };
-    }
-    entriesByClass[row.class_code][row.weekday].push({
-      period: row.period,
-      periodEnd: row.period_end ?? undefined,
-      time: row.time_range,
-      subject: row.subject ?? undefined,
-      detail: row.detail ?? undefined,
-      room: row.room ?? undefined,
-    });
-  }
+  const { entries } = buildEntriesByClass(rows.results);
 
   return jsonResponse({
     upload: {
@@ -90,7 +47,7 @@ export async function handleTimetable(request: Request, env: Env): Promise<Respo
       half_year: upload.half_year,
       updated_at: upload.updated_at,
     },
-    entries: entriesByClass,
+    entries,
     classes,
     todayKey: weekdayForToday(),
   });
@@ -101,31 +58,15 @@ export async function handleTimetable(request: Request, env: Env): Promise<Respo
  * Listet alle verfügbaren Klassen im aktiven Stundenplan.
  */
 export async function handleTimetableClasses(request: Request, env: Env): Promise<Response> {
-  const activeSetting = await env.DB.prepare(
-    "SELECT value FROM app_settings WHERE key = 'active_timetable_id'"
-  ).first<{ value: string }>();
+  const upload = await loadActiveUpload(env);
 
-  let uploadId = activeSetting?.value || null;
-
-  // Fallback: letzten verfügbaren Stundenplan suchen
-  if (!uploadId) {
-    const fallback = await env.DB.prepare(
-      `SELECT id FROM timetable_uploads
-       WHERE status IN ('active', 'parsed', 'archived')
-       ORDER BY CASE status WHEN 'active' THEN 0 WHEN 'parsed' THEN 1 WHEN 'archived' THEN 2 END,
-         updated_at DESC
-       LIMIT 1`
-    ).first<{ id: string }>();
-    uploadId = fallback?.id ?? null;
-  }
-
-  if (!uploadId) {
+  if (!upload) {
     return jsonResponse({ classes: [] });
   }
 
   const rows = await env.DB.prepare(
     'SELECT DISTINCT class_code FROM timetable_entries WHERE upload_id = ? ORDER BY class_code'
-  ).bind(uploadId).all<{ class_code: string }>();
+  ).bind(upload.id).all<{ class_code: string }>();
 
   return jsonResponse({ classes: rows.results.map((r) => r.class_code) });
 }
