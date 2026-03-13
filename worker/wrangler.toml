@@ -9,7 +9,7 @@ ADMIN_USER = "redaktion"
 [[d1_databases]]
 binding = "DB"
 database_name = "hgh-app-db"
-database_id = "placeholder-replace-after-creation"
+database_id = "7a6a1570-883f-4cf7-9989-34569a3a04eb"
 migrations_dir = "../migrations"
 
 [[r2_buckets]]
