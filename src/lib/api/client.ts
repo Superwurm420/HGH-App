@@ -3,12 +3,33 @@
  * Wird sowohl server-seitig (SSR) als auch client-seitig verwendet.
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
+
+/**
+ * Baut die Ziel-URL für API-Calls.
+ *
+ * Wichtiger Sonderfall für Admin-Auth im Browser:
+ * Diese Endpunkte arbeiten cookie-basiert. Bei Cross-Origin-Aufrufen schlagen
+ * Session-Cookies in der Praxis häufig fehl (CORS/SameSite-Konfiguration).
+ * Daher erzwingen wir client-seitig für /api/admin/* relative Requests
+ * (gleicher Origin), damit Next.js-Rewrites die Weiterleitung zur Worker-API
+ * übernehmen können.
+ */
+function buildApiUrl(path: string): string {
+  const isBrowser = typeof window !== 'undefined';
+  const isAdminEndpoint = path.startsWith('/api/admin/');
+
+  if (isBrowser && isAdminEndpoint) {
+    return path;
+  }
+
+  return `${API_BASE}${path}`;
+}
 
 type FetchOptions = Omit<RequestInit, 'method'>;
 
 async function apiFetch<T>(path: string, options?: FetchOptions & { method?: string }): Promise<T> {
-  const url = `${API_BASE}${path}`;
+  const url = buildApiUrl(path);
   const response = await fetch(url, {
     ...options,
     headers: {
@@ -225,7 +246,7 @@ export async function adminFetchUploads(): Promise<{ uploads: Array<{
 export async function adminUploadPdf(file: File): Promise<unknown> {
   const formData = new FormData();
   formData.append('file', file);
-  const url = `${API_BASE}/api/admin/uploads`;
+  const url = buildApiUrl('/api/admin/uploads');
   const response = await fetch(url, {
     method: 'POST',
     body: formData,

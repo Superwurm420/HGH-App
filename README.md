@@ -139,6 +139,13 @@ Der Workflow (`.github/workflows/deploy.yml`) führt automatisch aus:
 
 Danach ist die App unter der Cloudflare-URL erreichbar.
 
+**Wichtig für Admin-Login im Hosting:**
+- Wenn Frontend und API auf **unterschiedlichen Cloudflare-URLs** laufen, setze im Frontend-Deployment die Variable `API_ORIGIN` (alternativ `NEXT_PUBLIC_API_URL`) auf die API-URL, z. B. `https://hgh-app-api.<deine-domain>.workers.dev`.
+- Cloudflare Dashboard: **Workers & Pages → (dein Frontend) → Settings → Variables and Secrets → Add variable**.
+- Name: `API_ORIGIN` · Value: die komplette API-Origin ohne Pfad (z. B. `https://hgh-app-api.<deine-domain>.workers.dev`).
+- Danach Frontend neu deployen, damit die Rewrites aktiv werden.
+- Damit werden Browser-Requests auf `/api/*` serverseitig korrekt zur API weitergeleitet (inkl. Admin-Session-Cookies).
+
 ---
 
 ### Lokale Entwicklung
