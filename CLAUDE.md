@@ -4,7 +4,7 @@
 
 HGH-App is a **Progressive Web App (PWA)** for the **Holztechnik und Gestaltung Hildesheim** vocational school (BBS). It displays weekly timetables parsed from PDF files, school announcements, a calendar, daily messages, and a countdown timer. The entire UI is in **German**.
 
-- **Frontend**: Next.js 14 (App Router) with React 18
+- **Frontend**: Next.js 16 (App Router) with React 18
 - **Backend**: Cloudflare Worker (custom router, D1, R2)
 - **Database**: Cloudflare D1 (SQLite)
 - **File Storage**: Cloudflare R2
@@ -17,28 +17,32 @@ HGH-App is a **Progressive Web App (PWA)** for the **Holztechnik und Gestaltung 
 ## Quick Reference — Commands
 
 ```bash
-npm run dev              # Start Next.js dev server
-npm run dev:worker       # Start Cloudflare Worker dev server (wrangler dev)
-npm run build            # Production build (Next.js)
-npm run build:worker     # Worker dry-run deploy
+npm run dev              # Start Next.js dev server (Port 3000)
+npm run dev:api          # Start Worker API dev server (wrangler, Port 8787)
+npm run dev:worker       # Start OpenNext dev server (Port 8788)
+npm run build            # Production build (OpenNext/Cloudflare)
 npm run lint             # ESLint check
+npm run typecheck        # TypeScript type check
 npm run test:unit        # Run unit tests with Vitest
 npm run db:migrate       # Apply D1 migrations (remote)
 npm run db:migrate:local # Apply D1 migrations (local)
-npm run deploy           # Deploy Worker to Cloudflare
+npm run deploy           # Deploy Web + API to Cloudflare
+npm run deploy:web       # Deploy only frontend (OpenNext)
+npm run deploy:api       # Deploy only Worker API
 ```
 
 ## Repository Structure
 
 ```
 ├── CLAUDE.md
-├── wrangler.toml              # Cloudflare Worker config (D1, R2, site bucket)
+├── wrangler.toml              # OpenNext/Frontend config (assets, Port 8788)
 ├── next.config.mjs            # Rewrites (favicons, dev API proxy), caching headers
 ├── tailwind.config.ts         # Custom colors, border-radius tokens
 ├── tsconfig.json              # Strict TS, path alias @/* → ./src/*
 ├── package.json
 │
 ├── worker/                    # Cloudflare Worker Backend
+│   ├── wrangler.toml          # Worker API config (D1, R2, Port 8787)
 │   └── src/
 │       ├── index.ts           # Worker entry: fetch handler, router setup, CORS
 │       ├── router.ts          # URLPattern-based router
@@ -134,7 +138,7 @@ Das Projekt besteht aus zwei getrennten Systemen:
 1. **Cloudflare Worker** (`worker/src/`) — API-Backend mit D1-Datenbank und R2-Storage
 2. **Next.js Frontend** (`src/`) — UI, ruft Worker-API per `src/lib/api/client.ts` auf
 
-In der Entwicklung: Next.js auf Port 3000 proxied `/api/*` an den Worker auf Port 8787 (konfiguriert in `next.config.mjs`).
+In der Entwicklung: Next.js auf Port 3000 proxied `/api/*` an den Worker auf Port 8787 (konfiguriert in `next.config.mjs`). Es gibt zwei `wrangler.toml`-Dateien: die Root-Datei für OpenNext (Port 8788) und `worker/wrangler.toml` für die Worker-API (Port 8787, D1, R2).
 
 ### Data Flow
 
