@@ -1,8 +1,16 @@
 /** @type {import('next').NextConfig} */
+function getApiOrigin() {
+  const rawOrigin = process.env.API_ORIGIN
+    || process.env.NEXT_PUBLIC_API_URL
+    || (process.env.NODE_ENV === 'development' ? 'http://localhost:8787' : '');
+
+  return rawOrigin.replace(/\/$/, '');
+}
+
 const nextConfig = {
   reactStrictMode: true,
   async rewrites() {
-    const apiOrigin = process.env.API_ORIGIN || (process.env.NODE_ENV === 'development' ? 'http://localhost:8787' : '');
+    const apiOrigin = getApiOrigin();
 
     return [
       // Favicon rewrites
