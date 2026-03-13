@@ -142,6 +142,18 @@ export async function fetchBootstrap(): Promise<BootstrapResponse> {
   return apiFetch<BootstrapResponse>('/api/bootstrap');
 }
 
+// ── Admin Setup Status ────────────────────────────────────
+
+export interface SetupStatus {
+  dbReady: boolean;
+  hasUsers: boolean;
+  passwordConfigured: boolean;
+}
+
+export async function checkSetupStatus(): Promise<SetupStatus> {
+  return apiFetch<SetupStatus>('/api/admin/setup-status');
+}
+
 // ── Admin Auth ─────────────────────────────────────────────────────
 
 export async function adminLogin(username: string, password: string): Promise<{ ok: boolean; username: string }> {

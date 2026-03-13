@@ -105,7 +105,7 @@ database_id = "HIER-DIE-ID-EINTRAGEN"
 npx wrangler secret put ADMIN_PASSWORD -c worker/wrangler.toml
 ```
 
-Du wirst aufgefordert, ein Passwort einzugeben. Das ist das Passwort, mit dem sich die Redaktion im Adminbereich anmeldet. Der Benutzername ist standardmäßig `redaktion` (konfiguriert in `worker/wrangler.toml` als `ADMIN_USER`).
+Du wirst aufgefordert, ein Passwort einzugeben. Das ist das Passwort, mit dem sich die Redaktion im Adminbereich anmeldet. Der Benutzername ist `redaktion` (konfiguriert in `worker/wrangler.toml` als `ADMIN_USER`). Beim ersten Login wird das Admin-Konto automatisch erstellt.
 
 #### Schritt 6: Datenbank-Tabellen anlegen
 
@@ -146,7 +146,7 @@ Danach ist die App unter der Cloudflare-URL erreichbar.
 Für lokales Testen und Entwickeln:
 
 ```bash
-npm run setup          # Erstellt .dev.vars mit lokalem Passwort (admin123)
+npm run setup          # Erstellt worker/.dev.vars + migriert lokale DB
 npm run dev:api        # Startet die Worker-API (Terminal 1)
 npm run dev            # Startet das Frontend (Terminal 2)
 ```
@@ -154,8 +154,10 @@ npm run dev            # Startet das Frontend (Terminal 2)
 Dann im Browser öffnen: `http://localhost:3000`
 
 **Lokaler Admin-Login:**
+- Öffne `http://localhost:3000/admin`
 - Benutzername: `redaktion`
 - Passwort: `admin123`
+- Beim ersten Login wird das Admin-Konto automatisch erstellt.
 
 ---
 

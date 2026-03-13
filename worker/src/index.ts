@@ -5,7 +5,7 @@ import { handleTimetable, handleTimetableClasses } from './routes/timetable';
 import { handleAnnouncements, handleAnnouncementById } from './routes/announcements';
 import { handleEvents, handleEventById } from './routes/events';
 import { handleSettings, handleSettingByKey } from './routes/settings';
-import { handleAdminLogin, handleAdminLogout, handleAdminSession } from './routes/admin/auth';
+import { handleAdminLogin, handleAdminLogout, handleAdminSession, handleAdminSetupStatus } from './routes/admin/auth';
 import { handleAdminAnnouncements, handleAdminAnnouncementById } from './routes/admin/announcements';
 import { handleAdminEvents, handleAdminEventById } from './routes/admin/events';
 import { handleAdminUploads, handleAdminUploadById, handleAdminUploadActivate } from './routes/admin/uploads';
@@ -33,6 +33,7 @@ const worker = {
     router.post('/api/admin/login', (req) => handleAdminLogin(req, env));
     router.post('/api/admin/logout', (req) => handleAdminLogout(req, env));
     router.get('/api/admin/session', (req) => handleAdminSession(req, env));
+    router.get('/api/admin/setup-status', (req) => handleAdminSetupStatus(req, env));
 
     // ── Admin API (Auth wird in den Handlern selbst geprüft) ──
     router.get('/api/admin/announcements', (req) => handleAdminAnnouncements(req, env));

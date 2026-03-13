@@ -134,13 +134,13 @@ fi
 # ── Lokale Entwicklung vorbereiten ─────────────────────────
 step "Lokale Entwicklung vorbereiten"
 
-if [ ! -f ".dev.vars" ]; then
-  cat > .dev.vars <<EOF
+if [ ! -f "worker/.dev.vars" ]; then
+  cat > worker/.dev.vars <<EOF
 ADMIN_PASSWORD=admin123
 EOF
-  info ".dev.vars erstellt (lokales Passwort: admin123)"
+  info "worker/.dev.vars erstellt (lokales Passwort: admin123)"
 else
-  info ".dev.vars existiert bereits"
+  info "worker/.dev.vars existiert bereits"
 fi
 
 echo "    Lokale Datenbank-Migration..."

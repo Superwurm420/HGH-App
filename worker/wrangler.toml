@@ -4,7 +4,7 @@ compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
 
 [vars]
-ADMIN_USER = "hgh-admin"
+ADMIN_USER = "redaktion"
 
 [[d1_databases]]
 binding = "DB"
