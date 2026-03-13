@@ -14,13 +14,14 @@
     "test:unit": "vitest run",
     "db:migrate": "wrangler d1 migrations apply hgh-app-db -c worker/wrangler.toml",
     "db:migrate:local": "wrangler d1 migrations apply hgh-app-db --local -c worker/wrangler.toml",
-    "setup": "node scripts/setup.mjs",
+    "setup": "npm run setup:init -- --local",
     "deploy:web": "opennextjs-cloudflare deploy",
     "deploy:api": "wrangler deploy -c worker/wrangler.toml",
     "deploy": "npm run deploy:web && npm run deploy:api",
     "preview:worker": "opennextjs-cloudflare preview",
     "build:next": "next build",
-    "setup:cloudflare": "bash scripts/setup.sh"
+    "setup:cloudflare": "npm run setup:init -- --cloudflare",
+    "setup:init": "node scripts/setup.mjs"
   },
   "dependencies": {
     "next": "^16.1.6",

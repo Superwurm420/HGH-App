@@ -75,45 +75,17 @@ cd HGH-App
 npm install
 ```
 
-#### Schritt 3: Bei Cloudflare anmelden
+#### Schritt 3: Cloudflare-Ersteinrichtung in einem Command
 
 ```bash
-npx wrangler login
+npm run setup:init -- --cloudflare
 ```
 
-Daraufhin öffnet sich ein Browserfenster, in dem du dich bei Cloudflare anmeldest und den Zugriff bestätigst.
+Der zentrale Setup-Command übernimmt die Cloudflare-Anmeldung, D1/R2-Erstellung, das Setzen des Admin-Secrets und die Migration. Am Ende bekommst du eine kompakte Checkliste (`DB`, `Bucket`, `Secret`, `Migration`) mit `erledigt/offen`.
 
-#### Schritt 4: Datenbank und Speicher erstellen
+> Hinweis: Das Setzen von `ADMIN_PASSWORD` bleibt interaktiv. Wrangler fragt dich beim Lauf nach einem Passwort für den Adminzugang.
 
-```bash
-npx wrangler d1 create hgh-app-db
-npx wrangler r2 bucket create hgh-app-content
-```
-
-Nach dem Erstellen der Datenbank zeigt die Konsole eine **Database-ID** an (eine lange Zeichenkette). Diese musst du in die Datei `worker/wrangler.toml` eintragen:
-
-```toml
-[[d1_databases]]
-binding = "DB"
-database_name = "hgh-app-db"
-database_id = "HIER-DIE-ID-EINTRAGEN"
-```
-
-#### Schritt 5: Admin-Passwort festlegen
-
-```bash
-npx wrangler secret put ADMIN_PASSWORD -c worker/wrangler.toml
-```
-
-Du wirst aufgefordert, ein Passwort einzugeben. Das ist das Passwort, mit dem sich die Redaktion im Adminbereich anmeldet. Der Benutzername ist `redaktion` (konfiguriert in `worker/wrangler.toml` als `ADMIN_USER`). Beim ersten Login wird das Admin-Konto automatisch erstellt.
-
-#### Schritt 6: Datenbank-Tabellen anlegen
-
-```bash
-npm run db:migrate
-```
-
-#### Schritt 7: GitHub Secrets einrichten
+#### Schritt 4: GitHub Secrets einrichten
 
 Damit das automatische Deployment funktioniert, müssen im GitHub-Repository zwei Secrets hinterlegt werden:
 
@@ -122,7 +94,7 @@ Damit das automatische Deployment funktioniert, müssen im GitHub-Repository zwe
    - **`CLOUDFLARE_API_TOKEN`** — Ein Cloudflare API Token mit Rechten für Workers, D1 und R2. Erstelle diesen unter [Cloudflare Dashboard → API Tokens](https://dash.cloudflare.com/profile/api-tokens).
    - **`CLOUDFLARE_ACCOUNT_ID`** — Deine Cloudflare Account-ID. Findest du im Cloudflare Dashboard auf der Übersichtsseite rechts.
 
-#### Schritt 8: Erster Deploy
+#### Schritt 5: Erster Deploy
 
 Pushe den Code auf den `main`-Branch. GitHub Actions baut die App automatisch und deployed sie auf Cloudflare:
 
@@ -153,7 +125,7 @@ Danach ist die App unter der Cloudflare-URL erreichbar.
 Für lokales Testen und Entwickeln:
 
 ```bash
-npm run setup          # Erstellt worker/.dev.vars + migriert lokale DB
+npm run setup          # Alias für setup:init -- --local
 npm run dev:api        # Startet die Worker-API (Terminal 1)
 npm run dev            # Startet das Frontend (Terminal 2)
 ```
@@ -182,6 +154,9 @@ Dann im Browser öffnen: `http://localhost:3000`
 | `npm run lint` | Prüft den Code auf Fehler (ESLint) |
 | `npm run typecheck` | Prüft TypeScript-Typen |
 | `npm run test:unit` | Führt automatische Tests aus |
-| `npm run setup` | Erstellt lokale Entwicklungsdateien |
+| `npm run setup` | Alias für lokales Setup (`setup:init -- --local`) |
+| `npm run setup:cloudflare` | Alias für Cloudflare-Setup (`setup:init -- --cloudflare`) |
+| `npm run setup:init -- --cloudflare` | Zentraler Setup-Einstieg für Cloudflare (D1, R2, Secret, Migration) |
+| `npm run setup:init -- --local` | Zentraler Setup-Einstieg für lokales Setup |
 | `npm run db:migrate` | Wendet Datenbankänderungen an (Cloudflare) |
 | `npm run db:migrate:local` | Wendet Datenbankänderungen lokal an |
