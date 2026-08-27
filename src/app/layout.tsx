@@ -38,7 +38,10 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="de">
+    // ThemeScript setzt die Klasse auf <html>, bevor React hydratisiert — das
+    // verhindert ein kurzes Aufblitzen im falschen Design. React meldet die
+    // dadurch abweichende Klasse sonst als Hydration-Fehler.
+    <html lang="de" suppressHydrationWarning>
       <body>
         <ThemeScript />
         <ServiceWorkerRegister />
