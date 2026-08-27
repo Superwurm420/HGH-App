@@ -1,31 +1,21 @@
 import { AnnouncementList } from '@/components/announcements/AnnouncementList';
 import { ClassFromStorage } from '@/components/schedule/ClassFromStorage';
 import { ClassSelector } from '@/components/schedule/ClassSelector';
-import { fetchTimetable, fetchAnnouncements, toDisplayAnnouncement, type AnnouncementData } from '@/lib/api/client';
+import { toDisplayAnnouncement } from '@/lib/api/client';
+import { loadAnnouncements, loadSchedulePage } from '@/server/page-data';
 
 export const dynamic = 'force-dynamic';
 
-export default async function PinnwandPage({ searchParams }: { searchParams: { klasse?: string } }) {
-  let classes: string[] = [];
-  let announcements: AnnouncementData[] = [];
+type PageProps = { searchParams: Promise<{ klasse?: string }> };
 
-  try {
-    const plan = await fetchTimetable(searchParams.klasse);
-    classes = plan.classes;
+export default async function PinnwandPage({ searchParams }: PageProps) {
+  const { klasse } = await searchParams;
+  const { timetable, selectedClass } = await loadSchedulePage(klasse);
 
-    const selectedClass = searchParams.klasse && plan.entries[searchParams.klasse]
-      ? searchParams.klasse
-      : plan.classes[0];
-
-    const res = await fetchAnnouncements(selectedClass);
-    announcements = res.announcements;
-  } catch {
-    // Versuche Announcements auch ohne Timetable zu laden
-    try {
-      const res = await fetchAnnouncements();
-      announcements = res.announcements;
-    } catch { /* ignore */ }
-  }
+  // Ohne Stundenplan gibt es keine Klassenauswahl — die Pinnwand zeigt dann
+  // alle Ankündigungen statt gar keine.
+  const announcements = await loadAnnouncements(selectedClass);
+  const classes = timetable.classes;
 
   return (
     <>

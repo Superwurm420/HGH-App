@@ -1,26 +1,23 @@
 import { Clock } from '@/components/ui/Clock';
 import { TvTimetableGrid } from '@/components/schedule/TvTimetableGrid';
 import { TvPageController } from '@/components/tv/TvPageController';
-import { fetchTimetable, fetchAnnouncements, type AnnouncementData } from '@/lib/api/client';
-import { Weekday, type ParsedSchedule } from '@/lib/timetable/types';
+import { TvSlideshow } from '@/components/tv/TvSlideshow';
+import { mediaUrl } from '@/lib/api/client';
+import { loadAnnouncements, loadAppSettings, loadSchedulePage, loadTvImages } from '@/server/page-data';
 
 export const dynamic = 'force-dynamic';
+
+const MAX_TV_ANNOUNCEMENTS = 8;
+
 export default async function TvPage() {
-  let allEntries: ParsedSchedule = {};
-  let todayKey = 'MO';
-  let updatedAt: string | null = null;
-  let announcements: AnnouncementData[] = [];
+  const [schedule, announcements, images, settings] = await Promise.all([
+    loadSchedulePage(),
+    loadAnnouncements(),
+    loadTvImages(),
+    loadAppSettings(),
+  ]);
 
-  try {
-    const plan = await fetchTimetable();
-    allEntries = plan.entries;
-    todayKey = plan.todayKey;
-    updatedAt = plan.upload?.updated_at ?? null;
-  } catch {
-    /* ignore */
-  }
-
-  if (Object.keys(allEntries).length === 0) {
+  if (!schedule.hasTimetable) {
     return (
       <div className="card surface">
         <h1 className="section-title">TV-Ansicht</h1>
@@ -29,29 +26,26 @@ export default async function TvPage() {
     );
   }
 
-  try {
-    const res = await fetchAnnouncements();
-    announcements = res.announcements;
-  } catch {
-    /* ignore */
-  }
-
-  const sortedAnnouncements = [...announcements].sort((a, b) => {
-    return new Date(b.date).getTime() - new Date(a.date).getTime();
-  });
+  const { timetable } = schedule;
+  const slides = images.map((image) => ({
+    id: image.id,
+    filename: image.filename,
+    url: mediaUrl(image.id),
+  }));
 
   return (
     <div className="tv-view">
       <TvPageController />
-      <section className="tv-main-grid" aria-label="TV-Übersicht">
+      <section className="tv-main-grid" data-panels={slides.length > 0 ? '3' : '2'} aria-label="TV-Übersicht">
         <article className="tv-panel tv-clock-panel">
           <div className="tv-headline">
-            <h1>HGH Holztechnik und Gestaltung</h1>
+            <h1>{settings.schoolName}</h1>
           </div>
 
           <div className="tv-branding-row">
             <div className="tv-branding">
               <div className="tv-logo-wrap" aria-hidden="true">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/content/branding/school-logo.svg" alt="" className="tv-logo" />
               </div>
             </div>
@@ -59,19 +53,23 @@ export default async function TvPage() {
             <Clock variant="tv" />
           </div>
 
-          {updatedAt && <p className="text-sm text-muted">Stand Stundenplan: {new Date(updatedAt).toLocaleDateString('de-DE')}</p>}
+          {timetable.upload?.updated_at && (
+            <p className="text-sm text-muted">
+              Stand Stundenplan: {new Date(timetable.upload.updated_at).toLocaleDateString('de-DE')}
+            </p>
+          )}
         </article>
 
         <article className="tv-panel">
           <h2>Pinnwand</h2>
-          {sortedAnnouncements.length === 0 ? (
+          {announcements.length === 0 ? (
             <p className="text-sm text-muted">Keine aktiven Pinnwand-Einträge.</p>
           ) : (
             <div className="tv-list">
-              {sortedAnnouncements.slice(0, 8).map((item) => (
+              {announcements.slice(0, MAX_TV_ANNOUNCEMENTS).map((item) => (
                 <article key={item.id} className="tv-list-item">
                   <div className="tv-list-head">
-                    <strong>{item.title ?? 'Ohne Titel'}</strong>
+                    <strong>{item.title}</strong>
                     {item.date ? <span>{item.date}</span> : null}
                   </div>
                   <p>{item.body}</p>
@@ -81,10 +79,16 @@ export default async function TvPage() {
           )}
         </article>
 
+        {slides.length > 0 && (
+          <article className="tv-panel tv-slideshow-panel">
+            <h2>Aus der Schule</h2>
+            <TvSlideshow images={slides} />
+          </article>
+        )}
       </section>
 
       <section className="tv-panel tv-timetable-panel">
-        <TvTimetableGrid schedulesByClass={allEntries} day={todayKey as Weekday} />
+        <TvTimetableGrid schedulesByClass={timetable.entries} day={timetable.todayKey} />
       </section>
     </div>
   );

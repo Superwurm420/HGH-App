@@ -5,5 +5,13 @@ import nextTypescript from 'eslint-config-next/typescript';
 export default defineConfig([
   ...nextVitals,
   ...nextTypescript,
-  globalIgnores(['.next/**', '.open-next/**', 'build/**', 'next-env.d.ts']),
+  globalIgnores([
+    '.next/**',
+    '.open-next/**',
+    'build/**',
+    'next-env.d.ts',
+    // von scripts/prebuild.mjs erzeugt bzw. aus node_modules kopiert
+    'public/pdfjs/**',
+    'public/sw.js',
+  ]),
 ]);

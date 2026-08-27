@@ -26,7 +26,7 @@ Die App lässt sich wie eine normale App auf dem Startbildschirm ablegen:
 
 ## Für die Redaktion: Inhalte verwalten
 
-Die Redaktion verwaltet Stundenpläne, Ankündigungen und Termine über den **Adminbereich**:
+Die Redaktion verwaltet Stundenpläne, Ankündigungen, Termine und Bilder über den **Adminbereich**:
 
 1. Öffne die App im Browser
 2. Hänge `/admin` an die Adresse an (z. B. `https://deine-app.de/admin`)
@@ -34,9 +34,9 @@ Die Redaktion verwaltet Stundenpläne, Ankündigungen und Termine über den **Ad
 
 **Ausführliche Anleitung:** [Admin-Anleitung (docs/ADMIN.md)](docs/ADMIN.md)
 
-Tagesmeldungen und Ferienzeiträume werden über Textdateien gepflegt:
+Tagesmeldungen und Ferienzeiträume pflegst du ebenfalls im Adminbereich, unter **Einstellungen**:
 
-**Anleitung dazu:** [Inhaltsdateien pflegen (docs/CONTENT_FORMATS.md)](docs/CONTENT_FORMATS.md)
+**Anleitung dazu:** [Tagesmeldungen und Ferienzeiten (docs/CONTENT_FORMATS.md)](docs/CONTENT_FORMATS.md)
 
 ---
 
@@ -44,12 +44,14 @@ Tagesmeldungen und Ferienzeiträume werden über Textdateien gepflegt:
 
 ### Technik im Überblick
 
-Die App besteht aus zwei Teilen:
+Die App läuft vollständig auf Cloudflare, in **einem** Worker:
 
-- **Frontend**: Eine Website gebaut mit Next.js 16, gehostet auf Cloudflare
-- **Backend (API)**: Ein Cloudflare Worker mit Datenbank (D1) und Dateispeicher (R2)
+- **Oberfläche und Schnittstelle**: Next.js 16, ausgeliefert als Cloudflare Worker
+- **Datenbank**: Cloudflare D1 (SQLite) — Stundenpläne, Ankündigungen, Termine, Einstellungen
+- **Dateien**: Cloudflare R2 — hochgeladene PDFs und Bilder
 
-Beides wird auf Cloudflare betrieben. Deployment läuft automatisch über GitHub Actions.
+Es gibt keine getrennte API mehr und damit auch keine API-Adresse zu konfigurieren.
+Deployment läuft automatisch über GitHub Actions.
 
 ---
 
@@ -105,18 +107,20 @@ git push origin main
 Der Workflow (`.github/workflows/deploy.yml`) führt automatisch aus:
 1. Code herunterladen
 2. Abhängigkeiten installieren
-3. Code prüfen (Lint + Tests)
+3. Code prüfen (Lint, Typen, Tests)
 4. App bauen
 5. Auf Cloudflare deployen
+6. Datenbank-Migrationen anwenden
 
 Danach ist die App unter der Cloudflare-URL erreichbar.
 
-**Wichtig für Admin-Login im Hosting:**
-- Wenn Frontend und API auf **unterschiedlichen Cloudflare-URLs** laufen, setze im Frontend-Deployment die Variable `API_ORIGIN` (alternativ `NEXT_PUBLIC_API_URL`) auf die API-URL, z. B. `https://hgh-app-api.<deine-domain>.workers.dev`.
-- Cloudflare Dashboard: **Workers & Pages → (dein Frontend) → Settings → Variables and Secrets → Add variable**.
-- Name: `API_ORIGIN` · Value: die komplette API-Origin ohne Pfad (z. B. `https://hgh-app-api.<deine-domain>.workers.dev`).
-- Danach Frontend neu deployen, damit die Rewrites aktiv werden.
-- Damit werden Browser-Requests auf `/api/*` serverseitig korrekt zur API weitergeleitet (inkl. Admin-Session-Cookies).
+> **Schritt 6 ist der wichtigste.** Ohne angewandte Migrationen ist die Datenbank
+> leer: Dann ist kein Admin-Login möglich und die App zeigt überall
+> „Kein Stundenplan verfügbar". Genau das war der Grund, warum die App
+> zwischenzeitlich nicht funktioniert hat.
+
+Es muss **keine** API-Adresse konfiguriert werden — Oberfläche und Schnittstelle
+laufen im selben Worker unter derselben Adresse.
 
 ---
 
@@ -125,9 +129,9 @@ Danach ist die App unter der Cloudflare-URL erreichbar.
 Für lokales Testen und Entwickeln:
 
 ```bash
-npm run setup          # Alias für setup:init -- --local
-npm run dev:api        # Startet die Worker-API (Terminal 1)
-npm run dev            # Startet das Frontend (Terminal 2)
+npm install
+npm run setup          # legt .dev.vars an und migriert die lokale Datenbank
+npm run dev            # startet alles — ein Terminal genügt
 ```
 
 Dann im Browser öffnen: `http://localhost:3000`
@@ -135,8 +139,11 @@ Dann im Browser öffnen: `http://localhost:3000`
 **Lokaler Admin-Login:**
 - Öffne `http://localhost:3000/admin`
 - Benutzername: `redaktion`
-- Passwort: `admin123`
+- Passwort: `admin123` (steht in `.dev.vars`, siehe `.dev.vars.example`)
 - Beim ersten Login wird das Admin-Konto automatisch erstellt.
+
+Klappt die Anmeldung nicht, nennt die Anmeldeseite den Grund — meist fehlt die
+Datenbank-Migration oder das Passwort.
 
 ---
 
@@ -144,19 +151,14 @@ Dann im Browser öffnen: `http://localhost:3000`
 
 | Script | Was es tut |
 |---|---|
-| `npm run dev` | Startet das Frontend lokal (Port 3000) |
-| `npm run dev:api` | Startet die Worker-API lokal (Port 8787) |
-| `npm run dev:worker` | Startet den OpenNext-Entwicklungsserver (Port 8788) |
-| `npm run build` | Baut die App für Produktion |
-| `npm run deploy` | Deployed Frontend + API auf Cloudflare |
-| `npm run deploy:web` | Deployed nur das Frontend |
-| `npm run deploy:api` | Deployed nur die API |
-| `npm run lint` | Prüft den Code auf Fehler (ESLint) |
-| `npm run typecheck` | Prüft TypeScript-Typen |
-| `npm run test:unit` | Führt automatische Tests aus |
-| `npm run setup` | Alias für lokales Setup (`setup:init -- --local`) |
-| `npm run setup:cloudflare` | Alias für Cloudflare-Setup (`setup:init -- --cloudflare`) |
-| `npm run setup:init -- --cloudflare` | Zentraler Setup-Einstieg für Cloudflare (D1, R2, Secret, Migration) |
-| `npm run setup:init -- --local` | Zentraler Setup-Einstieg für lokales Setup |
-| `npm run db:migrate` | Wendet Datenbankänderungen an (Cloudflare) |
+| `npm run setup` | Lokale Ersteinrichtung: `.dev.vars` + lokale Datenbank |
+| `npm run dev` | Startet die App lokal inklusive Datenbank (Port 3000) |
+| `npm run build` | Baut die App für die Produktion |
+| `npm run preview` | Führt den gebauten Worker lokal aus |
+| `npm run deploy` | Deployed die App auf Cloudflare |
+| `npm run lint` | Prüft den Code (ESLint) |
+| `npm run typecheck` | Prüft die TypeScript-Typen |
+| `npm run test:unit` | Führt die automatischen Tests aus |
+| `npm run setup:cloudflare` | Cloudflare-Ersteinrichtung (D1, R2, Secret, Migration) |
+| `npm run db:migrate` | Wendet Datenbankänderungen auf Cloudflare an |
 | `npm run db:migrate:local` | Wendet Datenbankänderungen lokal an |

@@ -1,25 +1,22 @@
+import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare';
+
+// Stellt D1 und R2 auch im normalen `next dev` bereit (lokal über Miniflare),
+// damit `npm run dev` ohne zweiten Prozess auskommt.
+initOpenNextCloudflareForDev();
+
 /** @type {import('next').NextConfig} */
-function getApiOrigin() {
-  const rawOrigin = process.env.API_ORIGIN
-    || process.env.NEXT_PUBLIC_API_URL
-    || (process.env.NODE_ENV === 'development' ? 'http://localhost:8787' : '');
-
-  return rawOrigin.replace(/\/$/, '');
-}
-
 const nextConfig = {
   reactStrictMode: true,
   async rewrites() {
-    const apiOrigin = getApiOrigin();
-
+    // Die API liegt unter src/app/api/ im selben Worker — hier wird nichts
+    // mehr weitergeleitet. Es bleiben die Favicon-Pfade, die Browser und
+    // Betriebssysteme fest im Wurzelverzeichnis erwarten.
     return [
-      // Favicon rewrites
       { source: '/favicon.ico', destination: '/content/branding/favicon.ico' },
       { source: '/favicon-96x96.png', destination: '/content/branding/favicon-96x96.png' },
       { source: '/apple-touch-icon.png', destination: '/content/branding/apple-touch-icon.png' },
       { source: '/web-app-manifest-192x192.png', destination: '/content/branding/web-app-manifest-192x192.png' },
       { source: '/web-app-manifest-512x512.png', destination: '/content/branding/web-app-manifest-512x512.png' },
-      ...(apiOrigin ? [{ source: '/api/:path*', destination: `${apiOrigin}/api/:path*` }] : []),
     ];
   },
   async headers() {

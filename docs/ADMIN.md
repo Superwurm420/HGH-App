@@ -6,11 +6,13 @@ Diese Anleitung erklärt dir alles, was du im Adminbereich der HGH-App tun kanns
 
 ## Was kannst du im Adminbereich tun?
 
-Im Adminbereich gibt es drei Hauptbereiche:
+Im Adminbereich gibt es fünf Bereiche:
 
 1. **Stundenplan** — PDF-Dateien mit dem aktuellen Stundenplan hochladen und freischalten
 2. **Ankündigungen** — Nachrichten erstellen, die auf der Startseite und der Pinnwand erscheinen
 3. **Termine** — Kalendereinträge pflegen (z. B. Klausuren, Projekte, Feiertage)
+4. **Bilder** — Fotos hochladen, die auf dem Wandbildschirm (`/tv`) durchlaufen
+5. **Einstellungen** — Google-Kalender, Ferienzeiträume, Tagesmeldungen, Schulname
 
 ---
 
@@ -35,11 +37,15 @@ Im Adminbereich gibt es drei Hauptbereiche:
 
 1. Wechsle zum Tab **Stundenplan**.
 2. Klicke auf **Durchsuchen** und wähle die PDF-Datei aus.
-3. Klicke auf **Hochladen**.
-4. Warte, bis der Status sich von „Hochgeladen" über „Wird geparst" zu **Bereit zur Aktivierung** ändert.
-5. Klicke auf **Aktivieren**.
+3. Die Datei wird sofort ausgewertet — direkt hier im Browser, es wird noch nichts hochgeladen.
+4. **Prüfe die Vorschau**: Sie zeigt, wie viele Klassen und Stunden erkannt wurden und listet die Klassen auf. Sieht das falsch aus, klicke auf **Verwerfen**.
+5. Stimmt alles, klicke auf **Hochladen**.
+6. Klicke anschließend in der Liste auf **Aktivieren**.
 
 **Erst nach dem Aktivieren** sehen die Nutzer den neuen Stundenplan in der App!
+
+> Die Auswertung passiert bewusst in deinem Browser. Deshalb siehst du sofort,
+> ob das PDF richtig gelesen wurde — und musst nicht erst hochladen und hoffen.
 
 ### Dateiname richtig benennen
 
@@ -63,16 +69,18 @@ Wenn die Datei anders benannt ist, funktioniert der Upload trotzdem — nur Woch
 
 | Status | Was bedeutet das? |
 |---|---|
-| **Hochgeladen** | Die Datei ist angekommen und wird gleich verarbeitet |
-| **Wird geparst** | Die App liest gerade den Inhalt der PDF-Datei |
 | **Bereit zur Aktivierung** | Alles wurde erkannt — du kannst den Plan jetzt freischalten |
 | **Aktiv** | Dieser Plan wird den Nutzern aktuell angezeigt |
-| **Fehler** | Die Datei konnte nicht korrekt verarbeitet werden (siehe Troubleshooting unten) |
-| **Archiviert** | Ein alter Plan, der nicht mehr aktiv ist |
+| **Archiviert** | Ein früher aktiver Plan. Du kannst ihn jederzeit wieder aktivieren. |
+| **Fehler** | Beim Speichern ging etwas schief (siehe unten) |
+
+Probleme beim Lesen der PDF-Datei siehst du schon vor dem Hochladen in der Vorschau —
+in der Liste taucht ein unlesbares PDF also gar nicht erst auf.
 
 ### Wichtige Hinweise
 
 - **Dateigröße**: Maximal 20 MB pro PDF
+- **Seiten**: Ausgewertet wird nur die **erste Seite** des PDFs
 - **Dateiformat**: Nur PDF-Dateien werden akzeptiert
 - **Nur ein aktiver Plan**: Es kann immer nur ein Stundenplan gleichzeitig aktiv sein. Wenn du einen neuen aktivierst, wird der alte automatisch archiviert.
 - **Fallback**: Falls kein Plan aktiv ist, zeigt die App automatisch den letzten archivierten Plan an.
@@ -143,6 +151,61 @@ Funktioniert genauso wie bei Ankündigungen:
 
 ---
 
+## Bilder für den Wandbildschirm
+
+Der Tab **Bilder** füllt die Slideshow auf der TV-Ansicht (`/tv`) — zum Beispiel
+mit Werkstücken, Plakaten oder Fotos von Schulveranstaltungen.
+
+1. Wechsle zum Tab **Bilder**.
+2. Wähle ein oder mehrere Bilder aus (Mehrfachauswahl ist möglich).
+3. Klicke auf **Hochladen**.
+
+Die Bilder wechseln sich auf dem Wandbildschirm alle 15 Sekunden ab, in der
+Reihenfolge, in der sie hochgeladen wurden. Die Pinnwand bleibt daneben sichtbar.
+
+| Regel | Wert |
+|---|---|
+| Formate | JPG, PNG, GIF, WebP |
+| Maximale Größe | 8 MB pro Bild |
+
+Zum Entfernen auf **Löschen** unter dem jeweiligen Bild klicken. Solange keine
+Bilder hochgeladen sind, zeigt die TV-Ansicht einfach keine Slideshow.
+
+---
+
+## Einstellungen
+
+Im Tab **Einstellungen** pflegst du alles, was nicht Stundenplan, Ankündigung
+oder Termin ist. Änderungen werden erst mit **Alles speichern** übernommen.
+
+### Google-Kalender
+
+Öffne in Google Kalender die Einstellungen des gewünschten Kalenders, gehe zu
+**Kalender integrieren** und kopiere den Einbettungs-Link. Diesen hier einfügen
+und auf **Hinzufügen** klicken. Du kannst mehrere Kalender eintragen.
+
+Ist kein Kalender eingetragen, zeigt die App einen einfachen Monatskalender.
+
+### Ferien und freie Tage
+
+Trage hier die Schulferien mit Start- und Enddatum ein. In diesen Zeiträumen
+zeigt die Startseite eine Ferien-Meldung statt des Countdowns.
+
+Die **gesetzlichen Feiertage in Niedersachsen** sind bereits fest hinterlegt und
+müssen nicht eingetragen werden.
+
+### Tagesmeldungen
+
+Kurze Sprüche, die auf der Startseite je nach Tageszeit erscheinen. Das Feld
+erwartet JSON — Aufbau und Beispiele stehen in
+[docs/CONTENT_FORMATS.md](CONTENT_FORMATS.md). Wenn du hier nichts brauchst,
+lass einfach `{}` stehen.
+
+Beim Speichern wird geprüft, ob das JSON gültig ist — bei einem Tippfehler
+bekommst du eine Meldung, statt dass die Startseite kaputtgeht.
+
+---
+
 ## Häufige Probleme und Lösungen
 
 ### „Ungültige Anmeldedaten"
@@ -151,12 +214,23 @@ Funktioniert genauso wie bei Ankündigungen:
 - Prüfe das Passwort (Groß-/Kleinschreibung beachten)
 - Falls das System gerade erst eingerichtet wurde: frage die IT-Betreuung nach dem aktuellen Passwort
 
-### Upload steht auf „Fehler"
+Steht über dem Anmeldeformular ein **gelber Hinweis**, liegt es nicht am Passwort,
+sondern an der Einrichtung — der Hinweis sagt, was fehlt. Gib ihn genau so an die
+IT-Betreuung weiter.
 
-- Stelle sicher, dass es sich wirklich um eine PDF-Datei handelt
-- Prüfe, ob die Datei nicht größer als 20 MB ist
-- Versuche, die PDF neu zu exportieren (z. B. aus dem Programm, das den Stundenplan erstellt) und lade sie erneut hoch
-- Falls der Fehler bestehen bleibt: die PDF hat möglicherweise ein ungewöhnliches Format, das die App nicht verarbeiten kann
+### „Im PDF wurde kein Stundenplan erkannt"
+
+Diese Meldung kommt direkt nach dem Auswählen der Datei, noch vor dem Hochladen.
+
+- Stelle sicher, dass es sich wirklich um eine PDF-Datei handelt (kein Foto, kein Scan)
+- Der Stundenplan muss auf der **ersten Seite** stehen
+- Die PDF muss echten Text enthalten. Ein eingescanntes Blatt ist nur ein Bild und kann nicht gelesen werden.
+- Versuche, die PDF neu zu exportieren (aus dem Programm, das den Stundenplan erstellt)
+
+### Die Vorschau zeigt zu wenige oder falsche Klassen
+
+Lade den Plan in diesem Fall **nicht** hoch, sondern klicke auf **Verwerfen** und
+gib der IT-Betreuung Bescheid — am besten zusammen mit der PDF-Datei.
 
 ### Änderungen sind nicht sichtbar
 
