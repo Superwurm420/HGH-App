@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { parseBerlinDate } from '@/lib/announcements/parser';
+import { parseBerlinDate } from '@/lib/berlin-time';
 import styles from './ExpiryCountdown.module.css';
 
 function formatRemaining(seconds: number): string {

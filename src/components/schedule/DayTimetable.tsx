@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { LessonEntry, SpecialEvent, WeekPlan, WEEKDAYS, Weekday, eventAppliesToDay } from '@/lib/timetable/types';
-import { formatSubject } from './format-subject';
+import { SpecialEvent, WeekPlan, WEEKDAYS, Weekday } from '@/lib/timetable/types';
+import { LessonRow } from './LessonRow';
+import { SpecialEventBanner } from './SpecialEventBanner';
 import styles from './DayTimetable.module.css';
 
 const DAY_SHORT: Record<Weekday, string> = {
@@ -20,7 +21,6 @@ export function DayTimetable({
 }) {
   const [activeDay, setActiveDay] = useState<Weekday>(todayKey);
   const lessons = week[activeDay] ?? [];
-  const dayEvents = events.filter((e) => eventAppliesToDay(e, activeDay));
 
   return (
     <div>
@@ -38,13 +38,7 @@ export function DayTimetable({
         ))}
       </div>
 
-      {dayEvents.length > 0 && (
-        <div className={styles.specialEvent}>
-          {dayEvents.map((event) => (
-            <p key={event.id} className="text-sm font-bold mb-1">{event.title}</p>
-          ))}
-        </div>
-      )}
+      <SpecialEventBanner events={events} day={activeDay} />
 
       {lessons.length === 0 ? (
         <p className="text-sm text-muted">Keine Einträge für {DAY_SHORT[activeDay]}.</p>
@@ -55,22 +49,12 @@ export function DayTimetable({
             <div className="tt-cell">Fach</div>
             <div className="tt-cell tt-cell-end">Raum</div>
           </div>
-          {lessons.map((lesson: LessonEntry) => (
-            <div key={`${activeDay}-${lesson.period}-${lesson.time}`} className="tt-row">
-              <div className="tt-cell tt-period-cell">
-                <span className="tt-period-num">
-                  {lesson.periodEnd ? `${lesson.period}+${lesson.periodEnd}.` : `${lesson.period}.`}
-                </span>
-                <span className="tt-period-time">{lesson.time}</span>
-              </div>
-              <div className="tt-cell tt-subject-cell">
-                {lesson.subject ? formatSubject(lesson.subject) : '-'}
-              </div>
-              <div className="tt-cell tt-info-cell">
-                {lesson.room && <span className="tt-room">{lesson.room}</span>}
-                {lesson.detail && <span className="tt-detail">{lesson.detail}</span>}
-              </div>
-            </div>
+          {lessons.map((lesson) => (
+            <LessonRow
+              key={`${activeDay}-${lesson.period}-${lesson.time}`}
+              lesson={lesson}
+              periodLabel={lesson.periodEnd ? `${lesson.period}+${lesson.periodEnd}.` : `${lesson.period}.`}
+            />
           ))}
         </div>
       )}

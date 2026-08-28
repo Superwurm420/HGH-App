@@ -1,8 +1,8 @@
 import { AnnouncementList } from '@/components/announcements/AnnouncementList';
 import { ClassFromStorage } from '@/components/schedule/ClassFromStorage';
 import { ClassSelector } from '@/components/schedule/ClassSelector';
-import { toDisplayAnnouncement } from '@/lib/api/client';
-import { loadAnnouncements, loadSchedulePage } from '@/server/page-data';
+
+import { loadAnnouncements, loadSchedulePage, toDisplayAnnouncement } from '@/server/page-data';
 
 export const dynamic = 'force-dynamic';
 

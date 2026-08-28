@@ -9,8 +9,3 @@
 :global(.light) .card {
   background: rgba(255, 255, 255, 0.5);
 }
-
-.warningBox {
-  border-left: 3px solid #f5a623;
-  background: rgba(245, 166, 35, 0.08);
-}

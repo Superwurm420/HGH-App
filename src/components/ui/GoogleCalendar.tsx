@@ -1,5 +1,5 @@
 import React from 'react';
-import { extractGoogleCalendarIds } from '../../lib/calendar/url-normalization';
+import { extractGoogleCalendarIds } from '@/lib/calendar/url-normalization';
 
 export function GoogleCalendar({ urls }: { urls: string[] }) {
   const calendarIds = urls.flatMap((url) => extractGoogleCalendarIds(url));

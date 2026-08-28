@@ -250,7 +250,7 @@ export function AdminSettingsEditor() {
         </p>
 
         {form.holidays.length === 0 ? (
-          <p className="text-sm text-gray-500">Keine Ferienzeiträume eingetragen.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Keine Ferienzeiträume eingetragen.</p>
         ) : (
           <div className="space-y-2">
             {form.holidays.map((range, index) => (

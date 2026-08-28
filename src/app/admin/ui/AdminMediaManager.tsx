@@ -124,7 +124,7 @@ export function AdminMediaManager() {
         </div>
 
         {media.length === 0 ? (
-          <p className="text-sm text-gray-500">Noch keine Bilder hochgeladen.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Noch keine Bilder hochgeladen.</p>
         ) : (
           <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {media.map((item) => (
@@ -139,7 +139,7 @@ export function AdminMediaManager() {
                 <div className="flex items-center gap-2 p-2">
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{item.filename}</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
                       {formatFileSize(item.file_size)} · {new Date(item.created_at).toLocaleDateString('de-DE')}
                     </p>
                   </div>

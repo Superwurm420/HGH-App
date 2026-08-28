@@ -50,7 +50,7 @@ export default async function TvPage() {
               </div>
             </div>
 
-            <Clock variant="tv" />
+            <Clock />
           </div>
 
           {timetable.upload?.updated_at && (

@@ -263,7 +263,7 @@ export function AdminAnnouncementEditor() {
               >
                 {a.title || 'Ohne Titel'}
               </button>
-              <p className="mt-1 text-xs text-gray-500">{a.date || 'ohne Datum'}</p>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{a.date || 'ohne Datum'}</p>
               <button
                 type="button"
                 onClick={() => handleDelete(a.id, a.title)}
@@ -275,7 +275,7 @@ export function AdminAnnouncementEditor() {
             </li>
           ))}
           {announcements.length === 0 && (
-            <li className="text-sm text-gray-500">Noch keine Ankündigungen vorhanden.</li>
+            <li className="text-sm text-gray-500 dark:text-gray-400">Noch keine Ankündigungen vorhanden.</li>
           )}
         </ul>
       </aside>

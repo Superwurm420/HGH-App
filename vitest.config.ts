@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config';
+import { configDefaults, defineConfig } from 'vitest/config';
 import path from 'node:path';
 
 export default defineConfig({
@@ -8,6 +8,8 @@ export default defineConfig({
     },
   },
   test: {
-    exclude: ['node_modules', '.next'],
+    // configDefaults dazunehmen — ein eigenes exclude ersetzt sie sonst,
+    // und Tests aus node_modules landen im Lauf.
+    exclude: [...configDefaults.exclude, '.next/**', '.open-next/**', '.wrangler/**'],
   },
 });

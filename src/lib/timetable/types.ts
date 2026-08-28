@@ -1,4 +1,4 @@
-export type SchoolClass = string;
+type SchoolClass = string;
 
 export const WEEKDAYS = ['MO', 'DI', 'MI', 'DO', 'FR'] as const;
 export type Weekday = (typeof WEEKDAYS)[number];

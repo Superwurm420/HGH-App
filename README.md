@@ -7,13 +7,14 @@ Die HGH-App ist die Stundenplan-App der **HGH Holztechnik und Gestaltung Hildesh
 ## Für Nutzer: So nutzt du die App
 
 1. **Öffne die App** im Browser auf deinem Handy, Tablet oder Computer.
-2. **Wähle deine Klasse** aus (z. B. HT11, G21) — das geht über die Einstellungen.
+2. **Wähle deine Klasse** aus (z. B. HT11, G21) — die Auswahl steht oben auf der Startseite und auf den Stundenplan-Seiten. Sie merkt sich deine Klasse auf diesem Gerät.
 3. Auf der **Startseite** siehst du deinen heutigen Stundenplan, aktuelle Ankündigungen und einen Countdown.
 4. Über die Navigation unten erreichst du weitere Bereiche:
-   - **Stundenplan** — tageweise Ansicht
+   - **Tag** — tageweise Ansicht
    - **Woche** — die ganze Woche auf einen Blick
-   - **Pinnwand** — alle aktuellen Ankündigungen
-   - **Einstellungen** — Klasse ändern, Design anpassen
+   - **Weiteres** — Zusatzinfos und Links
+
+   Die **Pinnwand** mit allen aktuellen Ankündigungen erreichst du über den Link auf der Startseite.
 
 ### App auf dem Startbildschirm installieren
 

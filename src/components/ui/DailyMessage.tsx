@@ -36,25 +36,11 @@ type MessagesData = {
       freierTag?: string[];
     }
   >;
-  // Legacy-Felder für Abwärtskompatibilität
-  morgen?: string[];
-  mittag?: string[];
-  nachmittag?: string[];
-  schulschluss?: string[];
-  [key: string]: unknown;
 };
 
 function parseTime(value: string): number {
   const [h, m] = value.split(':').map(Number);
   return timeToMinutes(h, m);
-}
-
-function getLegacyTimeCategory(hour: number, isWeekendDay: boolean): string {
-  if (isWeekendDay) return 'wochenende';
-  if (hour < 10) return 'morgen';
-  if (hour < 13) return 'mittag';
-  if (hour < 17) return 'nachmittag';
-  return 'schulschluss';
 }
 
 function normalizeTime(value: string): string | null {
@@ -149,28 +135,27 @@ export function DailyMessage({
         freierTag: 25,
       };
 
-      if (standardCategory) {
-        const classPool =
-          ((classKey ? messages.klassen?.[classKey]?.[standardCategory] : undefined) as string[] | undefined) ?? [];
-        const standardPool = (messages.standard?.[standardCategory] as string[] | undefined) ?? [];
-        const freeDayFallbackPool =
-          standardCategory === 'freierTag'
-            ? [
-                ...((((classKey ? messages.klassen?.[classKey]?.feiertag : undefined) as string[] | undefined) ?? [])),
-                ...(((messages.standard?.feiertag as string[] | undefined) ?? [])),
-              ]
-            : [];
-
-        if (classPool.length > 0 || standardPool.length > 0 || freeDayFallbackPool.length > 0) {
-          const pool = classPool.length > 0 ? classPool : standardPool.length > 0 ? standardPool : freeDayFallbackPool;
-          setText(pickMessage(pool, categorySeed[standardCategory] ?? 0));
-          return;
-        }
+      if (!standardCategory) {
+        setText('');
+        return;
       }
 
-      const legacyCategory = getLegacyTimeCategory(now.hour, isWeekendDay);
-      const legacyGeneral = (messages[legacyCategory] as string[] | undefined) ?? [];
-      setText(pickMessage(legacyGeneral, 0));
+      const classPool = (classKey ? messages.klassen?.[classKey]?.[standardCategory] : undefined) ?? [];
+      const standardPool = messages.standard?.[standardCategory] ?? [];
+
+      // Ein freier Tag ohne eigene Texte greift auf die Feiertagstexte zurück.
+      const freeDayFallbackPool =
+        standardCategory === 'freierTag'
+          ? [
+              ...((classKey ? messages.klassen?.[classKey]?.feiertag : undefined) ?? []),
+              ...(messages.standard?.feiertag ?? []),
+            ]
+          : [];
+
+      const pool =
+        classPool.length > 0 ? classPool : standardPool.length > 0 ? standardPool : freeDayFallbackPool;
+
+      setText(pickMessage(pool, categorySeed[standardCategory]));
     };
 
     updateMessage();

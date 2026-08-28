@@ -58,7 +58,7 @@ npm run setup:cloudflare # Cloudflare-Ersteinrichtung (D1, R2, Migration)
     ├── app/                   # Next.js App Router
     │   ├── page.tsx           # Startseite
     │   ├── layout.tsx
-    │   ├── stundenplan/ woche/ pinnwand/ weiteres/ einstellungen/ tv/
+    │   ├── stundenplan/ woche/ pinnwand/ weiteres/ tv/
     │   ├── admin/
     │   │   ├── page.tsx
     │   │   └── ui/            # AdminWorkspace + Tabs (Upload, Ankündigungen,
@@ -71,25 +71,29 @@ npm run setup:cloudflare # Cloudflare-Ersteinrichtung (D1, R2, Migration)
     │
     ├── server/                # Serverseitige Logik (nur im Worker)
     │   ├── env.ts             # Bindings über getCloudflareContext()
-    │   ├── types.ts           # CloudflareEnv, DB-Zeilen, Weekday, LessonEntry
+    │   ├── types.ts           # CloudflareEnv, DB-Zeilen; Stundenplan-Typen
+    │   │                      #   re-exportiert aus lib/timetable/types
     │   ├── auth.ts            # Session-Cookie, requireAuth, Ersteinrichtung
     │   ├── guard.ts           # withAdmin() — Bindings + Auth + Fehlerbehandlung
     │   ├── responses.ts       # jsonResponse, errorResponse, withErrorHandling
     │   ├── page-data.ts       # Datenbeschaffung der Server Components
     │   └── services/          # timetable, schedule, announcements, events,
-    │                          #   settings, media, password, audit, berlin-time
+    │                          #   settings, media, password, audit
     │
     ├── components/
     │   ├── announcements/ schedule/ tv/ ui/
     │
     ├── lib/
     │   ├── api/client.ts      # API-Client — nur Adminbereich (Browser)
+    │   ├── admin-defaults.ts  # Standardzugang für die Ersteinrichtung
+    │   ├── base64.ts          # Kodierung für Uploads (Browser-Hälfte)
+    │   ├── berlin-time.ts     # einzige Quelle für Zeit-/Datumslogik
     │   ├── timetable/         # types, parse-pdf, parse-pdf-browser, select-class
     │   ├── calendar/          # Feiertage/Ferien, Google-Kalender-URLs
-    │   ├── berlin-time.ts
     │   └── storage/preferences.ts
     │
-    └── styles/                # globals, tokens, base, components, layout, features-*
+    └── styles/                # globals, tokens, base, components, layout,
+                               #   features-timetable
 ```
 
 ## Architecture & Key Patterns
@@ -173,7 +177,6 @@ Der Workers-Free-Plan erlaubt **10 ms CPU-Zeit pro Request** — das Auswerten e
 | `/woche` | Ganze Woche |
 | `/pinnwand` | Alle aktiven Ankündigungen |
 | `/weiteres` | Zusatzinfos, Links |
-| `/einstellungen` | Weiterleitung auf `/weiteres` (Altbestand) |
 | `/tv` | Wandbildschirm — Uhr, Pinnwand, Bilder-Slideshow, Stundenplan-Raster |
 | `/admin` | Adminbereich |
 
@@ -247,11 +250,35 @@ dem Deploy anzumelden.
 - **Vitest** (`npm run test:unit`), Testdateien als `*.test.ts` neben dem Quellcode.
 - Passwortregeln und Hashing sind in `src/server/auth.test.ts` abgedeckt.
 - Abgedeckt sind vor allem die Teile ohne Netz- und DB-Abhängigkeit: PDF-Parser (mit nachgebautem pdfjs-Dokument), Schema-Validierung der Upload-Daten, Gruppierung der Stundenplan-Zeilen, Klassenauswahl, Klassenfilter.
+- `announcements.test.ts` prüft Ablauf und Reihenfolge gegen eine nachgebaute D1 (`fakeDb`) mit fester Systemzeit — das deutsche Datumsformat lässt sich sonst nicht sinnvoll testen.
 
 ## Important Notes
 
-- Zeitzone ist durchgängig **Europe/Berlin**.
+- Zeitzone ist durchgängig **Europe/Berlin**. Alle Zeit- und Datumslogik steht in
+  `src/lib/berlin-time.ts` — **eine** Quelle für Server und Browser. Die Datei hat
+  bewusst kein `'use client'`, damit beide Seiten sie importieren können. Es gab
+  hier einmal drei Kopien, die still auseinanderliefen.
 - Klassencodes folgen `[A-ZÄÖÜ]{1,5}\d{1,2}[A-Z]?` (z. B. `HT11`, `G21`).
+- Das **Stundenplan-Modell** (`Weekday`, `LessonEntry`, `WeekPlan`, `ParsedSchedule`)
+  wird nur in `src/lib/timetable/types.ts` deklariert; `src/server/types.ts`
+  re-exportiert es. Der geparste Plan wandert als JSON vom Browser zum Server —
+  zwei getrennte Deklarationen könnten unbemerkt auseinanderlaufen.
+- **Ankündigungen speichern ihr Datum als `TT.MM.JJJJ HH:mm`** — ein Erbe aus der
+  Zeit der TXT-Dateien. In diesem Format ist die Zeichenkette nicht sortierbar
+  (sie beginnt mit dem Tag im Monat). Ablauf und Reihenfolge werden deshalb in
+  `services/announcements.ts` in TypeScript ausgewertet, **nicht im SQL**. Termine
+  benutzen dagegen ISO und dürfen im SQL verglichen werden.
+- **Dunkelmodus ist die Voreinstellung**: `tokens.css` setzt die dunklen Werte auf
+  `:root` und schaltet über die Klasse `light` auf hell um. Eine Klasse `dark`
+  gibt es nicht — deshalb steht in `tailwind.config.ts`
+  `darkMode: ['selector', ':root:not(.light)']`. Mit Tailwinds Standard griffe
+  keine einzige `dark:`-Utility.
 - D1 erlaubt **maximal 100 Statements pro `batch()`** — `storeSchedule()` teilt entsprechend auf.
+- **Tote Teile im Schema** (bewusst nicht migriert, weil ein Eingriff in die
+  Live-Datenbank mehr Risiko wäre als Nutzen): die Tabelle `classes` wird nicht
+  mehr beschrieben und nie gelesen — die Klassenliste kommt aus
+  `timetable_entries`. Ebenso ungenutzt: `users.role`,
+  `timetable_uploads.parse_started_at` und die Status-Werte `'uploaded'` und
+  `'parsing'`, die seit dem Parsen im Browser nicht mehr entstehen.
 - `public/sw.js` und `public/pdfjs/` werden von `scripts/prebuild.mjs` erzeugt und sind **nicht eingecheckt**. Änderungen am Service Worker gehören in `scripts/sw.template.js`.
 - Der Deploy-Workflow migriert die Datenbank **nach** dem Deploy. Ohne diesen Schritt bleibt D1 leer und die App zeigt nichts an.

@@ -8,7 +8,8 @@ export default defineConfig([
   globalIgnores([
     '.next/**',
     '.open-next/**',
-    'build/**',
+    // lokaler Miniflare-Zustand (D1/R2)
+    '.wrangler/**',
     'next-env.d.ts',
     // von scripts/prebuild.mjs erzeugt bzw. aus node_modules kopiert
     'public/pdfjs/**',
