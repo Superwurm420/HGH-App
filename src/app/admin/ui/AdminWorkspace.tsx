@@ -8,6 +8,7 @@ import { AdminEventEditor } from './AdminEventEditor';
 import { AdminMediaManager } from './AdminMediaManager';
 import { AdminSettingsEditor } from './AdminSettingsEditor';
 import { AdminPasswordChange } from './AdminPasswordChange';
+import { DEFAULT_ADMIN_PASSWORD } from '@/lib/admin-defaults';
 import {
   adminLogin,
   adminLogout,
@@ -48,13 +49,13 @@ function SetupHints({ setupStatus, apiReachable }: { setupStatus: SetupStatus | 
     if (setupStatus.dbReady && !setupStatus.hasUsers) {
       hints.push({
         message: 'Ersteinrichtung: Es gibt noch kein Admin-Konto.',
-        detail: `Melde dich mit dem Benutzernamen "${setupStatus.adminUser}" an — ohne Passwort. Das Konto wird dabei angelegt, und du vergibst direkt danach ein eigenes Passwort.`,
+        detail: `Benutzername "${setupStatus.adminUser}", Passwort "${DEFAULT_ADMIN_PASSWORD}". Das Konto wird dabei angelegt, und du vergibst direkt danach ein eigenes Passwort.`,
       });
     }
     if (setupStatus.dbReady && setupStatus.needsPassword) {
       hints.push({
-        message: 'Für das Admin-Konto ist noch kein Passwort vergeben.',
-        detail: `Melde dich mit dem Benutzernamen "${setupStatus.adminUser}" ohne Passwort an und vergib eines. Bis dahin steht das Konto offen.`,
+        message: 'Für das Admin-Konto gilt noch das Standardpasswort.',
+        detail: `Melde dich mit "${setupStatus.adminUser}" und "${DEFAULT_ADMIN_PASSWORD}" an und vergib ein eigenes Passwort. Bis dahin kommt jede und jeder hinein, der die Adresse kennt.`,
       });
     }
   }
@@ -152,9 +153,9 @@ export function AdminWorkspace() {
   }
 
   if (!isAuthenticated) {
-    // Solange kein Konto mit Passwort existiert, wäre ein Passwortfeld nur
-    // irreführend: Es gibt noch keins, das man eingeben könnte.
-    const passwordless =
+    // Solange kein eigenes Passwort vergeben ist, gilt noch das
+    // Standardpasswort — dann darf die Seite es auch nennen.
+    const isSetup =
       setupStatus?.dbReady === true && (!setupStatus.hasUsers || setupStatus.needsPassword);
 
     return (
@@ -163,8 +164,8 @@ export function AdminWorkspace() {
         <div className="rounded-lg border border-gray-300 p-6 dark:border-gray-700">
           <h2 className="mb-2 text-lg font-semibold">Anmeldung</h2>
           <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">
-            {passwordless
-              ? 'Ersteinrichtung: Benutzername eingeben und anmelden. Das Passwort vergibst du im nächsten Schritt.'
+            {isSetup
+              ? `Ersteinrichtung: Benutzername "${setupStatus?.adminUser}", Passwort "${DEFAULT_ADMIN_PASSWORD}". Ein eigenes Passwort vergibst du im nächsten Schritt.`
               : 'Bitte Benutzername und Passwort eingeben.'}
           </p>
           <label className="block text-sm font-medium">
@@ -173,26 +174,21 @@ export function AdminWorkspace() {
               type="text"
               value={username}
               autoComplete="username"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && passwordless) { e.preventDefault(); login(); }
-              }}
               onChange={(e) => setUsername(e.target.value)}
               className="mt-1 w-full rounded border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-900"
             />
           </label>
-          {!passwordless && (
-            <label className="mt-3 block text-sm font-medium">
-              Passwort
-              <input
-                type="password"
-                value={password}
-                autoComplete="current-password"
-                onChange={(e) => setPassword(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); login(); } }}
-                className="mt-1 w-full rounded border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-900"
-              />
-            </label>
-          )}
+          <label className="mt-3 block text-sm font-medium">
+            Passwort
+            <input
+              type="password"
+              value={password}
+              autoComplete="current-password"
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); login(); } }}
+              className="mt-1 w-full rounded border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-900"
+            />
+          </label>
           <button
             type="button"
             onClick={login}
@@ -219,9 +215,9 @@ export function AdminWorkspace() {
             Bitte vergib jetzt ein Passwort.
           </p>
           <p className="mt-1 text-amber-700 dark:text-amber-300">
-            Das Konto ist bis dahin ohne Passwort erreichbar — jede und jeder mit dem
-            Benutzernamen käme hinein. Der Adminbereich bleibt gesperrt, solange kein
-            Passwort gesetzt ist.
+            Bis dahin gilt das Standardpasswort &bdquo;{DEFAULT_ADMIN_PASSWORD}&ldquo; — das steht
+            in der Anleitung und ist damit allgemein bekannt. Der Adminbereich bleibt
+            gesperrt, solange kein eigenes Passwort gesetzt ist.
           </p>
         </div>
 

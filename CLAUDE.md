@@ -136,9 +136,17 @@ Der Workers-Free-Plan erlaubt **10 ms CPU-Zeit pro Request** — das Auswerten e
 
 - Passwort-Anmeldung (PBKDF2-SHA256), Session-Token in D1, 12 Stunden gültig.
 - **Ersteinrichtung ohne Secret**: Solange die `users`-Tabelle leer ist, legt der
-  erste Login mit `ADMIN_USER` das Konto an — **ohne Passwort**. Es gibt kein
-  `ADMIN_PASSWORD` mehr.
-- **Kein Passwort gesetzt** heißt: `users.password_hash` ist der leere String.
+  erste Login mit `ADMIN_USER` + `DEFAULT_ADMIN_PASSWORD` das Konto an. Die
+  Vorgaben (`Admin` / `admin`) stehen in `src/lib/admin-defaults.ts` — in
+  `src/lib/`, weil Server und Anmeldeseite beide darauf zugreifen und
+  `src/server/` nicht aus `'use client'` importiert werden darf. Es gibt kein
+  `ADMIN_PASSWORD`-Secret mehr.
+- **Benutzername case-insensitive**: Die Anmeldung sucht mit `COLLATE NOCASE`,
+  angelegt wird aber unter der Schreibweise aus `ADMIN_USER`. Sonst hinge die
+  Schreibweise des Kontos davon ab, wie sich jemand zufällig zuerst angemeldet
+  hat.
+- **Kein eigenes Passwort gesetzt** heißt: `users.password_hash` ist der leere
+  String. Bis zur ersten Vergabe gilt dann weiter das Standardpasswort.
   Bewusst dieselbe Spalte statt eines zweiten Kennzeichens, das auseinanderlaufen
   könnte. Der leere Hash ist unbestätigbar — `verifyPassword` bricht ohne den
   Trenner `:` ab.
@@ -222,16 +230,17 @@ Der Workers-Free-Plan erlaubt **10 ms CPU-Zeit pro Request** — das Auswerten e
 
 | Name | Wo | Zweck |
 |---|---|---|
-| `ADMIN_USER` | `wrangler.toml` unter `[vars]` | Benutzername für `/admin` (Standard `redaktion`) |
+| `ADMIN_USER` | `wrangler.toml` unter `[vars]` | Benutzername für `/admin` (Standard `Admin`). Beim Anmelden groß-/kleinschreibungs-unempfindlich. |
 
 Das ist die **einzige** Variable. Es gibt kein Secret und keine `.env` — `next dev`
 bekommt die Bindings über `initOpenNextCloudflareForDev()` aus `wrangler.toml`.
 
-Der Preis dafür: Zwischen Deploy und erster Anmeldung existiert kein Konto, und
-`/admin` ist öffentlich. In diesem Fenster kann sich das Konto nehmen, wer den
-Benutzernamen errät. Es schließt sich mit der ersten Passwortvergabe — deshalb
-weisen README und `docs/ADMIN.md` darauf hin, sich direkt nach dem Deploy
-anzumelden.
+Der Preis dafür: Bis zur ersten Anmeldung gilt `Admin` / `admin`, und `/admin`
+ist öffentlich. Das Konto kann sich in diesem Fenster jede und jeder nehmen, der
+die Adresse kennt — das Passwort steht in der Anleitung, es ist nicht zu raten.
+Das Fenster schließt die erste Passwortvergabe; deshalb weisen README,
+`docs/ADMIN.md` und die Ausgabe von `npm run setup` darauf hin, sich direkt nach
+dem Deploy anzumelden.
 
 ## Testing
 

@@ -81,7 +81,7 @@ function localSetup() {
   };
 
   logStep('Lokales Setup');
-  logInfo('Es sind keine Secrets nötig — das Admin-Konto entsteht beim ersten Login.');
+  logInfo('Es sind keine Secrets nötig — das Admin-Konto entsteht beim ersten Login (Admin / admin).');
 
   logInfo('Lokale Datenbank wird vorbereitet...');
   const migration = run('npx', ['wrangler', 'd1', 'migrations', 'apply', 'hgh-app-db', '--local']);
@@ -200,9 +200,9 @@ function printChecklist(checklist) {
   console.log(`- Migration: ${checklist.migration}`);
   console.log(
     '\nNächster Schritt: /admin öffnen, mit dem Benutzernamen aus wrangler.toml ' +
-    '(ADMIN_USER, Standard "redaktion") ohne Passwort anmelden und dann ein ' +
-    'Passwort vergeben. Zwischen Deploy und erster Anmeldung steht das Konto offen — ' +
-    'also gleich erledigen.',
+    '(ADMIN_USER, Standard "Admin") und dem Standardpasswort "admin" anmelden, ' +
+    'dann ein eigenes Passwort vergeben. Bis dahin kommt herein, wer die Adresse ' +
+    'kennt — also gleich erledigen.',
   );
 }
 

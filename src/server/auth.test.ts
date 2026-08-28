@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { hasPassword, validateNewPassword } from './auth';
 import { hashPassword, verifyPassword } from './services/password';
+import { DEFAULT_ADMIN_PASSWORD, DEFAULT_ADMIN_USER } from '@/lib/admin-defaults';
 
 describe('validateNewPassword', () => {
   it('lässt ein geändertes Passwort zu', () => {
@@ -34,6 +35,22 @@ describe('validateNewPassword', () => {
     it('meldet bei leerer Eingabe „leer" und nicht „unveraendert"', () => {
       expect(validateNewPassword('', '')).toEqual({ ok: false, reason: 'leer' });
     });
+  });
+});
+
+describe('Vorgaben der Ersteinrichtung', () => {
+  // Die Werte stehen in der Anleitung und in der Oberfläche. Ändert sie jemand
+  // im Code, muss die Doku mitgezogen werden — dieser Test macht das sichtbar.
+  it('sind Admin/admin', () => {
+    expect(DEFAULT_ADMIN_USER).toBe('Admin');
+    expect(DEFAULT_ADMIN_PASSWORD).toBe('admin');
+  });
+
+  // Bewusst erlaubt: Es gibt keine Regeln für das eigene Passwort, auch keine
+  // Sperrliste. Wer bei der Vergabe wieder "admin" eintippt, bekommt einen
+  // echten Hash — der Einrichtungszustand ist damit trotzdem beendet.
+  it('erlauben das Standardpasswort auch als eigenes Passwort', () => {
+    expect(validateNewPassword('', DEFAULT_ADMIN_PASSWORD)).toEqual({ ok: true });
   });
 });
 

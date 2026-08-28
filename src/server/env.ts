@@ -1,5 +1,7 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 
+import { DEFAULT_ADMIN_USER } from '@/lib/admin-defaults';
+
 import './types';
 
 /**
@@ -21,5 +23,5 @@ export async function getDb(): Promise<D1Database> {
 
 /** Der konfigurierte Admin-Benutzername (Fallback für die Ersteinrichtung). */
 export function adminUsername(env: CloudflareEnv): string {
-  return env.ADMIN_USER?.trim() || 'redaktion';
+  return env.ADMIN_USER?.trim() || DEFAULT_ADMIN_USER;
 }

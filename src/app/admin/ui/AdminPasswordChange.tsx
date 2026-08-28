@@ -80,7 +80,7 @@ export function AdminPasswordChange({ initial = false, onDone }: AdminPasswordCh
       </h2>
       <p className="mb-3 text-sm text-gray-600 dark:text-gray-300">
         {initial
-          ? 'Gilt ab sofort für die Anmeldung am Adminbereich. Es gibt keine Vorgabe zur Länge — wähle etwas, das nicht zu erraten ist.'
+          ? 'Ersetzt das Standardpasswort und gilt ab sofort für die Anmeldung am Adminbereich. Es gibt keine Vorgabe zur Länge — wähle etwas, das nicht zu erraten ist.'
           : 'Gilt für die Anmeldung am Adminbereich. Nach dem Ändern bleibst du hier angemeldet; alle anderen Geräte werden abgemeldet.'}
       </p>
 

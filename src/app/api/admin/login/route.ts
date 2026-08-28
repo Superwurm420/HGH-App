@@ -12,14 +12,10 @@ export async function POST(request: Request): Promise<Response> {
     if (!body) return errorResponse('Ungültiger Request-Body.', 400);
 
     const username = body.username?.trim();
-    if (!username) {
-      return errorResponse('Benutzername ist erforderlich.', 400);
+    const password = body.password;
+    if (!username || !password) {
+      return errorResponse('Benutzername und Passwort sind erforderlich.', 400);
     }
-
-    // Das Passwort ist optional: Bei der Ersteinrichtung gibt es noch keins.
-    // Für ein Konto mit Passwort scheitert der leere String in `authenticate`
-    // wie jede andere falsche Eingabe.
-    const password = body.password ?? '';
 
     const env = await getEnv();
     const result = await authenticate(env, username, password);

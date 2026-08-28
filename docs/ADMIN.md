@@ -21,12 +21,13 @@ Im Adminbereich gibt es fünf Bereiche:
 1. Öffne die App im Browser.
 2. Hänge `/admin` an die Adresse an (z. B. `https://deine-app.de/admin`).
 3. Gib deinen Benutzernamen und dein Passwort ein:
-   - **Benutzername**: `redaktion` (Standardwert, kann von der IT geändert werden)
-   - **Passwort**: bekommst du von der IT-Betreuung
+   - **Benutzername**: `Admin` (Standardwert, kann von der IT geändert werden; Groß-/Kleinschreibung ist beim Anmelden egal)
+   - **Passwort**: bekommst du von der IT-Betreuung. Beim allerersten Login lautet es `admin`.
 4. Klicke auf **Anmelden**.
 
 **Gut zu wissen:**
 - Beim allerersten Login wird dein Adminkonto automatisch erstellt — du musst nichts extra einrichten.
+- Danach kommst du **nur noch zur Passwortvergabe**: Solange das Standardpasswort gilt, ist der übrige Adminbereich gesperrt. Vergib dort ein eigenes Passwort, dann ist alles freigeschaltet.
 - Deine Sitzung läuft nach **12 Stunden** automatisch ab. Danach musst du dich einfach erneut anmelden.
 
 ---
@@ -196,8 +197,8 @@ müssen nicht eingetragen werden.
 
 ### Passwort ändern
 
-Ganz unten im Tab. Du brauchst dein bisheriges Passwort, das neue muss
-mindestens 10 Zeichen lang sein.
+Ganz unten im Tab. Du brauchst dein bisheriges Passwort. Für das neue gibt es
+**keine Vorgabe zur Länge** — wähle trotzdem etwas, das nicht zu erraten ist.
 
 Nach dem Ändern bleibst du auf diesem Gerät angemeldet — **alle anderen Geräte
 werden abgemeldet**. Das ist Absicht: Wenn ein Passwort in falsche Hände geraten
@@ -223,7 +224,7 @@ bekommst du eine Meldung, statt dass die Startseite kaputtgeht.
 
 ### „Ungültige Anmeldedaten"
 
-- Prüfe, ob der Benutzername stimmt (Standard: `redaktion`)
+- Prüfe, ob der Benutzername stimmt (Standard: `Admin`)
 - Prüfe das Passwort (Groß-/Kleinschreibung beachten)
 - Falls das System gerade erst eingerichtet wurde: frage die IT-Betreuung nach dem aktuellen Passwort
 
@@ -259,12 +260,12 @@ Sicherheitsfragen). Die IT-Betreuung setzt das Konto zurück:
 ```bash
 # Konto löschen — die Stundenpläne, Ankündigungen und Termine bleiben erhalten
 npx wrangler d1 execute hgh-app-db --remote \
-  --command "DELETE FROM users WHERE username = 'redaktion'"
+  --command "DELETE FROM users WHERE username = 'Admin'"
 ```
 
 Danach ist die Ersteinrichtung wieder aktiv: Der nächste Login mit dem
-Benutzernamen aus `ADMIN_USER` (Standard `redaktion`) legt das Konto neu an —
-**ohne Passwort**, das Feld dafür wird gar nicht erst angezeigt.
+Benutzernamen aus `ADMIN_USER` (Standard `Admin`) und dem Standardpasswort
+`admin` legt das Konto neu an.
 
 **Melde dich unmittelbar nach dem Löschen an.** In der Zeit dazwischen steht der
 Adminbereich offen: Wer den Benutzernamen kennt, kann sich das Konto nehmen. Der

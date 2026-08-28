@@ -13,9 +13,11 @@ binding = "ASSETS"
 
 [vars]
 # Benutzername für den Adminbereich. Ein Passwort wird hier nicht hinterlegt:
-# Der erste Login unter /admin mit genau diesem Namen legt das Konto an, das
-# Passwort vergibt die Redaktion anschließend selbst im Adminbereich.
-ADMIN_USER = "redaktion"
+# Der erste Login mit diesem Namen und dem Standardpasswort "admin" legt das
+# Konto an; ein eigenes Passwort vergibt die Redaktion direkt danach im
+# Adminbereich — vorher lässt der Adminbereich nichts anderes zu.
+# Beim Anmelden wird die Groß-/Kleinschreibung des Namens nicht beachtet.
+ADMIN_USER = "Admin"
 
 [[d1_databases]]
 binding = "DB"

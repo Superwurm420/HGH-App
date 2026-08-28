@@ -5,6 +5,7 @@ import { errorResponse } from './responses';
 import { hashPassword, verifyPassword } from './services/password';
 import { logAudit } from './services/audit';
 import { adminUsername } from './env';
+import { DEFAULT_ADMIN_PASSWORD } from '@/lib/admin-defaults';
 
 export const COOKIE_NAME = 'hgh-admin';
 
@@ -134,9 +135,14 @@ export interface LoginResult {
  * Prüft die Anmeldedaten.
  *
  * Ersteinrichtung: Solange noch kein Benutzer existiert, legt der erste Login
- * mit dem konfigurierten ADMIN_USER das Admin-Konto an — ohne Passwort. Das
- * eigene Passwort vergibt die Redaktion unmittelbar danach selbst; bis dahin
- * lässt `withAdmin` nichts anderes zu als genau diesen einen Schritt.
+ * mit dem konfigurierten ADMIN_USER und dem Standardpasswort das Admin-Konto
+ * an — noch ohne eigenes Passwort. Das vergibt die Redaktion unmittelbar
+ * danach selbst; bis dahin lässt `withAdmin` nichts anderes zu als genau
+ * diesen einen Schritt.
+ *
+ * Der Benutzername wird ohne Rücksicht auf Groß- und Kleinschreibung gesucht
+ * (`COLLATE NOCASE`). Dokumentiert ist `Admin`; wer `admin` tippt, soll nicht
+ * vor einem „Ungültige Anmeldedaten" stehen, dessen Grund niemand sieht.
  */
 export async function authenticate(
   env: CloudflareEnv,
@@ -146,14 +152,18 @@ export async function authenticate(
   const db = env.DB;
 
   const user = await db.prepare(
-    'SELECT id, username, password_hash FROM users WHERE username = ?'
+    'SELECT id, username, password_hash FROM users WHERE username = ? COLLATE NOCASE'
   ).bind(username).first<{ id: string; username: string; password_hash: string }>();
 
   if (user) {
-    // Konto ohne Passwort: Die Anmeldung steht offen, bis eines vergeben ist.
-    // Ein eingetipptes Passwort wird dabei nicht geprüft — es gibt keins,
-    // gegen das man prüfen könnte.
+    // Konto ohne eigenes Passwort: Bis zur ersten Vergabe gilt weiter das
+    // Standardpasswort. Gegen den leeren Hash zu prüfen ginge nicht — er ist
+    // absichtlich unbestätigbar.
     if (!hasPassword(user.password_hash)) {
+      if (password !== DEFAULT_ADMIN_PASSWORD) {
+        await logAudit(db, null, 'login_failed', 'user', user.id, `Fehlgeschlagener Login für ${username}`);
+        return { ok: false };
+      }
       return { ok: true, userId: user.id, username: user.username, mustSetPassword: true };
     }
 
@@ -165,18 +175,22 @@ export async function authenticate(
     return { ok: true, userId: user.id, username: user.username };
   }
 
-  const created = await tryInitialSetup(env, username);
+  const created = await tryInitialSetup(env, username, password);
   if (!created) return { ok: false };
   return { ok: true, userId: created.id, username: created.username, mustSetPassword: true };
 }
 
 /**
- * Legt bei der Ersteinrichtung das Admin-Konto an — passwortlos.
+ * Legt bei der Ersteinrichtung das Admin-Konto an.
  *
- * Vorher musste dafür das Secret `ADMIN_PASSWORD` gesetzt sein. Das war eine
- * Hürde vor dem ersten Login und ein Passwort, das anschließend niemand mehr
- * wechselte. Jetzt genügt der konfigurierte Benutzername; das Passwort vergibt
- * die Redaktion im Adminbereich.
+ * Verlangt den konfigurierten Benutzernamen (ohne Rücksicht auf Groß- und
+ * Kleinschreibung) und das Standardpasswort. Das Konto entsteht mit leerem
+ * `password_hash`, also ohne eigenes Passwort — vergeben wird es im
+ * Adminbereich, erzwungen durch `withAdmin`.
+ *
+ * Angelegt wird unter dem konfigurierten Namen, nicht unter dem eingetippten:
+ * Sonst hinge die Schreibweise des Kontos davon ab, wie jemand sich zufällig
+ * zuerst angemeldet hat.
  *
  * Greift ausschließlich, solange die Tabelle leer ist — mit dem ersten Konto
  * ist dieser Weg dauerhaft zu.
@@ -184,25 +198,28 @@ export async function authenticate(
 async function tryInitialSetup(
   env: CloudflareEnv,
   username: string,
+  password: string,
 ): Promise<{ id: string; username: string } | null> {
-  if (username !== adminUsername(env)) return null;
+  const configured = adminUsername(env);
+  if (username.toLowerCase() !== configured.toLowerCase()) return null;
+  if (password !== DEFAULT_ADMIN_PASSWORD) return null;
 
   const count = await env.DB.prepare('SELECT COUNT(*) AS cnt FROM users').first<{ cnt: number }>();
   if ((count?.cnt ?? 0) > 0) return null;
 
   const created = await env.DB.prepare(
     `INSERT INTO users (username, password_hash, role) VALUES (?, '', 'admin') RETURNING id, username`
-  ).bind(username).first<{ id: string; username: string }>();
+  ).bind(configured).first<{ id: string; username: string }>();
 
   if (created) {
-    console.log(`[auth] Erster Admin-Benutzer '${username}' wurde angelegt (noch ohne Passwort).`);
+    console.log(`[auth] Erster Admin-Benutzer '${configured}' wurde angelegt (noch mit Standardpasswort).`);
     await logAudit(
       env.DB,
       created.id,
       'initial_setup',
       'user',
       created.id,
-      `Admin-Konto '${username}' bei der Ersteinrichtung angelegt`,
+      `Admin-Konto '${configured}' bei der Ersteinrichtung angelegt`,
     );
   }
   return created;

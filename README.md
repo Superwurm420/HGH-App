@@ -88,7 +88,7 @@ npm run setup:init -- --cloudflare
 
 Der zentrale Setup-Command übernimmt die Cloudflare-Anmeldung, D1/R2-Erstellung und die Migration. Am Ende bekommst du eine kompakte Checkliste (`DB`, `Bucket`, `Admin-Konto`, `Migration`).
 
-> Ein Admin-Passwort wird hier **nicht** gesetzt. Es gibt kein Secret dafür: Das Konto entsteht beim ersten Login unter `/admin` und bekommt sein Passwort dort.
+> Ein Admin-Passwort wird hier **nicht** gesetzt und es gibt kein Secret dafür. Für den ersten Login gilt `Admin` / `admin`; das Konto entsteht dabei und bekommt sein eigenes Passwort direkt danach im Adminbereich.
 
 #### Schritt 4: GitHub Secrets einrichten
 
@@ -126,15 +126,15 @@ Danach ist die App unter der Cloudflare-URL erreichbar.
 
 **Das ist zeitkritisch.** Öffne direkt nach dem ersten erfolgreichen Deploy
 `https://DEINE-URL/admin` und melde dich mit dem Benutzernamen aus
-`wrangler.toml` (`ADMIN_USER`, Standard `redaktion`) an — ein Passwortfeld gibt
-es dabei nicht. Der Adminbereich lässt dich dann nichts anderes tun, als ein
+`wrangler.toml` (`ADMIN_USER`, Standard `Admin`) und dem Standardpasswort
+`admin` an. Der Adminbereich lässt dich dann nichts anderes tun, als ein
 Passwort zu vergeben.
 
-Der Grund für die Eile: Zwischen Deploy und dieser ersten Anmeldung existiert
-noch kein Konto, und die Seite ist öffentlich erreichbar. Wer in diesem Fenster
-`/admin` aufruft und den Benutzernamen errät, legt das Konto selbst an und
-vergibt das Passwort. Das Fenster schließt sich in dem Moment, in dem du dein
-Passwort gesetzt hast.
+Der Grund für die Eile: Bis zu dieser ersten Anmeldung gilt `Admin` / `admin`,
+und die Seite ist öffentlich erreichbar. Das ist kein Passwort, das man raten
+müsste — es steht hier in der Anleitung. Wer in diesem Fenster `/admin` aufruft,
+legt das Konto selbst an und vergibt das Passwort. Das Fenster schließt sich in
+dem Moment, in dem du dein eigenes Passwort gesetzt hast.
 
 Ist es doch passiert — jemand hat sich das Konto geschnappt —, hilft nur der
 Reset: das Konto löschen (siehe `docs/ADMIN.md`, Abschnitt „Passwort
@@ -180,7 +180,7 @@ Dann im Browser öffnen: `http://localhost:3000`
 
 **Lokaler Admin-Login:**
 - Öffne `http://localhost:3000/admin`
-- Benutzername: `redaktion`, **kein Passwort** — das Feld wird bei der Ersteinrichtung gar nicht angezeigt
+- Benutzername: `Admin`, Passwort: `admin` (Groß-/Kleinschreibung des Namens ist beim Anmelden egal)
 - Beim ersten Login wird das Admin-Konto angelegt; anschließend musst du ein Passwort vergeben, bevor der Adminbereich etwas zulässt.
 
 Klappt die Anmeldung nicht, nennt die Anmeldeseite den Grund — meist fehlt die
