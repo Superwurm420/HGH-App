@@ -145,6 +145,17 @@ export function checkAdminSession(): Promise<{ authenticated: boolean; username?
   return apiFetch('/api/admin/session');
 }
 
+/**
+ * Ändert das eigene Passwort. Die aktuelle Sitzung bleibt bestehen, alle
+ * anderen Anmeldungen werden dabei serverseitig beendet.
+ */
+export async function adminChangePassword(currentPassword: string, newPassword: string): Promise<void> {
+  await apiFetch('/api/admin/password', {
+    method: 'POST',
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+}
+
 // ── Ankündigungen ──────────────────────────────────────────────────
 
 export function adminFetchAnnouncements(): Promise<{ announcements: AnnouncementData[] }> {

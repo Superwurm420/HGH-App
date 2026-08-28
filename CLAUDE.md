@@ -136,6 +136,10 @@ Der Workers-Free-Plan erlaubt **10 ms CPU-Zeit pro Request** — das Auswerten e
 ### Admin System
 
 - Passwort-Anmeldung (PBKDF2-SHA256), Session-Token in D1, 12 Stunden gültig.
+- **Passwortwechsel** über `POST /api/admin/password` (Einstellungen-Tab). Beendet
+  alle Sitzungen des Benutzers außer der aufrufenden.
+  `ADMIN_PASSWORD` wird **nur** bei der Ersteinrichtung gelesen — das Secret zu
+  ändern wechselt das Login-Passwort nicht, sobald ein Konto existiert.
 - **Ersteinrichtung**: Der erste Login mit `ADMIN_USER` + `ADMIN_PASSWORD` legt das Konto automatisch an. `GET /api/admin/setup-status` sagt (ohne Anmeldung, nur Ja/Nein) warum es gerade nicht klappt.
 - Jeder Admin-Handler ist in `withAdmin()` aus `src/server/guard.ts` gekapselt — Bindings, Auth und Fehlerbehandlung an einer Stelle.
 - Alle Änderungen landen im `audit_logs`.
@@ -172,6 +176,7 @@ Der Workers-Free-Plan erlaubt **10 ms CPU-Zeit pro Request** — das Auswerten e
 | `/api/admin/uploads/:id/activate` | POST | Plan aktivieren |
 | `/api/admin/media[/:id]` | GET/POST/DELETE | Bilder |
 | `/api/admin/settings` | GET/PUT | Einstellungen |
+| `/api/admin/password` | POST | Eigenes Passwort ändern |
 | `/api/admin/audit` | GET | Audit-Log |
 
 ## Coding Conventions
@@ -207,13 +212,14 @@ Der Workers-Free-Plan erlaubt **10 ms CPU-Zeit pro Request** — das Auswerten e
 | Name | Wo | Zweck |
 |---|---|---|
 | `ADMIN_USER` | `wrangler.toml` unter `[vars]` | Benutzername für `/admin` (Standard `redaktion`) |
-| `ADMIN_PASSWORD` | lokal `.dev.vars`, produktiv `wrangler secret put` | Passwort für `/admin` |
+| `ADMIN_PASSWORD` | lokal `.dev.vars`, produktiv `wrangler secret put` | Passwort für die **Ersteinrichtung** von `/admin`. Sobald ein Konto existiert, wird die Variable nicht mehr gelesen; das Passwort wird dann im Adminbereich geändert. |
 
 Es gibt **keine** `.env` mehr — `next dev` bekommt die Bindings und Variablen über `initOpenNextCloudflareForDev()` aus `wrangler.toml` und `.dev.vars`.
 
 ## Testing
 
 - **Vitest** (`npm run test:unit`), Testdateien als `*.test.ts` neben dem Quellcode.
+- Passwortregeln und Hashing sind in `src/server/auth.test.ts` abgedeckt.
 - Abgedeckt sind vor allem die Teile ohne Netz- und DB-Abhängigkeit: PDF-Parser (mit nachgebautem pdfjs-Dokument), Schema-Validierung der Upload-Daten, Gruppierung der Stundenplan-Zeilen, Klassenauswahl, Klassenfilter.
 
 ## Important Notes

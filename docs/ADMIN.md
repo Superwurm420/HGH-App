@@ -12,7 +12,7 @@ Im Adminbereich gibt es fünf Bereiche:
 2. **Ankündigungen** — Nachrichten erstellen, die auf der Startseite und der Pinnwand erscheinen
 3. **Termine** — Kalendereinträge pflegen (z. B. Klausuren, Projekte, Feiertage)
 4. **Bilder** — Fotos hochladen, die auf dem Wandbildschirm (`/tv`) durchlaufen
-5. **Einstellungen** — Google-Kalender, Ferienzeiträume, Tagesmeldungen, Schulname
+5. **Einstellungen** — Google-Kalender, Ferienzeiträume, Tagesmeldungen, Schulname, Passwort ändern
 
 ---
 
@@ -194,6 +194,19 @@ zeigt die Startseite eine Ferien-Meldung statt des Countdowns.
 Die **gesetzlichen Feiertage in Niedersachsen** sind bereits fest hinterlegt und
 müssen nicht eingetragen werden.
 
+### Passwort ändern
+
+Ganz unten im Tab. Du brauchst dein bisheriges Passwort, das neue muss
+mindestens 10 Zeichen lang sein.
+
+Nach dem Ändern bleibst du auf diesem Gerät angemeldet — **alle anderen Geräte
+werden abgemeldet**. Das ist Absicht: Wenn ein Passwort in falsche Hände geraten
+ist, soll niemand über ein offenes Fenster angemeldet bleiben.
+
+> Ändere das Passwort auf jeden Fall einmal, wenn du den Adminbereich
+> übernimmst. Das Passwort aus der Ersteinrichtung ist oft mehreren Leuten
+> bekannt.
+
 ### Tagesmeldungen
 
 Kurze Sprüche, die auf der Startseite je nach Tageszeit erscheinen. Das Feld
@@ -237,6 +250,25 @@ gib der IT-Betreuung Bescheid — am besten zusammen mit der PDF-Datei.
 - Wurde der neue Stundenplan wirklich **aktiviert**? (Status muss „Aktiv" sein)
 - Lade die Seite im Browser neu (am besten mit **Strg + Umschalt + R** bzw. **Cmd + Umschalt + R** auf dem Mac)
 - Auf Handys: App kurz schließen und neu öffnen
+
+### Passwort vergessen
+
+Dafür gibt es bewusst keinen Selbstbedienungsweg (kein Mailversand, keine
+Sicherheitsfragen). Die IT-Betreuung setzt das Konto zurück:
+
+```bash
+# Konto löschen — die Stundenpläne, Ankündigungen und Termine bleiben erhalten
+npx wrangler d1 execute hgh-app-db --remote \
+  --command "DELETE FROM users WHERE username = 'redaktion'"
+```
+
+Danach ist die Ersteinrichtung wieder aktiv: Der nächste Login mit `ADMIN_USER`
+und dem hinterlegten `ADMIN_PASSWORD` legt das Konto neu an. Ist auch dieses
+Passwort unbekannt, vorher neu setzen mit
+`npx wrangler secret put ADMIN_PASSWORD`.
+
+**Danach im Adminbereich unter Einstellungen ein eigenes Passwort vergeben** —
+sonst gilt weiter das Einrichtungspasswort.
 
 ### Sitzung abgelaufen
 

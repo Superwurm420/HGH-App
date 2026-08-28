@@ -34,6 +34,9 @@ Die Redaktion verwaltet Stundenpläne, Ankündigungen, Termine und Bilder über 
 
 **Ausführliche Anleitung:** [Admin-Anleitung (docs/ADMIN.md)](docs/ADMIN.md)
 
+> **Nach der Ersteinrichtung das Passwort ändern:** Adminbereich → Einstellungen →
+> *Passwort ändern*. Das Passwort aus der Einrichtung gilt sonst unbegrenzt weiter.
+
 Tagesmeldungen und Ferienzeiträume pflegst du ebenfalls im Adminbereich, unter **Einstellungen**:
 
 **Anleitung dazu:** [Tagesmeldungen und Ferienzeiten (docs/CONTENT_FORMATS.md)](docs/CONTENT_FORMATS.md)
