@@ -3,13 +3,13 @@ import { requireAuth } from './auth';
 import { errorResponse, withErrorHandling } from './responses';
 import { AuthContext } from './types';
 
-export interface AdminContext {
+interface AdminContext {
   env: CloudflareEnv;
   db: D1Database;
   auth: AuthContext;
 }
 
-export interface AdminGuardOptions {
+interface AdminGuardOptions {
   /**
    * Lässt den Handler auch dann zu, wenn für das Konto noch kein Passwort
    * vergeben ist. Genau eine Route darf das: die, über die man es vergibt.

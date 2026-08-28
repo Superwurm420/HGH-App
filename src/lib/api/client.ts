@@ -11,7 +11,7 @@
 
 import { arrayBufferToBase64 } from '@/lib/base64';
 
-export class ApiError extends Error {
+class ApiError extends Error {
   readonly status: number;
 
   constructor(message: string, status: number) {
@@ -111,18 +111,6 @@ export interface MediaData {
   created_at: string;
 }
 
-/** Formt einen Datensatz für die Anzeige-Komponenten um. */
-export function toDisplayAnnouncement(item: AnnouncementData) {
-  return {
-    id: item.id,
-    title: item.title,
-    date: item.date,
-    expires: item.expires ?? undefined,
-    body: item.body,
-    highlight: item.highlight === 1,
-  };
-}
-
 // ── Ersteinrichtung & Anmeldung ────────────────────────────────────
 
 export interface SetupStatus {
@@ -137,7 +125,7 @@ export function checkSetupStatus(): Promise<SetupStatus> {
   return apiFetch<SetupStatus>('/api/admin/setup-status');
 }
 
-export interface LoginResponse {
+interface LoginResponse {
   ok: boolean;
   username: string;
   /** Jetzt muss ein Passwort vergeben werden, bevor irgendetwas anderes geht. */
@@ -241,7 +229,7 @@ export async function adminDeleteUpload(id: string): Promise<void> {
 
 // ── Einstellungen ──────────────────────────────────────────────────
 
-export interface SettingRow {
+interface SettingRow {
   key: string;
   value: string;
   updated_at: string;

@@ -8,9 +8,9 @@ import { MiniCalendar } from '@/components/ui/MiniCalendar';
 import { AnnouncementList } from '@/components/announcements/AnnouncementList';
 import { DailyMessage } from '@/components/ui/DailyMessage';
 import { GoogleCalendar } from '@/components/ui/GoogleCalendar';
-import { toDisplayAnnouncement } from '@/lib/api/client';
 import {
   announcementsToEvents,
+  toDisplayAnnouncement,
   loadAnnouncements,
   loadAppSettings,
   loadSchedulePage,

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { parseBerlinDate } from '@/lib/announcements/parser';
+import { parseBerlinDate } from '@/lib/berlin-time';
 import { ExpiryCountdown } from './ExpiryCountdown';
 import styles from './AnnouncementItem.module.css';
 

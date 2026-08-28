@@ -1,6 +1,6 @@
 import { getDb } from '@/server/env';
 import { jsonResponse, withErrorHandling } from '@/server/responses';
-import { weekdayForToday } from '@/server/services/berlin-time';
+import { weekdayForToday } from '@/lib/berlin-time';
 import { loadTimetable } from '@/server/services/timetable';
 
 export const dynamic = 'force-dynamic';

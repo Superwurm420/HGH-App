@@ -24,26 +24,15 @@ export interface AuthContext {
   mustSetPassword: boolean;
 }
 
-/** Wochentags-Codes im Stundenplan. */
-export type Weekday = 'MO' | 'DI' | 'MI' | 'DO' | 'FR';
-
-export const WEEKDAYS: readonly Weekday[] = ['MO', 'DI', 'MI', 'DO', 'FR'];
-
-/** Eine einzelne Unterrichtsstunde. */
-export interface LessonEntry {
-  period: number;
-  periodEnd?: number;
-  time: string;
-  subject?: string;
-  detail?: string;
-  room?: string;
-}
-
-/** Wochenplan einer Klasse. */
-export type WeekPlan = Record<Weekday, LessonEntry[]>;
-
-/** Kompletter geparster Stundenplan: Klassencode → Wochenplan. */
-export type ParsedSchedule = Record<string, WeekPlan>;
+/**
+ * Das Stundenplan-Modell wird nicht hier deklariert, sondern in
+ * `src/lib/timetable/types.ts` — dort, wo der Parser es erzeugt. Server und
+ * Browser sehen so garantiert dasselbe Modell: Der geparste Plan wandert als
+ * JSON vom Adminbereich hierher, zwei getrennte Deklarationen könnten
+ * unbemerkt auseinanderlaufen.
+ */
+export type { Weekday, LessonEntry, WeekPlan, ParsedSchedule } from '@/lib/timetable/types';
+export { WEEKDAYS } from '@/lib/timetable/types';
 
 /** Metadaten eines Stundenplan-Uploads. */
 export interface TimetableUpload {
@@ -123,5 +112,3 @@ export interface AuditLog {
   details: string | null;
   created_at: string;
 }
-
-export {};

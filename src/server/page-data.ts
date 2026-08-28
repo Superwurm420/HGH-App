@@ -1,5 +1,5 @@
 import { getDb } from './env';
-import { weekdayForToday } from './services/berlin-time';
+import { weekdayForToday } from '@/lib/berlin-time';
 import { loadTimetable, type TimetableView } from './services/timetable';
 import { loadActiveAnnouncements } from './services/announcements';
 import { loadPublicSettings, parseJsonSetting } from './services/settings';
@@ -72,6 +72,18 @@ export async function loadTvImages(): Promise<MediaFile[]> {
  * Hervorgehobene Ankündigungen als Termin-Einblendungen im Stundenplan.
  * Dieselbe Umformung brauchen Startseite und Stundenplanseite.
  */
+/** Formt einen Datensatz aus D1 für die Anzeige-Komponenten um. */
+export function toDisplayAnnouncement(item: Announcement) {
+  return {
+    id: item.id,
+    title: item.title,
+    date: item.date,
+    expires: item.expires ?? undefined,
+    body: item.body,
+    highlight: item.highlight === 1,
+  };
+}
+
 export function announcementsToEvents(announcements: Announcement[]) {
   return announcements
     .filter((item) => item.highlight === 1)

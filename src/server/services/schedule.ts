@@ -159,10 +159,6 @@ export async function storeSchedule(
   const statements: D1PreparedStatement[] = [];
 
   for (const [classCode, week] of Object.entries(schedule)) {
-    statements.push(
-      db.prepare('INSERT OR IGNORE INTO classes (code) VALUES (?)').bind(classCode),
-    );
-
     for (const day of WEEKDAYS) {
       for (const lesson of week[day] ?? []) {
         statements.push(
