@@ -31,3 +31,9 @@ bucket_name = "hgh-app-content"
 
 [dev]
 port = 8788
+
+# Workers Logs einschalten: Ohne das sind die `console.error`-Zeilen aus
+# src/server/responses.ts nur während eines laufenden `wrangler tail` sichtbar,
+# nie nachträglich — genau daran scheiterte die Diagnose des Upload-Fehlers.
+[observability]
+enabled = true
