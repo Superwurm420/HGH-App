@@ -127,6 +127,27 @@ laufen im selben Worker unter derselben Adresse.
 
 ---
 
+### Wichtig: nur ein Deploy-Weg
+
+Das Deployment läuft über **GitHub Actions**. Das ist der einzige Weg, der auch
+die Datenbank-Migration ausführt — und ein fehlender Migrationsschritt war die
+Ursache dafür, dass die App zwischenzeitlich nichts mehr anzeigen konnte.
+
+Cloudflare bietet zusätzlich eine eigene Git-Anbindung an („Workers Builds"),
+die bei jedem Push selbst baut und deployed. Ist die aktiv, deployen **zwei
+Systeme denselben Worker**: Sie überholen sich gegenseitig, und der Cloudflare-Weg
+lässt die Migration aus. Welche Version am Ende live ist, wird damit zum Zufall.
+
+**Prüfen und abschalten:**
+
+1. [Cloudflare Dashboard](https://dash.cloudflare.com/) → **Compute (Workers)** → Worker **`hgh-app`**
+2. Reiter **Settings** → Abschnitt **Build**
+3. Steht dort ein verbundenes Repository, auf **Disconnect** (bzw. **Manage** → Verbindung trennen)
+
+Danach deployed ausschließlich GitHub Actions. Erkennbar ist eine aktive
+Cloudflare-Anbindung auch daran, dass ein Bot namens
+*cloudflare-workers-and-pages* Deployment-Kommentare an Pull Requests schreibt.
+
 ### Lokale Entwicklung
 
 Für lokales Testen und Entwickeln:
