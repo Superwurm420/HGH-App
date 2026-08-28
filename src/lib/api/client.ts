@@ -1,53 +1,13 @@
 /**
- * API-Client für die Kommunikation mit dem Cloudflare Worker Backend.
- * Wird sowohl server-seitig (SSR) als auch client-seitig verwendet.
- */
-
-const API_BASE = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
-
-/**
- * Baut die Ziel-URL für API-Calls.
+ * API-Client für den Adminbereich.
  *
- * Wichtiger Sonderfall für Admin-Auth im Browser:
- * Diese Endpunkte arbeiten cookie-basiert. Bei Cross-Origin-Aufrufen schlagen
- * Session-Cookies in der Praxis häufig fehl (CORS/SameSite-Konfiguration).
- * Daher erzwingen wir client-seitig für /api/admin/* relative Requests
- * (gleicher Origin), damit Next.js-Rewrites die Weiterleitung zur Worker-API
- * übernehmen können.
+ * Frontend und API laufen im selben Cloudflare-Worker, also auf derselben
+ * Origin: Alle Pfade sind relativ, es gibt keine API-URL zu konfigurieren und
+ * das Session-Cookie wird ohne CORS-Sonderregeln mitgeschickt.
+ *
+ * Die öffentlichen Seiten benutzen diesen Client nicht — sie lesen als Server
+ * Components direkt aus D1 (siehe src/server/services/).
  */
-function buildApiUrl(path: string): string {
-  const isBrowser = typeof window !== 'undefined';
-  const isAdminEndpoint = path.startsWith('/api/admin/');
-
-  if (isBrowser && isAdminEndpoint) {
-    return path;
-  }
-
-  return `${API_BASE}${path}`;
-}
-
-type FetchOptions = Omit<RequestInit, 'method'>;
-
-async function apiFetch<T>(path: string, options?: FetchOptions & { method?: string }): Promise<T> {
-  const url = buildApiUrl(path);
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
-  });
-
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({ error: 'Unbekannter Fehler' }));
-    throw new ApiError(
-      (errorBody as { error?: string }).error ?? `HTTP ${response.status}`,
-      response.status,
-    );
-  }
-
-  return response.json() as Promise<T>;
-}
 
 export class ApiError extends Error {
   readonly status: number;
@@ -59,43 +19,45 @@ export class ApiError extends Error {
   }
 }
 
-// ── Timetable ──────────────────────────────────────────────────────
-
-export interface LessonEntry {
-  period: number;
-  periodEnd?: number;
-  time: string;
-  subject?: string;
-  detail?: string;
-  room?: string;
+async function toApiError(response: Response, fallback: string): Promise<ApiError> {
+  const body = await response.json().catch(() => null);
+  const message = (body as { error?: string } | null)?.error;
+  return new ApiError(message ?? fallback, response.status);
 }
 
-export type Weekday = 'MO' | 'DI' | 'MI' | 'DO' | 'FR';
-export type WeekPlan = Record<Weekday, LessonEntry[]>;
+async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
+  const response = await fetch(path, {
+    credentials: 'same-origin',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options?.headers,
+    },
+  });
 
-export interface TimetableResponse {
-  upload: {
-    id: string;
-    filename: string;
-    calendar_week: number | null;
-    half_year: number | null;
-    updated_at: string;
-  } | null;
-  entries: Record<string, WeekPlan>;
-  classes: string[];
-  todayKey: string;
+  if (!response.ok) {
+    throw await toApiError(response, `HTTP ${response.status}`);
+  }
+
+  return response.json() as Promise<T>;
 }
 
-export async function fetchTimetable(klasse?: string): Promise<TimetableResponse> {
-  const params = klasse ? `?klasse=${encodeURIComponent(klasse)}` : '';
-  return apiFetch<TimetableResponse>(`/api/timetable${params}`);
+/** Upload per multipart — hier darf kein Content-Type gesetzt werden. */
+async function uploadFetch<T>(path: string, formData: FormData, fallback: string): Promise<T> {
+  const response = await fetch(path, {
+    method: 'POST',
+    body: formData,
+    credentials: 'same-origin',
+  });
+
+  if (!response.ok) {
+    throw await toApiError(response, fallback);
+  }
+
+  return response.json() as Promise<T>;
 }
 
-export async function fetchTimetableClasses(): Promise<{ classes: string[] }> {
-  return apiFetch<{ classes: string[] }>('/api/timetable/classes');
-}
-
-// ── Announcements ──────────────────────────────────────────────────
+// ── Gemeinsame Datentypen ──────────────────────────────────────────
 
 export interface AnnouncementData {
   id: string;
@@ -110,25 +72,6 @@ export interface AnnouncementData {
   updated_at: string;
 }
 
-/** Transformiert AnnouncementData für die Anzeige-Komponenten. */
-export function toDisplayAnnouncement(a: AnnouncementData) {
-  return {
-    id: a.id,
-    title: a.title,
-    date: a.date,
-    expires: a.expires ?? undefined,
-    body: a.body,
-    highlight: a.highlight === 1,
-  };
-}
-
-export async function fetchAnnouncements(klasse?: string): Promise<{ announcements: AnnouncementData[] }> {
-  const params = klasse ? `?klasse=${encodeURIComponent(klasse)}` : '';
-  return apiFetch<{ announcements: AnnouncementData[] }>(`/api/announcements${params}`);
-}
-
-// ── Events ─────────────────────────────────────────────────────────
-
 export interface EventData {
   id: string;
   title: string;
@@ -140,96 +83,7 @@ export interface EventData {
   classes: string;
 }
 
-export async function fetchEvents(klasse?: string): Promise<{ events: EventData[] }> {
-  const params = klasse ? `?klasse=${encodeURIComponent(klasse)}` : '';
-  return apiFetch<{ events: EventData[] }>(`/api/events${params}`);
-}
-
-// ── Settings ───────────────────────────────────────────────────────
-
-export async function fetchSettings(): Promise<{ settings: Record<string, string> }> {
-  return apiFetch<{ settings: Record<string, string> }>('/api/settings');
-}
-
-// ── Bootstrap ──────────────────────────────────────────────────────
-
-export interface BootstrapResponse {
-  timetable: TimetableResponse;
-  announcements: AnnouncementData[];
-  version: string;
-}
-
-export async function fetchBootstrap(): Promise<BootstrapResponse> {
-  return apiFetch<BootstrapResponse>('/api/bootstrap');
-}
-
-// ── Admin Setup Status ────────────────────────────────────
-
-export interface SetupStatus {
-  dbReady: boolean;
-  hasUsers: boolean;
-  passwordConfigured: boolean;
-}
-
-export async function checkSetupStatus(): Promise<SetupStatus> {
-  return apiFetch<SetupStatus>('/api/admin/setup-status');
-}
-
-// ── Admin Auth ─────────────────────────────────────────────────────
-
-export async function adminLogin(username: string, password: string): Promise<{ ok: boolean; username: string }> {
-  return apiFetch<{ ok: boolean; username: string }>('/api/admin/login', {
-    method: 'POST',
-    body: JSON.stringify({ username, password }),
-    credentials: 'include',
-  });
-}
-
-export async function adminLogout(): Promise<void> {
-  await apiFetch<{ ok: boolean }>('/api/admin/logout', {
-    method: 'POST',
-    credentials: 'include',
-  });
-}
-
-export async function checkAdminSession(): Promise<{ authenticated: boolean; username?: string }> {
-  return apiFetch<{ authenticated: boolean; username?: string }>('/api/admin/session', {
-    credentials: 'include',
-  });
-}
-
-// ── Admin CRUD ─────────────────────────────────────────────────────
-
-export async function adminFetchAnnouncements(): Promise<{ announcements: AnnouncementData[] }> {
-  return apiFetch<{ announcements: AnnouncementData[] }>('/api/admin/announcements', {
-    credentials: 'include',
-  });
-}
-
-export async function adminCreateAnnouncement(data: Partial<AnnouncementData>): Promise<AnnouncementData> {
-  return apiFetch<AnnouncementData>('/api/admin/announcements', {
-    method: 'POST',
-    body: JSON.stringify(data),
-    credentials: 'include',
-  });
-}
-
-export async function adminUpdateAnnouncement(id: string, data: Partial<AnnouncementData>): Promise<AnnouncementData> {
-  return apiFetch<AnnouncementData>(`/api/admin/announcements/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(data),
-    credentials: 'include',
-  });
-}
-
-export async function adminDeleteAnnouncement(id: string): Promise<void> {
-  await apiFetch<{ ok: boolean }>(`/api/admin/announcements/${id}`, {
-    method: 'DELETE',
-    credentials: 'include',
-  });
-}
-
-export async function adminFetchUploads(): Promise<{ uploads: Array<{
+export interface UploadData {
   id: string;
   filename: string;
   file_size: number;
@@ -237,67 +91,154 @@ export async function adminFetchUploads(): Promise<{ uploads: Array<{
   half_year: number | null;
   status: string;
   parse_error: string | null;
+  entry_count: number;
+  class_count: number;
   created_at: string;
   updated_at: string;
-}> }> {
-  return apiFetch('/api/admin/uploads', { credentials: 'include' });
 }
 
-export async function adminUploadPdf(file: File): Promise<unknown> {
-  const formData = new FormData();
-  formData.append('file', file);
-  const url = buildApiUrl('/api/admin/uploads');
-  const response = await fetch(url, {
+export interface MediaData {
+  id: string;
+  filename: string;
+  content_type: string;
+  file_size: number;
+  created_at: string;
+}
+
+/** Formt einen Datensatz für die Anzeige-Komponenten um. */
+export function toDisplayAnnouncement(item: AnnouncementData) {
+  return {
+    id: item.id,
+    title: item.title,
+    date: item.date,
+    expires: item.expires ?? undefined,
+    body: item.body,
+    highlight: item.highlight === 1,
+  };
+}
+
+// ── Ersteinrichtung & Anmeldung ────────────────────────────────────
+
+export interface SetupStatus {
+  dbReady: boolean;
+  hasUsers: boolean;
+  passwordConfigured: boolean;
+  adminUser: string;
+}
+
+export function checkSetupStatus(): Promise<SetupStatus> {
+  return apiFetch<SetupStatus>('/api/admin/setup-status');
+}
+
+export function adminLogin(username: string, password: string): Promise<{ ok: boolean; username: string }> {
+  return apiFetch('/api/admin/login', {
     method: 'POST',
-    body: formData,
-    credentials: 'include',
-  });
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Upload fehlgeschlagen' }));
-    throw new ApiError((error as { error?: string }).error ?? 'Upload fehlgeschlagen', response.status);
-  }
-  return response.json();
-}
-
-export async function adminActivateUpload(id: string): Promise<void> {
-  await apiFetch<{ ok: boolean }>(`/api/admin/uploads/${id}/activate`, {
-    method: 'POST',
-    credentials: 'include',
+    body: JSON.stringify({ username, password }),
   });
 }
 
-export async function adminDeleteUpload(id: string): Promise<void> {
-  await apiFetch<{ ok: boolean }>(`/api/admin/uploads/${id}`, {
-    method: 'DELETE',
-    credentials: 'include',
-  });
+export async function adminLogout(): Promise<void> {
+  await apiFetch('/api/admin/logout', { method: 'POST' });
 }
 
-export async function adminFetchEvents(): Promise<{ events: EventData[] }> {
-  return apiFetch<{ events: EventData[] }>('/api/admin/events', {
-    credentials: 'include',
-  });
+export function checkAdminSession(): Promise<{ authenticated: boolean; username?: string }> {
+  return apiFetch('/api/admin/session');
 }
 
-export async function adminCreateEvent(data: Partial<EventData>): Promise<EventData> {
-  return apiFetch<EventData>('/api/admin/events', {
-    method: 'POST',
-    body: JSON.stringify(data),
-    credentials: 'include',
-  });
+// ── Ankündigungen ──────────────────────────────────────────────────
+
+export function adminFetchAnnouncements(): Promise<{ announcements: AnnouncementData[] }> {
+  return apiFetch('/api/admin/announcements');
 }
 
-export async function adminUpdateEvent(id: string, data: Partial<EventData>): Promise<EventData> {
-  return apiFetch<EventData>(`/api/admin/events/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(data),
-    credentials: 'include',
-  });
+export function adminCreateAnnouncement(data: Partial<AnnouncementData>): Promise<AnnouncementData> {
+  return apiFetch('/api/admin/announcements', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export function adminUpdateAnnouncement(id: string, data: Partial<AnnouncementData>): Promise<AnnouncementData> {
+  return apiFetch(`/api/admin/announcements/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+}
+
+export async function adminDeleteAnnouncement(id: string): Promise<void> {
+  await apiFetch(`/api/admin/announcements/${id}`, { method: 'DELETE' });
+}
+
+// ── Termine ────────────────────────────────────────────────────────
+
+export function adminFetchEvents(): Promise<{ events: EventData[] }> {
+  return apiFetch('/api/admin/events');
+}
+
+export function adminCreateEvent(data: Partial<EventData>): Promise<EventData> {
+  return apiFetch('/api/admin/events', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export function adminUpdateEvent(id: string, data: Partial<EventData>): Promise<EventData> {
+  return apiFetch(`/api/admin/events/${id}`, { method: 'PUT', body: JSON.stringify(data) });
 }
 
 export async function adminDeleteEvent(id: string): Promise<void> {
-  await apiFetch<{ ok: boolean }>(`/api/admin/events/${id}`, {
-    method: 'DELETE',
-    credentials: 'include',
-  });
+  await apiFetch(`/api/admin/events/${id}`, { method: 'DELETE' });
+}
+
+// ── Stundenplan-Uploads ────────────────────────────────────────────
+
+export function adminFetchUploads(): Promise<{ uploads: UploadData[] }> {
+  return apiFetch('/api/admin/uploads');
+}
+
+/**
+ * Lädt PDF und den im Browser ausgewerteten Stundenplan gemeinsam hoch.
+ * Der Server parst nichts mehr selbst, prüft die Daten aber vollständig.
+ */
+export function adminUploadTimetable(file: File, schedule: unknown): Promise<UploadData> {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('schedule', JSON.stringify(schedule));
+  return uploadFetch<UploadData>('/api/admin/uploads', formData, 'Upload fehlgeschlagen.');
+}
+
+export async function adminActivateUpload(id: string): Promise<void> {
+  await apiFetch(`/api/admin/uploads/${id}/activate`, { method: 'POST' });
+}
+
+export async function adminDeleteUpload(id: string): Promise<void> {
+  await apiFetch(`/api/admin/uploads/${id}`, { method: 'DELETE' });
+}
+
+// ── Einstellungen ──────────────────────────────────────────────────
+
+export interface SettingRow {
+  key: string;
+  value: string;
+  updated_at: string;
+}
+
+export function adminFetchSettings(): Promise<{ settings: SettingRow[] }> {
+  return apiFetch('/api/admin/settings');
+}
+
+export async function adminSaveSettings(settings: Record<string, string>): Promise<void> {
+  await apiFetch('/api/admin/settings', { method: 'PUT', body: JSON.stringify({ settings }) });
+}
+
+// ── Bilder (TV-Slideshow) ──────────────────────────────────────────
+
+export function adminFetchMedia(): Promise<{ media: MediaData[] }> {
+  return apiFetch('/api/admin/media');
+}
+
+export function adminUploadImage(file: File): Promise<MediaData> {
+  const formData = new FormData();
+  formData.append('file', file);
+  return uploadFetch<MediaData>('/api/admin/media', formData, 'Bild-Upload fehlgeschlagen.');
+}
+
+export async function adminDeleteMedia(id: string): Promise<void> {
+  await apiFetch(`/api/admin/media/${id}`, { method: 'DELETE' });
+}
+
+/** Öffentliche URL eines hochgeladenen Bildes. */
+export function mediaUrl(id: string): string {
+  return `/api/media/${id}`;
 }

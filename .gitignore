@@ -7,7 +7,15 @@ npm-debug.log*
 .env.*.local
 .dev.vars
 
-# zentrale Persistenz (laufzeitgeneriert)
-data/announcements-store.json
 
 .open-next
+
+# Build-Artefakte
+tsconfig.tsbuildinfo
+# von scripts/prebuild.mjs aus node_modules kopiert
+public/pdfjs/
+# von scripts/prebuild.mjs aus scripts/sw.template.js erzeugt
+public/sw.js
+
+# lokaler Wrangler-Zustand (lokale D1/R2-Daten)
+.wrangler

@@ -384,6 +384,22 @@
   gap: 14px;
 }
 
+/* Mit hochgeladenen Bildern kommt die Slideshow als drittes Panel dazu —
+   die Pinnwand bleibt dabei sichtbar. */
+.tv-main-grid[data-panels='3'] {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.tv-slideshow-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.tv-slideshow-panel > :last-child {
+  flex: 1;
+  min-height: 0;
+}
+
 .tv-panel {
   border-radius: var(--radius);
   border: 1px solid var(--line);

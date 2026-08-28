@@ -1,4 +1,5 @@
 import Link from 'next/link';
+
 import { ClassSelector } from '@/components/schedule/ClassSelector';
 import { TodaySchedule } from '@/components/schedule/TodaySchedule';
 import { ClassFromStorage } from '@/components/schedule/ClassFromStorage';
@@ -7,97 +8,60 @@ import { MiniCalendar } from '@/components/ui/MiniCalendar';
 import { AnnouncementList } from '@/components/announcements/AnnouncementList';
 import { DailyMessage } from '@/components/ui/DailyMessage';
 import { GoogleCalendar } from '@/components/ui/GoogleCalendar';
-import { fetchTimetable, fetchAnnouncements, fetchSettings, toDisplayAnnouncement, type AnnouncementData } from '@/lib/api/client';
-import { Weekday } from '@/lib/timetable/types';
-import type { SchoolHolidayRange } from '@/lib/calendar/lowerSaxonySchoolFreeDays';
+import { toDisplayAnnouncement } from '@/lib/api/client';
+import {
+  announcementsToEvents,
+  loadAnnouncements,
+  loadAppSettings,
+  loadSchedulePage,
+} from '@/server/page-data';
 
 export const dynamic = 'force-dynamic';
+
 const MAX_HOME_ANNOUNCEMENTS = 2;
 
-export default async function HomePage({ searchParams }: { searchParams: { klasse?: string } }) {
-  let plan: Awaited<ReturnType<typeof fetchTimetable>> | null = null;
-  let announcements: AnnouncementData[] = [];
-  let calendarUrls: string[] = [];
-  let messagesData: Record<string, unknown> = {};
-  let schoolHolidays: SchoolHolidayRange[] = [];
+type PageProps = { searchParams: Promise<{ klasse?: string }> };
 
-  try {
-    const [timetableRes, settingsRes] = await Promise.all([
-      fetchTimetable(searchParams.klasse),
-      fetchSettings(),
-    ]);
-    plan = timetableRes;
+export default async function HomePage({ searchParams }: PageProps) {
+  const { klasse } = await searchParams;
 
-    try {
-      calendarUrls = JSON.parse(settingsRes.settings.calendar_urls || '[]');
-    } catch { /* ignore */ }
-    try {
-      messagesData = JSON.parse(settingsRes.settings.messages || '{}');
-    } catch { /* ignore */ }
-    try {
-      const parsed = JSON.parse(settingsRes.settings.school_holidays || '[]');
-      schoolHolidays = Array.isArray(parsed) ? parsed : parsed?.ranges ?? [];
-    } catch { /* ignore */ }
-  } catch (error) {
-    console.warn('[home] Fehler beim Laden:', error);
-  }
+  const [schedule, settings] = await Promise.all([
+    loadSchedulePage(klasse),
+    loadAppSettings(),
+  ]);
 
-  if (!plan || !plan.upload || plan.classes.length === 0) {
+  const calendar = settings.calendarUrls.length > 0
+    ? <GoogleCalendar urls={settings.calendarUrls} />
+    : <MiniCalendar />;
+
+  if (!schedule.hasTimetable || !schedule.selectedClass) {
     return (
       <>
         <div className="card surface">
           <Countdown lessons={[]} />
-          <DailyMessage messages={messagesData} schoolHolidays={schoolHolidays} />
+          <DailyMessage messages={settings.messages} schoolHolidays={settings.schoolHolidays} />
           <p className="text-sm text-muted mt-2">Kein Stundenplan verfügbar.</p>
         </div>
-        {calendarUrls.length > 0 ? (
-          <GoogleCalendar urls={calendarUrls} />
-        ) : (
-          <div className="mt-3">
-            <MiniCalendar />
-          </div>
-        )}
+        <div className="mt-3">{calendar}</div>
       </>
     );
   }
 
-  const selectedClass = searchParams.klasse && plan.entries[searchParams.klasse]
-    ? searchParams.klasse
-    : plan.classes[0];
+  const { timetable, selectedClass } = schedule;
+  const todayLessons = timetable.entries[selectedClass]?.[timetable.todayKey] ?? [];
 
-  const weekPlan = plan.entries[selectedClass];
-  const todayKey = plan.todayKey as Weekday;
-  const todayLessons = weekPlan?.[todayKey] ?? [];
-
-  try {
-    const announcementRes = await fetchAnnouncements(selectedClass);
-    announcements = announcementRes.announcements;
-  } catch { /* ignore */ }
-
-  const previewAnnouncements = announcements.slice(0, MAX_HOME_ANNOUNCEMENTS);
+  const announcements = await loadAnnouncements(selectedClass);
+  const preview = announcements.slice(0, MAX_HOME_ANNOUNCEMENTS);
   const hasMore = announcements.length > MAX_HOME_ANNOUNCEMENTS;
-
-  // Highlighted announcements as events
-  const events = announcements
-    .filter((a) => a.highlight === 1)
-    .map((a) => ({
-      id: a.id,
-      title: a.title,
-      audience: a.audience,
-      startsAt: a.date,
-      endsAt: a.expires ?? undefined,
-      details: a.body,
-      classes: a.classes ? a.classes.split(',').map((c) => c.trim()) : ('alle' as const),
-    }));
 
   return (
     <>
-      <ClassFromStorage classes={plan.classes} />
+      <ClassFromStorage classes={timetable.classes} />
 
       <div className="home-dashboard">
         <div className="card surface">
           <div className="mb-1">
-            <ClassSelector classes={plan.classes} />
+            <ClassSelector classes={timetable.classes} />
           </div>
 
           <div className="home-landscape-grid">
@@ -105,31 +69,31 @@ export default async function HomePage({ searchParams }: { searchParams: { klass
               <Countdown lessons={todayLessons} />
 
               <DailyMessage
-                messages={messagesData}
+                messages={settings.messages}
                 schoolClass={selectedClass}
                 lessons={todayLessons}
-                schoolHolidays={schoolHolidays}
+                schoolHolidays={settings.schoolHolidays}
               />
             </div>
 
             <div>
               <TodaySchedule
-                day={todayKey}
+                day={timetable.todayKey}
                 lessons={todayLessons}
-                events={events}
+                events={announcementsToEvents(announcements)}
               />
             </div>
           </div>
 
-          {plan.upload?.updated_at && (
+          {timetable.upload?.updated_at && (
             <p className="meta-note">
-              Aktualisiert: {new Date(plan.upload.updated_at).toLocaleDateString('de-DE')}
+              Aktualisiert: {new Date(timetable.upload.updated_at).toLocaleDateString('de-DE')}
             </p>
           )}
         </div>
 
         <div className="home-secondary-grid">
-          {previewAnnouncements.length > 0 && (
+          {preview.length > 0 && (
             <div className="card surface home-secondary-card">
               <div className="section-header">
                 <h2 className="section-title">Ankündigungen</h2>
@@ -139,19 +103,11 @@ export default async function HomePage({ searchParams }: { searchParams: { klass
                   </Link>
                 )}
               </div>
-              <AnnouncementList items={previewAnnouncements.map(toDisplayAnnouncement)} />
+              <AnnouncementList items={preview.map(toDisplayAnnouncement)} />
             </div>
           )}
 
-          {calendarUrls.length > 0 ? (
-            <div className="home-secondary-card">
-              <GoogleCalendar urls={calendarUrls} />
-            </div>
-          ) : (
-            <div className="home-secondary-card">
-              <MiniCalendar />
-            </div>
-          )}
+          <div className="home-secondary-card">{calendar}</div>
         </div>
       </div>
     </>

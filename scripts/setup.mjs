@@ -73,12 +73,12 @@ function ensureNodeVersion() {
 }
 
 function ensureDevVars() {
-  const devVarsPath = path.resolve('worker', '.dev.vars');
+  const devVarsPath = path.resolve('.dev.vars');
   if (!fs.existsSync(devVarsPath)) {
     fs.writeFileSync(devVarsPath, 'ADMIN_PASSWORD=admin123\n', 'utf8');
-    logInfo('worker/.dev.vars wurde erstellt (lokales Passwort: admin123).');
+    logInfo('.dev.vars wurde erstellt (lokales Passwort: admin123).');
   } else {
-    logInfo('worker/.dev.vars existiert bereits.');
+    logInfo('.dev.vars existiert bereits.');
   }
 }
 
@@ -94,7 +94,7 @@ function localSetup() {
   ensureDevVars();
 
   logInfo('Lokale Datenbank wird vorbereitet...');
-  const migration = run('npx', ['wrangler', 'd1', 'migrations', 'apply', 'hgh-app-db', '--local', '-c', 'worker/wrangler.toml']);
+  const migration = run('npx', ['wrangler', 'd1', 'migrations', 'apply', 'hgh-app-db', '--local']);
   if (migration.ok) {
     checklist.db = status.done;
     checklist.migration = status.done;
@@ -109,7 +109,7 @@ function localSetup() {
 }
 
 function readWranglerToml() {
-  const wranglerPath = path.resolve('worker', 'wrangler.toml');
+  const wranglerPath = path.resolve('wrangler.toml');
   return {
     wranglerPath,
     content: fs.readFileSync(wranglerPath, 'utf8'),
@@ -151,7 +151,7 @@ function cloudflareSetup() {
 
   if (currentDbId && currentDbId !== 'placeholder-replace-after-creation') {
     checklist.db = status.done;
-    logInfo(`Datenbank-ID bereits in worker/wrangler.toml eingetragen (${currentDbId}).`);
+    logInfo(`Datenbank-ID bereits in wrangler.toml eingetragen (${currentDbId}).`);
   } else {
     const createDb = run('npx', ['wrangler', 'd1', 'create', 'hgh-app-db'], { capture: true });
     const output = createDb.output;
@@ -162,10 +162,10 @@ function cloudflareSetup() {
       const updated = upsertDatabaseId(content, createdDbId);
       fs.writeFileSync(wranglerPath, updated, 'utf8');
       checklist.db = status.done;
-      logInfo(`Datenbank erstellt und worker/wrangler.toml aktualisiert (${createdDbId}).`);
+      logInfo(`Datenbank erstellt und wrangler.toml aktualisiert (${createdDbId}).`);
     } else if (/already exists/i.test(output)) {
       logWarn('Datenbank existiert bereits, aber keine database_id wurde automatisch gefunden.');
-      logWarn('Bitte Datenbank-ID mit "npx wrangler d1 list" ermitteln und in worker/wrangler.toml setzen.');
+      logWarn('Bitte Datenbank-ID mit "npx wrangler d1 list" ermitteln und in wrangler.toml setzen.');
     } else {
       logError('Datenbank konnte nicht erstellt werden.');
       if (output.trim()) {
@@ -189,7 +189,7 @@ function cloudflareSetup() {
 
   logStep('Admin Secret setzen');
   logInfo('Falls bereits vorhanden, kann Secret einfach überschrieben werden.');
-  const secret = run('npx', ['wrangler', 'secret', 'put', 'ADMIN_PASSWORD', '-c', 'worker/wrangler.toml']);
+  const secret = run('npx', ['wrangler', 'secret', 'put', 'ADMIN_PASSWORD']);
   if (secret.ok) {
     checklist.secret = status.done;
     logInfo('Secret ADMIN_PASSWORD gesetzt.');
@@ -198,7 +198,7 @@ function cloudflareSetup() {
   }
 
   logStep('Migration ausführen');
-  const migration = run('npx', ['wrangler', 'd1', 'migrations', 'apply', 'hgh-app-db', '-c', 'worker/wrangler.toml']);
+  const migration = run('npx', ['wrangler', 'd1', 'migrations', 'apply', 'hgh-app-db', '--remote']);
   if (migration.ok) {
     checklist.migration = status.done;
     if (checklist.db === status.open) {

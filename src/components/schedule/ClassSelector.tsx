@@ -1,20 +1,18 @@
 'use client';
 
-import { loadSelectedClass, saveSelectedClass } from '@/lib/storage/preferences';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 
-function resolveSelectedClass(classes: string[], fromUrl: string | null, stored: string | null): string {
-  if (fromUrl && classes.includes(fromUrl)) return fromUrl;
-  if (stored && classes.includes(stored)) return stored;
-  return classes[0] ?? '';
-}
+import { loadSelectedClass, saveSelectedClass } from '@/lib/storage/preferences';
+import { resolveSelectedClass } from '@/lib/timetable/select-class';
 
 export function ClassSelector({ classes }: { classes: string[] }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const selected = resolveSelectedClass(classes, searchParams.get('klasse'), loadSelectedClass());
+  // Dieselbe Auswahllogik wie auf dem Server — sonst zeigt das Feld eine andere
+  // Klasse an als der Stundenplan darunter.
+  const selected = resolveSelectedClass(classes, searchParams.get('klasse'), loadSelectedClass()) ?? '';
 
   const onChange = (value: string) => {
     saveSelectedClass(value);
@@ -32,8 +30,8 @@ export function ClassSelector({ classes }: { classes: string[] }) {
         value={selected}
         onChange={(e) => onChange(e.target.value)}
       >
-        {classes.map((c) => (
-          <option key={c} value={c}>{c}</option>
+        {classes.map((code) => (
+          <option key={code} value={code}>{code}</option>
         ))}
       </select>
     </label>

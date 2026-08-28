@@ -1,21 +1,17 @@
 import { ClassFromStorage } from '@/components/schedule/ClassFromStorage';
 import { ClassSelector } from '@/components/schedule/ClassSelector';
 import { DayTimetable } from '@/components/schedule/DayTimetable';
-import { fetchTimetable, fetchAnnouncements } from '@/lib/api/client';
-import { Weekday, WeekPlan } from '@/lib/timetable/types';
+import { announcementsToEvents, loadAnnouncements, loadSchedulePage } from '@/server/page-data';
 
 export const dynamic = 'force-dynamic';
 
-export default async function StundenplanPage({ searchParams }: { searchParams: { klasse?: string } }) {
-  let plan: Awaited<ReturnType<typeof fetchTimetable>> | null = null;
+type PageProps = { searchParams: Promise<{ klasse?: string }> };
 
-  try {
-    plan = await fetchTimetable(searchParams.klasse);
-  } catch {
-    /* ignore */
-  }
+export default async function StundenplanPage({ searchParams }: PageProps) {
+  const { klasse } = await searchParams;
+  const { timetable, selectedClass, hasTimetable } = await loadSchedulePage(klasse);
 
-  if (!plan || !plan.upload || plan.classes.length === 0) {
+  if (!hasTimetable || !selectedClass) {
     return (
       <div className="card surface">
         <h2 className="text-lg font-bold">Stundenplan</h2>
@@ -24,45 +20,29 @@ export default async function StundenplanPage({ searchParams }: { searchParams: 
     );
   }
 
-  const selectedClass = searchParams.klasse && plan.entries[searchParams.klasse]
-    ? searchParams.klasse
-    : plan.classes[0];
-
-  const week = plan.entries[selectedClass] as WeekPlan;
-  const todayKey = plan.todayKey as Weekday;
-
-  // Highlighted announcements as events
-  let events: Array<{ id: string; title: string; startsAt: string; endsAt?: string; audience?: string; classes: string[] | 'alle' }> = [];
-  try {
-    const announcementRes = await fetchAnnouncements(selectedClass);
-    events = announcementRes.announcements
-      .filter((a) => a.highlight === 1)
-      .map((a) => ({
-        id: a.id,
-        title: a.title,
-        startsAt: a.date,
-        endsAt: a.expires ?? undefined,
-        audience: a.audience,
-        classes: a.classes ? a.classes.split(',').map((c) => c.trim()) : ('alle' as const),
-      }));
-  } catch { /* ignore */ }
+  const week = timetable.entries[selectedClass];
+  const announcements = await loadAnnouncements(selectedClass);
 
   return (
     <>
-      <ClassFromStorage classes={plan.classes} />
+      <ClassFromStorage classes={timetable.classes} />
       <div className="card surface">
         <div className="section-header">
           <h2 className="section-title">Stundenplan</h2>
           <div className="section-actions">
-            <ClassSelector classes={plan.classes} />
+            <ClassSelector classes={timetable.classes} />
           </div>
         </div>
 
-        <DayTimetable week={week} todayKey={todayKey} events={events} />
+        <DayTimetable
+          week={week}
+          todayKey={timetable.todayKey}
+          events={announcementsToEvents(announcements)}
+        />
 
-        {plan.upload?.updated_at && (
+        {timetable.upload?.updated_at && (
           <p className="meta-note">
-            Aktualisiert: {new Date(plan.upload.updated_at).toLocaleDateString('de-DE')}
+            Aktualisiert: {new Date(timetable.upload.updated_at).toLocaleDateString('de-DE')}
           </p>
         )}
       </div>

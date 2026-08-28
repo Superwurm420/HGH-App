@@ -1,25 +1,32 @@
-# Inhaltsdateien pflegen — einfach erklärt
+# Tagesmeldungen und Ferienzeiten — einfach erklärt
 
-In der HGH-App gibt es zwei Textdateien, die du bearbeiten kannst, um Tagesmeldungen und Ferienzeiträume anzupassen. Diese Anleitung erklärt dir Schritt für Schritt, wie das geht.
-
----
-
-## Wo finde ich diese Dateien?
-
-Die Dateien liegen im Projektordner unter `public/content/`:
-
-- `public/content/messages.json` — Tagesmeldungen
-- `public/content/schulferien-nds.json` — Ferienzeiträume
-
-**Wichtig:** Diese Dateien werden **nicht** über den Adminbereich bearbeitet, sondern direkt als Textdateien. Änderungen müssen danach ins System eingespielt werden (z. B. durch die IT-Betreuung oder einen Push auf GitHub). Frage im Zweifel die IT, wie die Änderungen live gehen.
+Diese Anleitung erklärt den Aufbau der **Tagesmeldungen** und der
+**Ferienzeiträume**.
 
 ---
 
-## 1) Tagesmeldungen (`messages.json`)
+## Wo pflege ich das?
+
+Beides im **Adminbereich unter „Einstellungen"** — du brauchst keinen Dateizugriff
+und niemanden aus der IT:
+
+| Was | Wo |
+|---|---|
+| Tagesmeldungen | Adminbereich → Einstellungen → *Tagesmeldungen* |
+| Ferienzeiträume | Adminbereich → Einstellungen → *Ferien und freie Tage* |
+
+Änderungen sind sofort nach dem Speichern live.
+
+> Früher lagen diese Werte als Dateien unter `public/content/`. Das ist vorbei —
+> die Dateien gibt es nicht mehr, alles steht jetzt in der Datenbank.
+
+---
+
+## 1) Tagesmeldungen
 
 ### Wofür ist die Datei?
 
-Die App zeigt auf der Startseite kurze Meldungen an, die zur Situation passen — z. B. morgens vor dem Unterricht, in der Pause, am Wochenende oder in den Ferien. Diese Texte stehen in der Datei `messages.json`.
+Die App zeigt auf der Startseite kurze Meldungen an, die zur Situation passen — z. B. morgens vor dem Unterricht, in der Pause, am Wochenende oder in den Ferien. Diese Texte trägst du im Feld *Tagesmeldungen* ein.
 
 ### Die 6 Kategorien
 
@@ -32,7 +39,7 @@ Die App wählt automatisch die passende Kategorie je nach Tageszeit und Situatio
 | `nachUnterricht` | Nach der letzten Stunde des Tages |
 | `wochenende` | An Samstagen und Sonntagen |
 | `feiertag` | An gesetzlichen Feiertagen in Niedersachsen |
-| `freierTag` | An schulfreien Tagen (Ferien), die in `schulferien-nds.json` eingetragen sind |
+| `freierTag` | An schulfreien Tagen aus den Ferienzeiträumen (siehe unten) |
 
 In jeder Kategorie kannst du **mehrere Texte** eintragen. Die App wählt dann zufällig einen davon aus.
 
@@ -117,13 +124,18 @@ Diese Texte sind **nur Notizen für dich** — die App ignoriert sie komplett. D
 
 ---
 
-## 2) Ferienzeiten (`schulferien-nds.json`)
+## 2) Ferienzeiten
 
-### Wofür ist die Datei?
+### Wofür ist das?
 
-Hier trägst du ein, wann in Niedersachsen schulfreie Tage (Ferien) sind. Die App erkennt diese Tage dann automatisch und zeigt passende Meldungen an (Kategorie `freierTag`).
+Hier trägst du ein, wann schulfreie Tage (Ferien) sind. Die App erkennt diese Tage dann automatisch und zeigt passende Meldungen an (Kategorie `freierTag`).
 
-### So sieht die Datei aus
+Die **gesetzlichen Feiertage in Niedersachsen** sind fest in der App hinterlegt und
+müssen hier nicht eingetragen werden.
+
+### Aufbau
+
+Die Zeiträume trägst du bequem über die Datumsfelder ein. Gespeichert werden sie so:
 
 ```json
 {
@@ -201,7 +213,12 @@ Achte darauf, dass nach jeder Zeile (außer der letzten) ein **Komma** steht.
 | Falsche Anführungszeichen | `„Text"` oder `"Text"` | `"Text"` (gerade Zeichen) |
 | Klammer fehlt | `"vorUnterricht": [ "Text"` | `"vorUnterricht": [ "Text" ]` |
 
-**Tipp:** Verwende zum Bearbeiten am besten einen einfachen Texteditor (z. B. Notepad, TextEdit) und **kein** Textverarbeitungsprogramm wie Word — Word kann die Anführungszeichen automatisch in „typografische" Zeichen umwandeln, die nicht funktionieren.
+**Tipp:** Schreibe die Texte direkt im Adminbereich oder in einem einfachen Texteditor
+(Notepad, TextEdit) — **nicht** in Word. Word wandelt gerade Anführungszeichen
+automatisch in „typografische" um, die hier nicht funktionieren.
+
+Beim Speichern prüft die App, ob der Text gültiges JSON ist. Bei einem Tippfehler
+bekommst du eine Meldung und die alte Fassung bleibt erhalten.
 
 ---
 
@@ -209,7 +226,7 @@ Achte darauf, dass nach jeder Zeile (außer der letzten) ein **Komma** steht.
 
 - Sie erkennt **Wochenenden** (Samstag, Sonntag) selbstständig.
 - Sie erkennt **gesetzliche Feiertage** in Niedersachsen automatisch.
-- Sie nutzt die Einträge in `schulferien-nds.json`, um **schulfreie Tage** zu erkennen.
+- Sie nutzt die eingetragenen Ferienzeiträume, um **schulfreie Tage** zu erkennen.
 - Sie **wählt zufällig** einen Text aus der passenden Kategorie aus.
 - Wenn für eine Klasse keine eigene Meldung hinterlegt ist, wird automatisch der **Standard-Text** verwendet.
 

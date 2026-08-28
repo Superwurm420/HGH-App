@@ -1,0 +1,15 @@
+# Vorlage für die lokale Entwicklung.
+# Kopieren nach .dev.vars — diese Datei wird von wrangler bzw. `next dev`
+# gelesen und ist in .gitignore ausgenommen.
+#
+#   cp .dev.vars.example .dev.vars
+#
+# "npm run setup" legt die Datei automatisch an.
+
+# Passwort für den Adminbereich (/admin).
+# Auf Cloudflare wird es NICHT hier gesetzt, sondern als Secret:
+#   npx wrangler secret put ADMIN_PASSWORD
+ADMIN_PASSWORD=admin123
+
+# Der Benutzername steht in wrangler.toml unter [vars] (Standard: redaktion)
+# und muss hier nicht wiederholt werden.
