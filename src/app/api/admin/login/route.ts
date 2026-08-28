@@ -12,10 +12,14 @@ export async function POST(request: Request): Promise<Response> {
     if (!body) return errorResponse('Ungültiger Request-Body.', 400);
 
     const username = body.username?.trim();
-    const password = body.password;
-    if (!username || !password) {
-      return errorResponse('Benutzername und Passwort sind erforderlich.', 400);
+    if (!username) {
+      return errorResponse('Benutzername ist erforderlich.', 400);
     }
+
+    // Das Passwort ist optional: Bei der Ersteinrichtung gibt es noch keins.
+    // Für ein Konto mit Passwort scheitert der leere String in `authenticate`
+    // wie jede andere falsche Eingabe.
+    const password = body.password ?? '';
 
     const env = await getEnv();
     const result = await authenticate(env, username, password);
@@ -28,7 +32,11 @@ export async function POST(request: Request): Promise<Response> {
     await logAudit(env.DB, result.userId, 'login', 'user', result.userId);
 
     return withSessionCookie(
-      jsonResponse({ ok: true, username: result.username }),
+      jsonResponse({
+        ok: true,
+        username: result.username,
+        mustSetPassword: result.mustSetPassword === true,
+      }),
       request,
       token,
       SESSION_MAX_AGE_SECONDS,

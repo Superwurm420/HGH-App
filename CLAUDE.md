@@ -17,7 +17,7 @@ HGH-App is a **Progressive Web App (PWA)** for the **Holztechnik und Gestaltung 
 ## Quick Reference — Commands
 
 ```bash
-npm run setup            # Lokale Ersteinrichtung (.dev.vars + lokale D1-Migration)
+npm run setup            # Lokale Ersteinrichtung (lokale D1-Migration)
 npm run dev              # Dev-Server inkl. D1/R2 über Miniflare (Port 3000)
 npm run build            # Production-Build (OpenNext/Cloudflare)
 npm run preview          # Gebauten Worker lokal ausführen
@@ -27,7 +27,7 @@ npm run test:unit        # Unit-Tests (Vitest)
 npm run db:migrate       # D1-Migrationen anwenden (Produktion)
 npm run db:migrate:local # D1-Migrationen anwenden (lokal)
 npm run deploy           # Deploy nach Cloudflare
-npm run setup:cloudflare # Cloudflare-Ersteinrichtung (D1, R2, Secret, Migration)
+npm run setup:cloudflare # Cloudflare-Ersteinrichtung (D1, R2, Migration)
 ```
 
 ## Repository Structure
@@ -39,7 +39,6 @@ npm run setup:cloudflare # Cloudflare-Ersteinrichtung (D1, R2, Secret, Migration
 ├── open-next.config.ts
 ├── tailwind.config.ts
 ├── tsconfig.json              # Strict TS, Pfad-Alias @/* → ./src/*
-├── .dev.vars.example          # Vorlage für lokale Secrets (→ .dev.vars)
 │
 ├── migrations/
 │   └── 0001_initial_schema.sql
@@ -136,11 +135,23 @@ Der Workers-Free-Plan erlaubt **10 ms CPU-Zeit pro Request** — das Auswerten e
 ### Admin System
 
 - Passwort-Anmeldung (PBKDF2-SHA256), Session-Token in D1, 12 Stunden gültig.
-- **Passwortwechsel** über `POST /api/admin/password` (Einstellungen-Tab). Beendet
-  alle Sitzungen des Benutzers außer der aufrufenden.
-  `ADMIN_PASSWORD` wird **nur** bei der Ersteinrichtung gelesen — das Secret zu
-  ändern wechselt das Login-Passwort nicht, sobald ein Konto existiert.
-- **Ersteinrichtung**: Der erste Login mit `ADMIN_USER` + `ADMIN_PASSWORD` legt das Konto automatisch an. `GET /api/admin/setup-status` sagt (ohne Anmeldung, nur Ja/Nein) warum es gerade nicht klappt.
+- **Ersteinrichtung ohne Secret**: Solange die `users`-Tabelle leer ist, legt der
+  erste Login mit `ADMIN_USER` das Konto an — **ohne Passwort**. Es gibt kein
+  `ADMIN_PASSWORD` mehr.
+- **Kein Passwort gesetzt** heißt: `users.password_hash` ist der leere String.
+  Bewusst dieselbe Spalte statt eines zweiten Kennzeichens, das auseinanderlaufen
+  könnte. Der leere Hash ist unbestätigbar — `verifyPassword` bricht ohne den
+  Trenner `:` ab.
+- **Passwortzwang**: `withAdmin()` gibt 403 zurück, solange
+  `auth.mustSetPassword` gilt. Einzige Ausnahme ist `POST /api/admin/password`
+  mit `{ allowWithoutPassword: true }` — sonst käme man aus dem Zustand nicht
+  heraus. Der Zwang steckt im Server, nicht nur im Dialog: Ein Dialog im Browser
+  ließe sich durch direkte API-Aufrufe umgehen.
+- **Passwort setzen/wechseln** über `POST /api/admin/password`. Das bisherige
+  Passwort wird nur verlangt, wenn eines gesetzt ist. Beendet alle Sitzungen des
+  Benutzers außer der aufrufenden. **Keine Mindestlänge**, aber nicht leer.
+- `GET /api/admin/setup-status` sagt ohne Anmeldung (nur Ja/Nein), warum eine
+  Anmeldung gerade nicht klappt — inklusive `needsPassword`.
 - Jeder Admin-Handler ist in `withAdmin()` aus `src/server/guard.ts` gekapselt — Bindings, Auth und Fehlerbehandlung an einer Stelle.
 - Alle Änderungen landen im `audit_logs`.
 - Tabs: Stundenplan · Ankündigungen · Termine · Bilder · Einstellungen.
@@ -212,9 +223,15 @@ Der Workers-Free-Plan erlaubt **10 ms CPU-Zeit pro Request** — das Auswerten e
 | Name | Wo | Zweck |
 |---|---|---|
 | `ADMIN_USER` | `wrangler.toml` unter `[vars]` | Benutzername für `/admin` (Standard `redaktion`) |
-| `ADMIN_PASSWORD` | lokal `.dev.vars`, produktiv `wrangler secret put` | Passwort für die **Ersteinrichtung** von `/admin`. Sobald ein Konto existiert, wird die Variable nicht mehr gelesen; das Passwort wird dann im Adminbereich geändert. |
 
-Es gibt **keine** `.env` mehr — `next dev` bekommt die Bindings und Variablen über `initOpenNextCloudflareForDev()` aus `wrangler.toml` und `.dev.vars`.
+Das ist die **einzige** Variable. Es gibt kein Secret und keine `.env` — `next dev`
+bekommt die Bindings über `initOpenNextCloudflareForDev()` aus `wrangler.toml`.
+
+Der Preis dafür: Zwischen Deploy und erster Anmeldung existiert kein Konto, und
+`/admin` ist öffentlich. In diesem Fenster kann sich das Konto nehmen, wer den
+Benutzernamen errät. Es schließt sich mit der ersten Passwortvergabe — deshalb
+weisen README und `docs/ADMIN.md` darauf hin, sich direkt nach dem Deploy
+anzumelden.
 
 ## Testing
 

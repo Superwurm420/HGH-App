@@ -10,7 +10,6 @@ declare global {
     DB: D1Database;
     STORAGE: R2Bucket;
     ADMIN_USER?: string;
-    ADMIN_PASSWORD?: string;
   }
 }
 
@@ -18,6 +17,11 @@ declare global {
 export interface AuthContext {
   userId: string;
   username: string;
+  /**
+   * Für das Konto ist noch kein Passwort vergeben (Ersteinrichtung).
+   * Solange das gilt, lässt `withAdmin` nur die Passwort-Route durch.
+   */
+  mustSetPassword: boolean;
 }
 
 /** Wochentags-Codes im Stundenplan. */

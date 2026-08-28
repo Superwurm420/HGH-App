@@ -12,8 +12,9 @@ directory = ".open-next/assets"
 binding = "ASSETS"
 
 [vars]
-# Benutzername für den Adminbereich. Das Passwort ist ein Secret:
-#   npx wrangler secret put ADMIN_PASSWORD
+# Benutzername für den Adminbereich. Ein Passwort wird hier nicht hinterlegt:
+# Der erste Login unter /admin mit genau diesem Namen legt das Konto an, das
+# Passwort vergibt die Redaktion anschließend selbst im Adminbereich.
 ADMIN_USER = "redaktion"
 
 [[d1_databases]]

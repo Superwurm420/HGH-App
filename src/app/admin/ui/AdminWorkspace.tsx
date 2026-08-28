@@ -7,6 +7,7 @@ import { AdminUploadManager } from './AdminUploadManager';
 import { AdminEventEditor } from './AdminEventEditor';
 import { AdminMediaManager } from './AdminMediaManager';
 import { AdminSettingsEditor } from './AdminSettingsEditor';
+import { AdminPasswordChange } from './AdminPasswordChange';
 import {
   adminLogin,
   adminLogout,
@@ -44,16 +45,16 @@ function SetupHints({ setupStatus, apiReachable }: { setupStatus: SetupStatus | 
         detail: 'Lokal: "npm run db:migrate:local". Auf Cloudflare: "npm run db:migrate".',
       });
     }
-    if (!setupStatus.passwordConfigured) {
-      hints.push({
-        message: 'Es ist kein Admin-Passwort hinterlegt.',
-        detail: 'Lokal: ADMIN_PASSWORD in der Datei .dev.vars eintragen. Auf Cloudflare: "npx wrangler secret put ADMIN_PASSWORD".',
-      });
-    }
-    if (setupStatus.dbReady && setupStatus.passwordConfigured && !setupStatus.hasUsers) {
+    if (setupStatus.dbReady && !setupStatus.hasUsers) {
       hints.push({
         message: 'Ersteinrichtung: Es gibt noch kein Admin-Konto.',
-        detail: `Melde dich mit dem Benutzernamen "${setupStatus.adminUser}" und dem hinterlegten Passwort an — das Konto wird dabei automatisch angelegt.`,
+        detail: `Melde dich mit dem Benutzernamen "${setupStatus.adminUser}" an — ohne Passwort. Das Konto wird dabei angelegt, und du vergibst direkt danach ein eigenes Passwort.`,
+      });
+    }
+    if (setupStatus.dbReady && setupStatus.needsPassword) {
+      hints.push({
+        message: 'Für das Admin-Konto ist noch kein Passwort vergeben.',
+        detail: `Melde dich mit dem Benutzernamen "${setupStatus.adminUser}" ohne Passwort an und vergib eines. Bis dahin steht das Konto offen.`,
       });
     }
   }
@@ -77,6 +78,7 @@ function SetupHints({ setupStatus, apiReachable }: { setupStatus: SetupStatus | 
 
 export function AdminWorkspace() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [mustSetPassword, setMustSetPassword] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -100,6 +102,7 @@ export function AdminWorkspace() {
       const res = await checkAdminSession();
       setApiReachable(true);
       setIsAuthenticated(res.authenticated);
+      setMustSetPassword(res.mustSetPassword === true);
       if (!res.authenticated) {
         await fetchSetupStatus();
       }
@@ -117,10 +120,11 @@ export function AdminWorkspace() {
   async function login() {
     setIsLoginPending(true);
     try {
-      await adminLogin(username, password);
+      const res = await adminLogin(username, password);
       setUsername('');
       setPassword('');
       setIsAuthenticated(true);
+      setMustSetPassword(res.mustSetPassword === true);
       setSetupStatus(null);
       setStatus('');
     } catch (error) {
@@ -138,6 +142,7 @@ export function AdminWorkspace() {
       // Auch wenn der Server nicht antwortet: lokal abmelden.
     }
     setIsAuthenticated(false);
+    setMustSetPassword(false);
     setStatus('Abgemeldet.');
     await fetchSetupStatus();
   }
@@ -147,13 +152,20 @@ export function AdminWorkspace() {
   }
 
   if (!isAuthenticated) {
+    // Solange kein Konto mit Passwort existiert, wäre ein Passwortfeld nur
+    // irreführend: Es gibt noch keins, das man eingeben könnte.
+    const passwordless =
+      setupStatus?.dbReady === true && (!setupStatus.hasUsers || setupStatus.needsPassword);
+
     return (
       <section className="mx-auto max-w-md">
         <SetupHints setupStatus={setupStatus} apiReachable={apiReachable} />
         <div className="rounded-lg border border-gray-300 p-6 dark:border-gray-700">
           <h2 className="mb-2 text-lg font-semibold">Anmeldung</h2>
           <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">
-            Bitte Benutzername und Passwort eingeben.
+            {passwordless
+              ? 'Ersteinrichtung: Benutzername eingeben und anmelden. Das Passwort vergibst du im nächsten Schritt.'
+              : 'Bitte Benutzername und Passwort eingeben.'}
           </p>
           <label className="block text-sm font-medium">
             Benutzername
@@ -161,21 +173,26 @@ export function AdminWorkspace() {
               type="text"
               value={username}
               autoComplete="username"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && passwordless) { e.preventDefault(); login(); }
+              }}
               onChange={(e) => setUsername(e.target.value)}
               className="mt-1 w-full rounded border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-900"
             />
           </label>
-          <label className="mt-3 block text-sm font-medium">
-            Passwort
-            <input
-              type="password"
-              value={password}
-              autoComplete="current-password"
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); login(); } }}
-              className="mt-1 w-full rounded border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-900"
-            />
-          </label>
+          {!passwordless && (
+            <label className="mt-3 block text-sm font-medium">
+              Passwort
+              <input
+                type="password"
+                value={password}
+                autoComplete="current-password"
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); login(); } }}
+                className="mt-1 w-full rounded border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-900"
+              />
+            </label>
+          )}
           <button
             type="button"
             onClick={login}
@@ -186,6 +203,37 @@ export function AdminWorkspace() {
           </button>
           {status && <p className="mt-3 text-sm text-red-600">{status}</p>}
         </div>
+      </section>
+    );
+  }
+
+  // Angemeldet, aber ohne Passwort: Der Adminbereich bleibt zu, bis eines
+  // gesetzt ist. Der Server sperrt hier ohnehin alles außer der Passwort-Route
+  // (siehe withAdmin) — die Tabs jetzt schon auszublenden erspart der
+  // Redaktion nur eine Reihe von Fehlermeldungen.
+  if (mustSetPassword) {
+    return (
+      <section className="mx-auto max-w-md space-y-4">
+        <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm dark:border-amber-700 dark:bg-amber-950">
+          <p className="font-medium text-amber-800 dark:text-amber-200">
+            Bitte vergib jetzt ein Passwort.
+          </p>
+          <p className="mt-1 text-amber-700 dark:text-amber-300">
+            Das Konto ist bis dahin ohne Passwort erreichbar — jede und jeder mit dem
+            Benutzernamen käme hinein. Der Adminbereich bleibt gesperrt, solange kein
+            Passwort gesetzt ist.
+          </p>
+        </div>
+
+        <AdminPasswordChange initial onDone={() => setMustSetPassword(false)} />
+
+        <button
+          type="button"
+          onClick={logout}
+          className="rounded border border-gray-300 px-3 py-2 text-sm dark:border-gray-700"
+        >
+          Abmelden
+        </button>
       </section>
     );
   }

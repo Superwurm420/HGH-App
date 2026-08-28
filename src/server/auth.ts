@@ -39,16 +39,30 @@ export function withSessionCookie(response: Response, request: Request, token: s
   return result;
 }
 
+/**
+ * Ein leerer `password_hash` bedeutet: für dieses Konto ist noch kein Passwort
+ * vergeben.
+ *
+ * Das ist bewusst dieselbe Spalte statt eines zusätzlichen Kennzeichens — zwei
+ * Felder könnten auseinanderlaufen, dieses eine nicht. Sicher ist der leere
+ * Wert, weil `verifyPassword` ohne den Trenner `:` sofort `false` liefert: Ein
+ * leerer Hash kann durch kein Passwort der Welt bestätigt werden.
+ */
+export function hasPassword(passwordHash: string): boolean {
+  return passwordHash.length > 0;
+}
+
 interface SessionRow {
   id: string;
   user_id: string;
   expires_at: string;
   username: string;
+  password_hash: string;
 }
 
 async function findSession(db: D1Database, token: string): Promise<SessionRow | null> {
   return db.prepare(
-    `SELECT s.id, s.user_id, s.expires_at, u.username
+    `SELECT s.id, s.user_id, s.expires_at, u.username, u.password_hash
      FROM sessions s JOIN users u ON u.id = s.user_id
      WHERE s.token = ?`
   ).bind(token).first<SessionRow>();
@@ -68,7 +82,11 @@ export async function getAuth(db: D1Database): Promise<AuthContext | null> {
     return null;
   }
 
-  return { userId: session.user_id, username: session.username };
+  return {
+    userId: session.user_id,
+    username: session.username,
+    mustSetPassword: !hasPassword(session.password_hash),
+  };
 }
 
 /**
@@ -108,13 +126,17 @@ export interface LoginResult {
   ok: boolean;
   userId?: string;
   username?: string;
+  /** Das Konto hat noch kein Passwort — es muss jetzt eines vergeben werden. */
+  mustSetPassword?: boolean;
 }
 
 /**
  * Prüft die Anmeldedaten.
  *
  * Ersteinrichtung: Solange noch kein Benutzer existiert, legt der erste Login
- * mit ADMIN_USER/ADMIN_PASSWORD das Admin-Konto an.
+ * mit dem konfigurierten ADMIN_USER das Admin-Konto an — ohne Passwort. Das
+ * eigene Passwort vergibt die Redaktion unmittelbar danach selbst; bis dahin
+ * lässt `withAdmin` nichts anderes zu als genau diesen einen Schritt.
  */
 export async function authenticate(
   env: CloudflareEnv,
@@ -128,6 +150,13 @@ export async function authenticate(
   ).bind(username).first<{ id: string; username: string; password_hash: string }>();
 
   if (user) {
+    // Konto ohne Passwort: Die Anmeldung steht offen, bis eines vergeben ist.
+    // Ein eingetipptes Passwort wird dabei nicht geprüft — es gibt keins,
+    // gegen das man prüfen könnte.
+    if (!hasPassword(user.password_hash)) {
+      return { ok: true, userId: user.id, username: user.username, mustSetPassword: true };
+    }
+
     const isValid = await verifyPassword(password, user.password_hash);
     if (!isValid) {
       await logAudit(db, null, 'login_failed', 'user', user.id, `Fehlgeschlagener Login für ${username}`);
@@ -136,66 +165,86 @@ export async function authenticate(
     return { ok: true, userId: user.id, username: user.username };
   }
 
-  const created = await tryInitialSetup(env, username, password);
+  const created = await tryInitialSetup(env, username);
   if (!created) return { ok: false };
-  return { ok: true, userId: created.id, username: created.username };
+  return { ok: true, userId: created.id, username: created.username, mustSetPassword: true };
 }
 
-/** Legt den ersten Admin-Benutzer an, wenn die Zugangsdaten zur Konfiguration passen. */
+/**
+ * Legt bei der Ersteinrichtung das Admin-Konto an — passwortlos.
+ *
+ * Vorher musste dafür das Secret `ADMIN_PASSWORD` gesetzt sein. Das war eine
+ * Hürde vor dem ersten Login und ein Passwort, das anschließend niemand mehr
+ * wechselte. Jetzt genügt der konfigurierte Benutzername; das Passwort vergibt
+ * die Redaktion im Adminbereich.
+ *
+ * Greift ausschließlich, solange die Tabelle leer ist — mit dem ersten Konto
+ * ist dieser Weg dauerhaft zu.
+ */
 async function tryInitialSetup(
   env: CloudflareEnv,
   username: string,
-  password: string,
 ): Promise<{ id: string; username: string } | null> {
-  const expectedPassword = env.ADMIN_PASSWORD;
-  if (!expectedPassword) return null;
-  if (username !== adminUsername(env) || password !== expectedPassword) return null;
+  if (username !== adminUsername(env)) return null;
 
   const count = await env.DB.prepare('SELECT COUNT(*) AS cnt FROM users').first<{ cnt: number }>();
   if ((count?.cnt ?? 0) > 0) return null;
 
-  const passwordHash = await hashPassword(password);
   const created = await env.DB.prepare(
-    `INSERT INTO users (username, password_hash, role) VALUES (?, ?, 'admin') RETURNING id, username`
-  ).bind(username, passwordHash).first<{ id: string; username: string }>();
+    `INSERT INTO users (username, password_hash, role) VALUES (?, '', 'admin') RETURNING id, username`
+  ).bind(username).first<{ id: string; username: string }>();
 
   if (created) {
-    console.log(`[auth] Erster Admin-Benutzer '${username}' wurde angelegt.`);
+    console.log(`[auth] Erster Admin-Benutzer '${username}' wurde angelegt (noch ohne Passwort).`);
+    await logAudit(
+      env.DB,
+      created.id,
+      'initial_setup',
+      'user',
+      created.id,
+      `Admin-Konto '${username}' bei der Ersteinrichtung angelegt`,
+    );
   }
   return created;
 }
 
-/** Mindestlänge für ein neues Admin-Passwort. */
-export const MIN_PASSWORD_LENGTH = 10;
-
 export type PasswordChangeResult =
   | { ok: true }
-  | { ok: false; reason: 'zu-kurz' | 'unveraendert' | 'falsches-passwort' | 'kein-konto' };
+  | { ok: false; reason: 'leer' | 'unveraendert' | 'falsches-passwort' | 'kein-konto' };
 
 /**
  * Prüft ein neues Passwort, bevor es gehasht wird.
  * Als eigene Funktion, damit die Regeln ohne Datenbank testbar sind.
+ *
+ * Es gibt bewusst **keine** Mindestlänge — die Länge bestimmt die Redaktion.
+ * Leer bleibt trotzdem unzulässig: Ein leeres Passwort wäre kein Passwort,
+ * sondern der passwortlose Zustand der Ersteinrichtung, und das Konto stünde
+ * dauerhaft offen.
+ *
+ * `current` ist bei der Erstvergabe der leere String; dann entfällt der
+ * Vergleich, denn es gibt kein bisheriges Passwort.
  */
 export function validateNewPassword(
   current: string,
   next: string,
-): { ok: true } | { ok: false; reason: 'zu-kurz' | 'unveraendert' } {
-  if (next.length < MIN_PASSWORD_LENGTH) return { ok: false, reason: 'zu-kurz' };
-  if (next === current) return { ok: false, reason: 'unveraendert' };
+): { ok: true } | { ok: false; reason: 'leer' | 'unveraendert' } {
+  if (next.length === 0) return { ok: false, reason: 'leer' };
+  if (current.length > 0 && next === current) return { ok: false, reason: 'unveraendert' };
   return { ok: true };
 }
 
 /**
- * Ändert das Passwort des angemeldeten Benutzers.
+ * Setzt das Passwort des angemeldeten Benutzers — die Erstvergabe nach der
+ * Ersteinrichtung genauso wie jeden späteren Wechsel.
  *
- * Bis hierher gab es dafür überhaupt keinen Weg: `hashPassword` lief
- * ausschließlich in `tryInitialSetup`, und das steigt aus, sobald ein Konto
- * existiert. Ein einmal vergebenes Passwort war damit unveränderlich — auch
- * dann, wenn es bekannt geworden ist. `ADMIN_PASSWORD` zu ändern hilft nicht,
- * die Variable wird nach der Ersteinrichtung nie wieder gelesen.
+ * Hat das Konto bereits ein Passwort, muss das bisherige stimmen. Hat es noch
+ * keines (Ersteinrichtung), entfällt diese Prüfung: Es gäbe nichts, wogegen
+ * geprüft werden könnte, und der Weg ist ohnehin nur über eine bereits gültige
+ * Sitzung erreichbar.
  *
  * Alle übrigen Sitzungen des Benutzers werden beendet: Wer das alte Passwort
- * kannte, soll nicht über ein offenes Fenster angemeldet bleiben.
+ * kannte — oder das Konto in seinem passwortlosen Fenster erwischt hat — soll
+ * nicht über ein offenes Fenster angemeldet bleiben.
  */
 export async function changePassword(
   db: D1Database,
@@ -204,16 +253,18 @@ export async function changePassword(
   newPassword: string,
   keepToken?: string,
 ): Promise<PasswordChangeResult> {
-  const check = validateNewPassword(currentPassword, newPassword);
-  if (!check.ok) return { ok: false, reason: check.reason };
-
   const user = await db.prepare(
     'SELECT password_hash FROM users WHERE id = ?'
   ).bind(userId).first<{ password_hash: string }>();
 
   if (!user) return { ok: false, reason: 'kein-konto' };
 
-  if (!(await verifyPassword(currentPassword, user.password_hash))) {
+  const needsCurrent = hasPassword(user.password_hash);
+
+  const check = validateNewPassword(needsCurrent ? currentPassword : '', newPassword);
+  if (!check.ok) return { ok: false, reason: check.reason };
+
+  if (needsCurrent && !(await verifyPassword(currentPassword, user.password_hash))) {
     return { ok: false, reason: 'falsches-passwort' };
   }
 

@@ -122,7 +122,8 @@ export function toDisplayAnnouncement(item: AnnouncementData) {
 export interface SetupStatus {
   dbReady: boolean;
   hasUsers: boolean;
-  passwordConfigured: boolean;
+  /** Es gibt ein Konto, für das noch kein Passwort vergeben ist. */
+  needsPassword: boolean;
   adminUser: string;
 }
 
@@ -130,7 +131,18 @@ export function checkSetupStatus(): Promise<SetupStatus> {
   return apiFetch<SetupStatus>('/api/admin/setup-status');
 }
 
-export function adminLogin(username: string, password: string): Promise<{ ok: boolean; username: string }> {
+export interface LoginResponse {
+  ok: boolean;
+  username: string;
+  /** Jetzt muss ein Passwort vergeben werden, bevor irgendetwas anderes geht. */
+  mustSetPassword: boolean;
+}
+
+/**
+ * Meldet am Adminbereich an. Bei der Ersteinrichtung bleibt `password` leer —
+ * das Konto wird dabei angelegt und hat noch kein Passwort.
+ */
+export function adminLogin(username: string, password: string): Promise<LoginResponse> {
   return apiFetch('/api/admin/login', {
     method: 'POST',
     body: JSON.stringify({ username, password }),
@@ -141,13 +153,20 @@ export async function adminLogout(): Promise<void> {
   await apiFetch('/api/admin/logout', { method: 'POST' });
 }
 
-export function checkAdminSession(): Promise<{ authenticated: boolean; username?: string }> {
+export function checkAdminSession(): Promise<{
+  authenticated: boolean;
+  username?: string;
+  mustSetPassword?: boolean;
+}> {
   return apiFetch('/api/admin/session');
 }
 
 /**
- * Ändert das eigene Passwort. Die aktuelle Sitzung bleibt bestehen, alle
- * anderen Anmeldungen werden dabei serverseitig beendet.
+ * Setzt das eigene Passwort — Erstvergabe wie Wechsel.
+ *
+ * `currentPassword` bleibt bei der Erstvergabe leer; der Server prüft es nur,
+ * wenn das Konto bereits ein Passwort hat. Die aktuelle Sitzung bleibt
+ * bestehen, alle anderen Anmeldungen werden serverseitig beendet.
  */
 export async function adminChangePassword(currentPassword: string, newPassword: string): Promise<void> {
   await apiFetch('/api/admin/password', {

@@ -262,13 +262,15 @@ npx wrangler d1 execute hgh-app-db --remote \
   --command "DELETE FROM users WHERE username = 'redaktion'"
 ```
 
-Danach ist die Ersteinrichtung wieder aktiv: Der nächste Login mit `ADMIN_USER`
-und dem hinterlegten `ADMIN_PASSWORD` legt das Konto neu an. Ist auch dieses
-Passwort unbekannt, vorher neu setzen mit
-`npx wrangler secret put ADMIN_PASSWORD`.
+Danach ist die Ersteinrichtung wieder aktiv: Der nächste Login mit dem
+Benutzernamen aus `ADMIN_USER` (Standard `redaktion`) legt das Konto neu an —
+**ohne Passwort**, das Feld dafür wird gar nicht erst angezeigt.
 
-**Danach im Adminbereich unter Einstellungen ein eigenes Passwort vergeben** —
-sonst gilt weiter das Einrichtungspasswort.
+**Melde dich unmittelbar nach dem Löschen an.** In der Zeit dazwischen steht der
+Adminbereich offen: Wer den Benutzernamen kennt, kann sich das Konto nehmen. Der
+Adminbereich lässt nach dieser Anmeldung ohnehin nichts anderes zu, als ein
+Passwort zu vergeben — erst danach sind Stundenplan, Ankündigungen und Termine
+wieder erreichbar.
 
 ### Sitzung abgelaufen
 
