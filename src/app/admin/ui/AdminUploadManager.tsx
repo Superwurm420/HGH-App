@@ -181,7 +181,7 @@ export function AdminUploadManager() {
           />
         </label>
 
-        <p className="mt-2 text-xs text-gray-500">
+        <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
           Dateiname möglichst nach dem Muster <code>Stundenplan_kw_XX_HjY_YYYY_YY.pdf</code> —
           daraus werden Kalenderwoche und Halbjahr übernommen.
         </p>
@@ -227,7 +227,7 @@ export function AdminUploadManager() {
         </div>
 
         {uploads.length === 0 ? (
-          <p className="text-sm text-gray-500">Noch keine Uploads vorhanden.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Noch keine Uploads vorhanden.</p>
         ) : (
           <div className="space-y-2">
             {uploads.map((upload) => (
@@ -237,7 +237,7 @@ export function AdminUploadManager() {
               >
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{upload.filename}</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     {formatFileSize(upload.file_size)}
                     {upload.calendar_week != null && ` · KW ${upload.calendar_week}`}
                     {upload.half_year != null && ` · Hj ${upload.half_year}`}

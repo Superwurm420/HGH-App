@@ -234,7 +234,7 @@ export function AdminEventEditor() {
               >
                 {event.title}
               </button>
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 {event.start_date}
                 {event.end_date ? ` – ${event.end_date}` : ''}
               </p>
@@ -249,7 +249,7 @@ export function AdminEventEditor() {
             </li>
           ))}
           {events.length === 0 && (
-            <li className="text-sm text-gray-500">Noch keine Termine vorhanden.</li>
+            <li className="text-sm text-gray-500 dark:text-gray-400">Noch keine Termine vorhanden.</li>
           )}
         </ul>
       </aside>
