@@ -1,0 +1,77 @@
+{
+  "_hinweis": "Tagesmeldungen für die HGH-App. Die App wählt abhängig von Tageszeit, Wochentag und Schultag automatisch einen Text aus.",
+  "standard": {
+    "vorUnterricht": [
+      "Guten Morgen! Neuer Tag, neue Chancen – auf geht’s!",
+      "Morgenstimmung an der HGH: Erst ankommen, dann durchstarten.",
+      "Der Tag wartet schon. Kaffee, Wasser oder Tee geschnappt und los!",
+      "Noch ist alles ruhig – aber nicht mehr lange. Guten Start!",
+      "Neuer Schultag, neues Holzstück, neue Ideen. Viel Erfolg heute!",
+      "Guten Morgen! Werkzeug und Kopf einschalten, dann kann’s losgehen.",
+      "Aufstehen, ankommen, loslegen – du packst das.",
+      "Ein neuer Tag an der HGH beginnt. Mach was Gutes daraus!",
+      "Früh dran? Perfekt. Dann bleibt mehr Zeit für gute Ideen.",
+      "Der erste Schritt ist geschafft: Du bist hier. Jetzt geht’s weiter!"
+    ],
+    "inPause": [
+      "Pause! Kurz durchatmen, etwas trinken und dann geht’s weiter.",
+      "Zeit für eine kleine Verschnaufpause – Akku laden nicht vergessen.",
+      "Werkzeug weg, Kopf hoch: Pause ist angesagt!",
+      "Kurzer Stopp, neuer Fokus. Genieße deine Pause.",
+      "Ein paar Minuten raus aus dem Unterricht tun gut. Bis gleich!",
+      "Pause: reden, lachen, trinken – und vielleicht etwas essen.",
+      "Durchatmen. Der nächste Unterricht kommt früh genug.",
+      "Kurz abschalten, dann wieder konzentriert weitermachen.",
+      "Pause verdient. Beine vertreten und Kopf frei bekommen.",
+      "Die beste Idee kommt manchmal genau in der Pause."
+    ],
+    "nachUnterricht": [
+      "Geschafft! Feierabend – jetzt gehört der Tag dir.",
+      "Der Unterricht ist vorbei. Zeit, den Kopf auf Freizeit umzuschalten.",
+      "Tagesziel erreicht. Gut gemacht und schönen Feierabend!",
+      "Werkzeug zurück, Tasche zu – Feierabend!",
+      "Für heute ist genug geschafft. Erhol dich gut!",
+      "Schultag abgehakt. Jetzt noch was Schönes machen.",
+      "Raus aus dem Schulmodus, rein in den Feierabend. Du hast’s dir verdient!",
+      "Das war’s für heute. Morgen geht’s weiter – heute darf entspannt werden.",
+      "Kopf frei, Sachen packen, Feierabend genießen.",
+      "Ein langer Tag geht zu Ende. Mach’s dir schön!"
+    ],
+    "wochenende": [
+      "Wochenende! Heute bestimmt dein eigener Stundenplan den Tag.",
+      "Kein Gong, kein Stundenplan – einfach Wochenende. Genieße es!",
+      "Samstag oder Sonntag: Zeit für das, was sonst zu kurz kommt.",
+      "Wochenendmodus aktiviert. Akku aufladen nicht vergessen.",
+      "Heute darf der Wecker auch mal Urlaub machen.",
+      "Raus an die frische Luft oder einfach gemütlich machen – du entscheidest.",
+      "Zwei freie Tage, unzählige Möglichkeiten. Schönes Wochenende!",
+      "Heute ist Platz für Freunde, Hobbys und gute Ideen.",
+      "Kein Unterricht heute. Das klingt doch schon ziemlich gut.",
+      "Wochenende an der HGH: Füße hoch, Kopf frei!"
+    ],
+    "feiertag": [
+      "Heute ist Feiertag – kein Unterricht. Hab einen schönen freien Tag!",
+      "Feiertag! Zeit zum Ausschlafen, Durchatmen und Genießen.",
+      "Heute bleibt die Schule geschlossen. Mach dir einen schönen Tag!",
+      "Kein Schulstress heute – genieße deinen Feiertag.",
+      "Feiertag: Die einzige Aufgabe heute ist, einen guten Tag zu haben.",
+      "Heute steht nichts auf dem Stundenplan. Entspann dich!",
+      "Freier Feiertag voraus – nutz die Zeit für dich.",
+      "Heute darf das Schulheft geschlossen bleiben. Schönen Feiertag!",
+      "Feiertag in Niedersachsen – Zeit für eine kleine Pause vom Alltag.",
+      "Genieß den freien Tag. Morgen ist noch früh genug für Schule."
+    ],
+    "freierTag": [
+      "Heute ist schulfrei – genieße den freien Tag!",
+      "Ferienmodus an: Ausschlafen ausdrücklich erlaubt.",
+      "Keine Schule heute. Zeit für Erholung, Freunde oder Abenteuer.",
+      "Der Stundenplan kann warten. Heute ist frei!",
+      "Schulfrei! Mach etwas, auf das du sonst keine Zeit hast.",
+      "Heute keine Pausenklingel, kein Unterricht – einfach freie Zeit.",
+      "Freier Tag: Akku laden und Kopf frei bekommen.",
+      "Ferien oder freier Tag? Hauptsache kein Wecker für den Unterricht.",
+      "Heute ist Platz für alles, was im Schulalltag zu kurz kommt.",
+      "Genieße die freie Zeit – der nächste Schultag kommt noch früh genug."
+    ]
+  }
+}
