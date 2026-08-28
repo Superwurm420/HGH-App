@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { adminFetchSettings, adminSaveSettings } from '@/lib/api/client';
 import { extractGoogleCalendarIds } from '@/lib/calendar/url-normalization';
+import { AdminPasswordChange } from './AdminPasswordChange';
 
 interface HolidayRange {
   start: string;
@@ -311,6 +312,11 @@ export function AdminSettingsEditor() {
         </button>
         {status && <p className="text-sm text-gray-600 dark:text-gray-300">{status}</p>}
       </div>
+
+      {/* Eigener Bereich mit eigenem Knopf — „Alles speichern" oben betrifft ihn nicht. */}
+      <hr className="border-gray-200 dark:border-gray-800" />
+
+      <AdminPasswordChange />
     </div>
   );
 }

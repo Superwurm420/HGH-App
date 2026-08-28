@@ -34,6 +34,9 @@ Die Redaktion verwaltet Stundenpläne, Ankündigungen, Termine und Bilder über 
 
 **Ausführliche Anleitung:** [Admin-Anleitung (docs/ADMIN.md)](docs/ADMIN.md)
 
+> **Nach der Ersteinrichtung das Passwort ändern:** Adminbereich → Einstellungen →
+> *Passwort ändern*. Das Passwort aus der Einrichtung gilt sonst unbegrenzt weiter.
+
 Tagesmeldungen und Ferienzeiträume pflegst du ebenfalls im Adminbereich, unter **Einstellungen**:
 
 **Anleitung dazu:** [Tagesmeldungen und Ferienzeiten (docs/CONTENT_FORMATS.md)](docs/CONTENT_FORMATS.md)
@@ -123,6 +126,27 @@ Es muss **keine** API-Adresse konfiguriert werden — Oberfläche und Schnittste
 laufen im selben Worker unter derselben Adresse.
 
 ---
+
+### Wichtig: nur ein Deploy-Weg
+
+Das Deployment läuft über **GitHub Actions**. Das ist der einzige Weg, der auch
+die Datenbank-Migration ausführt — und ein fehlender Migrationsschritt war die
+Ursache dafür, dass die App zwischenzeitlich nichts mehr anzeigen konnte.
+
+Cloudflare bietet zusätzlich eine eigene Git-Anbindung an („Workers Builds"),
+die bei jedem Push selbst baut und deployed. Ist die aktiv, deployen **zwei
+Systeme denselben Worker**: Sie überholen sich gegenseitig, und der Cloudflare-Weg
+lässt die Migration aus. Welche Version am Ende live ist, wird damit zum Zufall.
+
+**Prüfen und abschalten:**
+
+1. [Cloudflare Dashboard](https://dash.cloudflare.com/) → **Compute (Workers)** → Worker **`hgh-app`**
+2. Reiter **Settings** → Abschnitt **Build**
+3. Steht dort ein verbundenes Repository, auf **Disconnect** (bzw. **Manage** → Verbindung trennen)
+
+Danach deployed ausschließlich GitHub Actions. Erkennbar ist eine aktive
+Cloudflare-Anbindung auch daran, dass ein Bot namens
+*cloudflare-workers-and-pages* Deployment-Kommentare an Pull Requests schreibt.
 
 ### Lokale Entwicklung
 

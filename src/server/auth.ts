@@ -164,3 +164,72 @@ async function tryInitialSetup(
   }
   return created;
 }
+
+/** Mindestlänge für ein neues Admin-Passwort. */
+export const MIN_PASSWORD_LENGTH = 10;
+
+export type PasswordChangeResult =
+  | { ok: true }
+  | { ok: false; reason: 'zu-kurz' | 'unveraendert' | 'falsches-passwort' | 'kein-konto' };
+
+/**
+ * Prüft ein neues Passwort, bevor es gehasht wird.
+ * Als eigene Funktion, damit die Regeln ohne Datenbank testbar sind.
+ */
+export function validateNewPassword(
+  current: string,
+  next: string,
+): { ok: true } | { ok: false; reason: 'zu-kurz' | 'unveraendert' } {
+  if (next.length < MIN_PASSWORD_LENGTH) return { ok: false, reason: 'zu-kurz' };
+  if (next === current) return { ok: false, reason: 'unveraendert' };
+  return { ok: true };
+}
+
+/**
+ * Ändert das Passwort des angemeldeten Benutzers.
+ *
+ * Bis hierher gab es dafür überhaupt keinen Weg: `hashPassword` lief
+ * ausschließlich in `tryInitialSetup`, und das steigt aus, sobald ein Konto
+ * existiert. Ein einmal vergebenes Passwort war damit unveränderlich — auch
+ * dann, wenn es bekannt geworden ist. `ADMIN_PASSWORD` zu ändern hilft nicht,
+ * die Variable wird nach der Ersteinrichtung nie wieder gelesen.
+ *
+ * Alle übrigen Sitzungen des Benutzers werden beendet: Wer das alte Passwort
+ * kannte, soll nicht über ein offenes Fenster angemeldet bleiben.
+ */
+export async function changePassword(
+  db: D1Database,
+  userId: string,
+  currentPassword: string,
+  newPassword: string,
+  keepToken?: string,
+): Promise<PasswordChangeResult> {
+  const check = validateNewPassword(currentPassword, newPassword);
+  if (!check.ok) return { ok: false, reason: check.reason };
+
+  const user = await db.prepare(
+    'SELECT password_hash FROM users WHERE id = ?'
+  ).bind(userId).first<{ password_hash: string }>();
+
+  if (!user) return { ok: false, reason: 'kein-konto' };
+
+  if (!(await verifyPassword(currentPassword, user.password_hash))) {
+    return { ok: false, reason: 'falsches-passwort' };
+  }
+
+  const passwordHash = await hashPassword(newPassword);
+
+  await db.prepare(
+    "UPDATE users SET password_hash = ?, updated_at = datetime('now') WHERE id = ?"
+  ).bind(passwordHash, userId).run();
+
+  if (keepToken) {
+    await db.prepare(
+      'DELETE FROM sessions WHERE user_id = ? AND token != ?'
+    ).bind(userId, keepToken).run();
+  } else {
+    await db.prepare('DELETE FROM sessions WHERE user_id = ?').bind(userId).run();
+  }
+
+  return { ok: true };
+}
