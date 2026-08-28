@@ -44,8 +44,8 @@ export const ALLOWED_IMAGE_TYPES = IMAGE_TYPES.map((type) => type.contentType);
  * Ermittelt den Bildtyp anhand der Datei-Signatur.
  * Gibt null zurück, wenn es kein unterstütztes Bild ist.
  */
-export function detectImageType(data: ArrayBuffer): ImageType | null {
-  const bytes = new Uint8Array(data.slice(0, 16));
+export function detectImageType(data: Uint8Array): ImageType | null {
+  const bytes = data.subarray(0, 16);
   return IMAGE_TYPES.find((type) => type.matches(bytes)) ?? null;
 }
 

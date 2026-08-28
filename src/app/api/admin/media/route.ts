@@ -1,5 +1,6 @@
 import { withAdmin } from '@/server/guard';
-import { errorResponse, jsonResponse } from '@/server/responses';
+import { describeError, errorResponse, jsonResponse, readJsonBody } from '@/server/responses';
+import { base64ToBytes } from '@/server/services/base64';
 import { logAudit } from '@/server/services/audit';
 import {
   ALLOWED_IMAGE_TYPES,
@@ -9,6 +10,7 @@ import {
   loadSlideshowImages,
 } from '@/server/services/media';
 import { MediaFile } from '@/server/types';
+import { toAsciiMetadata } from '@/server/services/upload-naming';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,25 +21,45 @@ export async function GET(): Promise<Response> {
   });
 }
 
-/** POST /api/admin/media — Bild hochladen (multipart, Feld `file`). */
+/**
+ * POST /api/admin/media — Bild hochladen.
+ *
+ * JSON-Body mit `filename` und `dataBase64`. Wie beim Stundenplan-Upload
+ * bewusst kein Multipart: `request.formData()` scheiterte im Worker
+ * reproduzierbar auf iOS.
+ */
+interface MediaPayload {
+  filename?: unknown;
+  dataBase64?: unknown;
+}
+
 export async function POST(request: Request): Promise<Response> {
   return withAdmin('POST /api/admin/media', async ({ env, db, auth }) => {
-    const contentType = request.headers.get('Content-Type') ?? '';
-    if (!contentType.includes('multipart/form-data')) {
-      return errorResponse('Ungültiger Content-Type. Erwartet wird multipart/form-data.', 400);
+    const payload = await readJsonBody<MediaPayload>(request);
+    if (!payload) {
+      return errorResponse('Der Upload konnte nicht gelesen werden. Bitte erneut versuchen.', 400);
     }
 
-    const formData = await request.formData();
-    const file = formData.get('file');
-
-    if (!(file instanceof File)) {
+    const filename = typeof payload.filename === 'string' ? payload.filename.trim() : '';
+    if (!filename) {
+      return errorResponse('Der Dateiname fehlt im Upload.', 400);
+    }
+    if (typeof payload.dataBase64 !== 'string' || !payload.dataBase64) {
       return errorResponse('Keine Datei im Upload gefunden.', 400);
     }
-    if (file.size > MAX_IMAGE_SIZE) {
+
+    let data: Uint8Array;
+    try {
+      data = base64ToBytes(payload.dataBase64);
+    } catch (error) {
+      console.error('[media] Base64-Daten konnten nicht dekodiert werden:', error);
+      return errorResponse('Das Bild konnte nicht gelesen werden. Bitte erneut versuchen.', 400);
+    }
+
+    if (data.byteLength > MAX_IMAGE_SIZE) {
       return errorResponse(`Bild zu groß. Maximum: ${MAX_IMAGE_SIZE / 1024 / 1024} MB.`, 400);
     }
 
-    const data = await file.arrayBuffer();
     const imageType = detectImageType(data);
     if (!imageType) {
       return errorResponse(
@@ -48,17 +70,22 @@ export async function POST(request: Request): Promise<Response> {
 
     const r2Key = `media/${Date.now()}_${crypto.randomUUID()}.${imageType.extension}`;
 
-    await env.STORAGE.put(r2Key, data, {
-      httpMetadata: { contentType: imageType.contentType },
-      customMetadata: { originalFilename: file.name },
-    });
+    try {
+      await env.STORAGE.put(r2Key, data, {
+        httpMetadata: { contentType: imageType.contentType },
+        customMetadata: { originalFilename: toAsciiMetadata(filename) },
+      });
+    } catch (error) {
+      console.error('[media] Bild konnte nicht in R2 abgelegt werden:', error);
+      return errorResponse('Das Bild konnte nicht gespeichert werden.', 500, describeError(error));
+    }
 
     const created = await db.prepare(
       `INSERT INTO media_files (filename, r2_key, content_type, file_size, category, uploaded_by)
        VALUES (?, ?, ?, ?, ?, ?)
        RETURNING *`
     ).bind(
-      file.name,
+      filename,
       r2Key,
       imageType.contentType,
       data.byteLength,
@@ -71,7 +98,7 @@ export async function POST(request: Request): Promise<Response> {
       return errorResponse('Bild konnte nicht gespeichert werden.', 500);
     }
 
-    await logAudit(db, auth.userId, 'upload', 'media', created.id, `Bild hochgeladen: ${file.name}`);
+    await logAudit(db, auth.userId, 'upload', 'media', created.id, `Bild hochgeladen: ${filename}`);
 
     return jsonResponse(created, 201);
   });

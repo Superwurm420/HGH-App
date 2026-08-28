@@ -49,18 +49,20 @@ self.addEventListener('message', (event) => {
 
 // ── Fetch ────────────────────────────────────────────────────────────────────
 self.addEventListener('fetch', (event) => {
+  // Nur GET anfassen. Ein POST hier durchzureichen bringt nichts und riskiert
+  // nur, den Request-Body zu verlieren; der Cache-Zweig weiter unten würde an
+  // `cache.put()` mit einem Nicht-GET-Request ohnehin scheitern.
+  if (event.request.method !== 'GET') return;
+
   const url = new URL(event.request.url);
 
   // Nur Same-Origin-Requests behandeln
   if (url.origin !== self.location.origin) return;
 
-  const isHtml = HTML_SET.has(url.pathname);
-  const isApi = url.pathname.startsWith('/api/');
+  // Die API gehört nie in den Cache — der Browser holt sie selbst.
+  if (url.pathname.startsWith('/api/')) return;
 
-  if (isApi) {
-    event.respondWith(fetch(event.request));
-    return;
-  }
+  const isHtml = HTML_SET.has(url.pathname);
 
   if (isHtml) {
     // Network-first für HTML: immer frische Inhalte, Cache als Fallback offline.
