@@ -9,6 +9,7 @@ import {
 } from '@/server/services/schedule';
 import { TimetableUpload } from '@/server/types';
 import { parseTimetableFilename } from '@/lib/timetable/parse-pdf';
+import { buildR2Key, normalizeHalfYear, toAsciiMetadata } from '@/server/services/upload-naming';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,7 +47,14 @@ export async function POST(request: Request): Promise<Response> {
       return errorResponse('Ungültiger Content-Type. Erwartet wird multipart/form-data.', 400);
     }
 
-    const formData = await request.formData();
+    let formData: FormData;
+    try {
+      formData = await request.formData();
+    } catch (error) {
+      console.error('[uploads] Multipart-Daten konnten nicht gelesen werden:', error);
+      return errorResponse('Der Upload konnte nicht gelesen werden. Bitte erneut versuchen.', 400);
+    }
+
     const file = formData.get('file');
     const rawSchedule = formData.get('schedule');
 
@@ -80,31 +88,43 @@ export async function POST(request: Request): Promise<Response> {
     }
 
     const meta = parseTimetableFilename(file.name);
-    const r2Key = `timetables/${Date.now()}_${file.name}`;
+    const r2Key = buildR2Key(file.name);
 
-    await env.STORAGE.put(r2Key, pdfData, {
-      httpMetadata: { contentType: 'application/pdf' },
-      customMetadata: { originalFilename: file.name },
-    });
+    try {
+      await env.STORAGE.put(r2Key, pdfData, {
+        httpMetadata: { contentType: 'application/pdf' },
+        customMetadata: { originalFilename: toAsciiMetadata(file.name) },
+      });
+    } catch (error) {
+      console.error('[uploads] PDF konnte nicht in R2 abgelegt werden:', error);
+      return errorResponse('Die PDF-Datei konnte nicht gespeichert werden.', 500);
+    }
 
-    const upload = await db.prepare(
-      `INSERT INTO timetable_uploads
-         (filename, r2_key, file_size, calendar_week, half_year, year_start, year_end_short, status, parse_finished_at, uploaded_by)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 'parsed', datetime('now'), ?)
-       RETURNING *`
-    ).bind(
-      file.name,
-      r2Key,
-      pdfData.byteLength,
-      meta?.kw ?? null,
-      meta?.halfYear ?? null,
-      meta?.yearStart ?? null,
-      meta?.yearEndShort ?? null,
-      auth.userId,
-    ).first<TimetableUpload>();
+    let upload: TimetableUpload | null = null;
+    try {
+      upload = await db.prepare(
+        `INSERT INTO timetable_uploads
+           (filename, r2_key, file_size, calendar_week, half_year, year_start, year_end_short, status, parse_finished_at, uploaded_by)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 'parsed', datetime('now'), ?)
+         RETURNING *`
+      ).bind(
+        file.name,
+        r2Key,
+        pdfData.byteLength,
+        meta?.kw ?? null,
+        normalizeHalfYear(meta?.halfYear),
+        meta?.yearStart ?? null,
+        meta?.yearEndShort ?? null,
+        auth.userId,
+      ).first<TimetableUpload>();
+    } catch (error) {
+      console.error('[uploads] INSERT in timetable_uploads fehlgeschlagen:', error);
+      // R2-Objekt nicht verwaisen lassen, wenn der DB-Insert scheitert.
+      await env.STORAGE.delete(r2Key).catch(() => undefined);
+      return errorResponse('Der Upload konnte nicht in der Datenbank angelegt werden.', 500);
+    }
 
     if (!upload) {
-      // R2-Objekt nicht verwaisen lassen, wenn der DB-Insert scheitert.
       await env.STORAGE.delete(r2Key).catch(() => undefined);
       return errorResponse('Upload konnte nicht gespeichert werden.', 500);
     }
