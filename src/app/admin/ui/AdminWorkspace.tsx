@@ -7,6 +7,8 @@ import { AdminUploadManager } from './AdminUploadManager';
 import { AdminEventEditor } from './AdminEventEditor';
 import { AdminMediaManager } from './AdminMediaManager';
 import { AdminSettingsEditor } from './AdminSettingsEditor';
+import { AdminPasswordChange } from './AdminPasswordChange';
+import { DEFAULT_ADMIN_PASSWORD } from '@/lib/admin-defaults';
 import {
   adminLogin,
   adminLogout,
@@ -44,16 +46,16 @@ function SetupHints({ setupStatus, apiReachable }: { setupStatus: SetupStatus | 
         detail: 'Lokal: "npm run db:migrate:local". Auf Cloudflare: "npm run db:migrate".',
       });
     }
-    if (!setupStatus.passwordConfigured) {
-      hints.push({
-        message: 'Es ist kein Admin-Passwort hinterlegt.',
-        detail: 'Lokal: ADMIN_PASSWORD in der Datei .dev.vars eintragen. Auf Cloudflare: "npx wrangler secret put ADMIN_PASSWORD".',
-      });
-    }
-    if (setupStatus.dbReady && setupStatus.passwordConfigured && !setupStatus.hasUsers) {
+    if (setupStatus.dbReady && !setupStatus.hasUsers) {
       hints.push({
         message: 'Ersteinrichtung: Es gibt noch kein Admin-Konto.',
-        detail: `Melde dich mit dem Benutzernamen "${setupStatus.adminUser}" und dem hinterlegten Passwort an — das Konto wird dabei automatisch angelegt.`,
+        detail: `Benutzername "${setupStatus.adminUser}", Passwort "${DEFAULT_ADMIN_PASSWORD}". Das Konto wird dabei angelegt, und du vergibst direkt danach ein eigenes Passwort.`,
+      });
+    }
+    if (setupStatus.dbReady && setupStatus.needsPassword) {
+      hints.push({
+        message: 'Für das Admin-Konto gilt noch das Standardpasswort.',
+        detail: `Melde dich mit "${setupStatus.adminUser}" und "${DEFAULT_ADMIN_PASSWORD}" an und vergib ein eigenes Passwort. Bis dahin kommt jede und jeder hinein, der die Adresse kennt.`,
       });
     }
   }
@@ -77,6 +79,7 @@ function SetupHints({ setupStatus, apiReachable }: { setupStatus: SetupStatus | 
 
 export function AdminWorkspace() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [mustSetPassword, setMustSetPassword] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -100,6 +103,7 @@ export function AdminWorkspace() {
       const res = await checkAdminSession();
       setApiReachable(true);
       setIsAuthenticated(res.authenticated);
+      setMustSetPassword(res.mustSetPassword === true);
       if (!res.authenticated) {
         await fetchSetupStatus();
       }
@@ -117,10 +121,11 @@ export function AdminWorkspace() {
   async function login() {
     setIsLoginPending(true);
     try {
-      await adminLogin(username, password);
+      const res = await adminLogin(username, password);
       setUsername('');
       setPassword('');
       setIsAuthenticated(true);
+      setMustSetPassword(res.mustSetPassword === true);
       setSetupStatus(null);
       setStatus('');
     } catch (error) {
@@ -138,6 +143,7 @@ export function AdminWorkspace() {
       // Auch wenn der Server nicht antwortet: lokal abmelden.
     }
     setIsAuthenticated(false);
+    setMustSetPassword(false);
     setStatus('Abgemeldet.');
     await fetchSetupStatus();
   }
@@ -147,13 +153,20 @@ export function AdminWorkspace() {
   }
 
   if (!isAuthenticated) {
+    // Solange kein eigenes Passwort vergeben ist, gilt noch das
+    // Standardpasswort — dann darf die Seite es auch nennen.
+    const isSetup =
+      setupStatus?.dbReady === true && (!setupStatus.hasUsers || setupStatus.needsPassword);
+
     return (
       <section className="mx-auto max-w-md">
         <SetupHints setupStatus={setupStatus} apiReachable={apiReachable} />
         <div className="rounded-lg border border-gray-300 p-6 dark:border-gray-700">
           <h2 className="mb-2 text-lg font-semibold">Anmeldung</h2>
           <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">
-            Bitte Benutzername und Passwort eingeben.
+            {isSetup
+              ? `Ersteinrichtung: Benutzername "${setupStatus?.adminUser}", Passwort "${DEFAULT_ADMIN_PASSWORD}". Ein eigenes Passwort vergibst du im nächsten Schritt.`
+              : 'Bitte Benutzername und Passwort eingeben.'}
           </p>
           <label className="block text-sm font-medium">
             Benutzername
@@ -186,6 +199,37 @@ export function AdminWorkspace() {
           </button>
           {status && <p className="mt-3 text-sm text-red-600">{status}</p>}
         </div>
+      </section>
+    );
+  }
+
+  // Angemeldet, aber ohne Passwort: Der Adminbereich bleibt zu, bis eines
+  // gesetzt ist. Der Server sperrt hier ohnehin alles außer der Passwort-Route
+  // (siehe withAdmin) — die Tabs jetzt schon auszublenden erspart der
+  // Redaktion nur eine Reihe von Fehlermeldungen.
+  if (mustSetPassword) {
+    return (
+      <section className="mx-auto max-w-md space-y-4">
+        <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm dark:border-amber-700 dark:bg-amber-950">
+          <p className="font-medium text-amber-800 dark:text-amber-200">
+            Bitte vergib jetzt ein Passwort.
+          </p>
+          <p className="mt-1 text-amber-700 dark:text-amber-300">
+            Bis dahin gilt das Standardpasswort &bdquo;{DEFAULT_ADMIN_PASSWORD}&ldquo; — das steht
+            in der Anleitung und ist damit allgemein bekannt. Der Adminbereich bleibt
+            gesperrt, solange kein eigenes Passwort gesetzt ist.
+          </p>
+        </div>
+
+        <AdminPasswordChange initial onDone={() => setMustSetPassword(false)} />
+
+        <button
+          type="button"
+          onClick={logout}
+          className="rounded border border-gray-300 px-3 py-2 text-sm dark:border-gray-700"
+        >
+          Abmelden
+        </button>
       </section>
     );
   }

@@ -4,16 +4,24 @@ import { useState } from 'react';
 
 import { adminChangePassword } from '@/lib/api/client';
 
-const MIN_LENGTH = 10;
+interface AdminPasswordChangeProps {
+  /**
+   * Erstvergabe nach der Ersteinrichtung: Es gibt noch kein bisheriges
+   * Passwort, das Feld dafür entfällt.
+   */
+  initial?: boolean;
+  /** Wird nach erfolgreichem Setzen aufgerufen. */
+  onDone?: () => void;
+}
 
 /**
- * Eigenes Passwort ändern.
+ * Eigenes Passwort setzen — Erstvergabe wie späterer Wechsel.
  *
- * Vorher gab es dafür keinen Weg: Ein einmal vergebenes Passwort ließ sich
- * nicht mehr wechseln, weil `ADMIN_PASSWORD` nur bei der Ersteinrichtung
- * gelesen wird. Wurde es bekannt, blieb es gültig.
+ * Eine Mindestlänge gibt es bewusst nicht; die Länge bestimmt die Redaktion.
+ * Geprüft wird hier nur, was die Eingabe selbst betrifft: nicht leer und
+ * zweimal gleich getippt. Alles Weitere entscheidet der Server.
  */
-export function AdminPasswordChange() {
+export function AdminPasswordChange({ initial = false, onDone }: AdminPasswordChangeProps) {
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
   const [repeat, setRepeat] = useState('');
@@ -27,12 +35,12 @@ export function AdminPasswordChange() {
   }
 
   async function submit() {
-    if (!current || !next) {
-      fail('Bitte bisheriges und neues Passwort eingeben.');
+    if (!initial && !current) {
+      fail('Bitte das bisherige Passwort eingeben.');
       return;
     }
-    if (next.length < MIN_LENGTH) {
-      fail(`Das neue Passwort muss mindestens ${MIN_LENGTH} Zeichen lang sein.`);
+    if (!next) {
+      fail('Bitte ein neues Passwort eingeben.');
       return;
     }
     if (next !== repeat) {
@@ -42,17 +50,22 @@ export function AdminPasswordChange() {
 
     setIsBusy(true);
     setIsError(false);
-    setStatus('Wird geändert …');
+    setStatus(initial ? 'Wird gesetzt …' : 'Wird geändert …');
 
     try {
-      await adminChangePassword(current, next);
+      await adminChangePassword(initial ? '' : current, next);
       setCurrent('');
       setNext('');
       setRepeat('');
       setIsError(false);
-      setStatus('Passwort geändert. Andere Geräte wurden abgemeldet.');
+      setStatus(
+        initial
+          ? 'Passwort gesetzt. Ab jetzt ist die Anmeldung nur noch damit möglich.'
+          : 'Passwort geändert. Andere Geräte wurden abgemeldet.',
+      );
+      onDone?.();
     } catch (error) {
-      fail(error instanceof Error ? error.message : 'Passwort konnte nicht geändert werden.');
+      fail(error instanceof Error ? error.message : 'Passwort konnte nicht gesetzt werden.');
     } finally {
       setIsBusy(false);
     }
@@ -62,48 +75,49 @@ export function AdminPasswordChange() {
 
   return (
     <div className="rounded-lg border border-gray-300 p-4 dark:border-gray-700">
-      <h2 className="mb-1 text-lg font-semibold">Passwort ändern</h2>
+      <h2 className="mb-1 text-lg font-semibold">
+        {initial ? 'Passwort vergeben' : 'Passwort ändern'}
+      </h2>
       <p className="mb-3 text-sm text-gray-600 dark:text-gray-300">
-        Gilt für die Anmeldung am Adminbereich. Nach dem Ändern bleibst du hier angemeldet;
-        alle anderen Geräte werden abgemeldet.
+        {initial
+          ? 'Ersetzt das Standardpasswort und gilt ab sofort für die Anmeldung am Adminbereich. Es gibt keine Vorgabe zur Länge — wähle etwas, das nicht zu erraten ist.'
+          : 'Gilt für die Anmeldung am Adminbereich. Nach dem Ändern bleibst du hier angemeldet; alle anderen Geräte werden abgemeldet.'}
       </p>
 
       <div className="grid max-w-md gap-3">
-        <div>
-          <label htmlFor="pw-current" className="block text-sm font-medium">
-            Bisheriges Passwort
-          </label>
-          <input
-            id="pw-current"
-            type="password"
-            value={current}
-            autoComplete="current-password"
-            onChange={(e) => setCurrent(e.target.value)}
-            className={inputClass}
-          />
-        </div>
+        {!initial && (
+          <div>
+            <label htmlFor="pw-current" className="block text-sm font-medium">
+              Bisheriges Passwort
+            </label>
+            <input
+              id="pw-current"
+              type="password"
+              value={current}
+              autoComplete="current-password"
+              onChange={(e) => setCurrent(e.target.value)}
+              className={inputClass}
+            />
+          </div>
+        )}
 
         <div>
           <label htmlFor="pw-new" className="block text-sm font-medium">
-            Neues Passwort
+            {initial ? 'Passwort' : 'Neues Passwort'}
           </label>
           <input
             id="pw-new"
             type="password"
             value={next}
             autoComplete="new-password"
-            aria-describedby="pw-new-hinweis"
             onChange={(e) => setNext(e.target.value)}
             className={inputClass}
           />
-          <p id="pw-new-hinweis" className="mt-1 text-xs text-gray-500">
-            Mindestens {MIN_LENGTH} Zeichen.
-          </p>
         </div>
 
         <div>
           <label htmlFor="pw-repeat" className="block text-sm font-medium">
-            Neues Passwort wiederholen
+            {initial ? 'Passwort wiederholen' : 'Neues Passwort wiederholen'}
           </label>
           <input
             id="pw-repeat"
@@ -123,7 +137,7 @@ export function AdminPasswordChange() {
         disabled={isBusy}
         className="mt-4 rounded bg-blue-600 px-4 py-2 text-sm text-white disabled:opacity-50"
       >
-        Passwort ändern
+        {initial ? 'Passwort speichern' : 'Passwort ändern'}
       </button>
 
       {status && (

@@ -72,26 +72,16 @@ function ensureNodeVersion() {
   }
 }
 
-function ensureDevVars() {
-  const devVarsPath = path.resolve('.dev.vars');
-  if (!fs.existsSync(devVarsPath)) {
-    fs.writeFileSync(devVarsPath, 'ADMIN_PASSWORD=admin123\n', 'utf8');
-    logInfo('.dev.vars wurde erstellt (lokales Passwort: admin123).');
-  } else {
-    logInfo('.dev.vars existiert bereits.');
-  }
-}
-
 function localSetup() {
   const checklist = {
     db: status.open,
     bucket: 'nicht benötigt (lokal)',
-    secret: status.done,
+    admin: 'beim ersten Login unter /admin',
     migration: status.open,
   };
 
   logStep('Lokales Setup');
-  ensureDevVars();
+  logInfo('Es sind keine Secrets nötig — das Admin-Konto entsteht beim ersten Login (Admin / admin).');
 
   logInfo('Lokale Datenbank wird vorbereitet...');
   const migration = run('npx', ['wrangler', 'd1', 'migrations', 'apply', 'hgh-app-db', '--local']);
@@ -129,7 +119,7 @@ function cloudflareSetup() {
   const checklist = {
     db: status.open,
     bucket: status.open,
-    secret: status.open,
+    admin: 'beim ersten Login unter /admin',
     migration: status.open,
   };
 
@@ -187,16 +177,6 @@ function cloudflareSetup() {
     }
   }
 
-  logStep('Admin Secret setzen');
-  logInfo('Falls bereits vorhanden, kann Secret einfach überschrieben werden.');
-  const secret = run('npx', ['wrangler', 'secret', 'put', 'ADMIN_PASSWORD']);
-  if (secret.ok) {
-    checklist.secret = status.done;
-    logInfo('Secret ADMIN_PASSWORD gesetzt.');
-  } else {
-    logWarn('Secret konnte nicht gesetzt werden.');
-  }
-
   logStep('Migration ausführen');
   const migration = run('npx', ['wrangler', 'd1', 'migrations', 'apply', 'hgh-app-db', '--remote']);
   if (migration.ok) {
@@ -216,8 +196,14 @@ function printChecklist(checklist) {
   console.log(`\n${color.bold}Checkliste${color.reset}`);
   console.log(`- DB: ${checklist.db}`);
   console.log(`- Bucket: ${checklist.bucket}`);
-  console.log(`- Secret: ${checklist.secret}`);
+  console.log(`- Admin-Konto: ${checklist.admin}`);
   console.log(`- Migration: ${checklist.migration}`);
+  console.log(
+    '\nNächster Schritt: /admin öffnen, mit dem Benutzernamen aus wrangler.toml ' +
+    '(ADMIN_USER, Standard "Admin") und dem Standardpasswort "admin" anmelden, ' +
+    'dann ein eigenes Passwort vergeben. Bis dahin kommt herein, wer die Adresse ' +
+    'kennt — also gleich erledigen.',
+  );
 }
 
 ensureNodeVersion();

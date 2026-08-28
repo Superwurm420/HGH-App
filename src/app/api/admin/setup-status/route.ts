@@ -17,11 +17,17 @@ export async function GET(): Promise<Response> {
 
     let dbReady = false;
     let hasUsers = false;
+    let needsPassword = false;
 
     try {
-      const count = await env.DB.prepare('SELECT COUNT(*) AS cnt FROM users').first<{ cnt: number }>();
+      const row = await env.DB.prepare(
+        `SELECT COUNT(*) AS cnt,
+                SUM(CASE WHEN password_hash = '' THEN 1 ELSE 0 END) AS ohne_passwort
+         FROM users`
+      ).first<{ cnt: number; ohne_passwort: number | null }>();
       dbReady = true;
-      hasUsers = (count?.cnt ?? 0) > 0;
+      hasUsers = (row?.cnt ?? 0) > 0;
+      needsPassword = (row?.ohne_passwort ?? 0) > 0;
     } catch {
       // Tabelle fehlt → Migration wurde noch nicht ausgeführt.
     }
@@ -29,7 +35,7 @@ export async function GET(): Promise<Response> {
     return jsonResponse({
       dbReady,
       hasUsers,
-      passwordConfigured: Boolean(env.ADMIN_PASSWORD),
+      needsPassword,
       adminUser: adminUsername(env),
     });
   });

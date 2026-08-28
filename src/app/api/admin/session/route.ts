@@ -9,6 +9,10 @@ export async function GET(): Promise<Response> {
   return withErrorHandling('GET /api/admin/session', async () => {
     const auth = await getAuth(await getDb());
     if (!auth) return jsonResponse({ authenticated: false });
-    return jsonResponse({ authenticated: true, username: auth.username });
+    return jsonResponse({
+      authenticated: true,
+      username: auth.username,
+      mustSetPassword: auth.mustSetPassword,
+    });
   });
 }

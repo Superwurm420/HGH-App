@@ -1,20 +1,23 @@
 import { describe, expect, it } from 'vitest';
 
-import { MIN_PASSWORD_LENGTH, validateNewPassword } from './auth';
+import { hasPassword, validateNewPassword } from './auth';
 import { hashPassword, verifyPassword } from './services/password';
+import { DEFAULT_ADMIN_PASSWORD, DEFAULT_ADMIN_USER } from '@/lib/admin-defaults';
 
 describe('validateNewPassword', () => {
-  it('lässt ein ausreichend langes, geändertes Passwort zu', () => {
+  it('lässt ein geändertes Passwort zu', () => {
     expect(validateNewPassword('altesPasswort', 'neuesGeheimnis1')).toEqual({ ok: true });
   });
 
-  it('weist zu kurze Passwörter ab', () => {
-    const tooShort = 'a'.repeat(MIN_PASSWORD_LENGTH - 1);
-    expect(validateNewPassword('altesPasswort', tooShort)).toEqual({ ok: false, reason: 'zu-kurz' });
+  // Bewusst keine Mindestlänge: Die Länge bestimmt die Redaktion, nicht der Code.
+  it('akzeptiert auch sehr kurze Passwörter', () => {
+    expect(validateNewPassword('altesPasswort', 'a')).toEqual({ ok: true });
   });
 
-  it('akzeptiert genau die Mindestlänge', () => {
-    expect(validateNewPassword('altesPasswort', 'a'.repeat(MIN_PASSWORD_LENGTH))).toEqual({ ok: true });
+  // Ein leeres Passwort wäre kein Passwort, sondern der passwortlose Zustand
+  // der Ersteinrichtung — das Konto stünde damit dauerhaft offen.
+  it('weist ein leeres Passwort ab', () => {
+    expect(validateNewPassword('altesPasswort', '')).toEqual({ ok: false, reason: 'leer' });
   });
 
   it('weist ein unverändertes Passwort ab', () => {
@@ -22,10 +25,49 @@ describe('validateNewPassword', () => {
       .toEqual({ ok: false, reason: 'unveraendert' });
   });
 
-  // Ein zu kurzes UND unverändertes Passwort soll die Längenmeldung liefern,
-  // sonst schickt man die Nutzerin zu einem Passwort, das ohnehin abgelehnt wird.
-  it('meldet bei zu kurz und unverändert die Länge', () => {
-    expect(validateNewPassword('kurz', 'kurz')).toEqual({ ok: false, reason: 'zu-kurz' });
+  describe('Erstvergabe (kein bisheriges Passwort)', () => {
+    it('lässt jedes nicht-leere Passwort zu', () => {
+      expect(validateNewPassword('', 'x')).toEqual({ ok: true });
+    });
+
+    // Ohne bisheriges Passwort gibt es nichts, wozu das neue „unverändert"
+    // sein könnte — der leere String darf hier nicht als Vergleichswert dienen.
+    it('meldet bei leerer Eingabe „leer" und nicht „unveraendert"', () => {
+      expect(validateNewPassword('', '')).toEqual({ ok: false, reason: 'leer' });
+    });
+  });
+});
+
+describe('Vorgaben der Ersteinrichtung', () => {
+  // Die Werte stehen in der Anleitung und in der Oberfläche. Ändert sie jemand
+  // im Code, muss die Doku mitgezogen werden — dieser Test macht das sichtbar.
+  it('sind Admin/admin', () => {
+    expect(DEFAULT_ADMIN_USER).toBe('Admin');
+    expect(DEFAULT_ADMIN_PASSWORD).toBe('admin');
+  });
+
+  // Bewusst erlaubt: Es gibt keine Regeln für das eigene Passwort, auch keine
+  // Sperrliste. Wer bei der Vergabe wieder "admin" eintippt, bekommt einen
+  // echten Hash — der Einrichtungszustand ist damit trotzdem beendet.
+  it('erlauben das Standardpasswort auch als eigenes Passwort', () => {
+    expect(validateNewPassword('', DEFAULT_ADMIN_PASSWORD)).toEqual({ ok: true });
+  });
+});
+
+describe('hasPassword', () => {
+  it('erkennt ein Konto ohne Passwort am leeren Hash', () => {
+    expect(hasPassword('')).toBe(false);
+  });
+
+  it('erkennt ein Konto mit Passwort', async () => {
+    expect(hasPassword(await hashPassword('egal'))).toBe(true);
+  });
+
+  // Der leere Hash muss unbestätigbar sein, sonst wäre er als Markierung
+  // gefährlich: Ein passendes Passwort dürfte es nicht geben.
+  it('kein Passwort kann gegen einen leeren Hash bestätigt werden', async () => {
+    expect(await verifyPassword('', '')).toBe(false);
+    expect(await verifyPassword('irgendetwas', '')).toBe(false);
   });
 });
 

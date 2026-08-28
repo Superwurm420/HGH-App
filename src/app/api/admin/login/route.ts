@@ -28,7 +28,11 @@ export async function POST(request: Request): Promise<Response> {
     await logAudit(env.DB, result.userId, 'login', 'user', result.userId);
 
     return withSessionCookie(
-      jsonResponse({ ok: true, username: result.username }),
+      jsonResponse({
+        ok: true,
+        username: result.username,
+        mustSetPassword: result.mustSetPassword === true,
+      }),
       request,
       token,
       SESSION_MAX_AGE_SECONDS,

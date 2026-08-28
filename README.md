@@ -86,9 +86,9 @@ npm install
 npm run setup:init -- --cloudflare
 ```
 
-Der zentrale Setup-Command übernimmt die Cloudflare-Anmeldung, D1/R2-Erstellung, das Setzen des Admin-Secrets und die Migration. Am Ende bekommst du eine kompakte Checkliste (`DB`, `Bucket`, `Secret`, `Migration`) mit `erledigt/offen`.
+Der zentrale Setup-Command übernimmt die Cloudflare-Anmeldung, D1/R2-Erstellung und die Migration. Am Ende bekommst du eine kompakte Checkliste (`DB`, `Bucket`, `Admin-Konto`, `Migration`).
 
-> Hinweis: Das Setzen von `ADMIN_PASSWORD` bleibt interaktiv. Wrangler fragt dich beim Lauf nach einem Passwort für den Adminzugang.
+> Ein Admin-Passwort wird hier **nicht** gesetzt und es gibt kein Secret dafür. Für den ersten Login gilt `Admin` / `admin`; das Konto entsteht dabei und bekommt sein eigenes Passwort direkt danach im Adminbereich.
 
 #### Schritt 4: GitHub Secrets einrichten
 
@@ -115,12 +115,30 @@ Der Workflow (`.github/workflows/deploy.yml`) führt automatisch aus:
 5. Auf Cloudflare deployen
 6. Datenbank-Migrationen anwenden
 
-Danach ist die App unter der Cloudflare-URL erreichbar.
-
-> **Schritt 6 ist der wichtigste.** Ohne angewandte Migrationen ist die Datenbank
+> **Punkt 6 ist der wichtigste.** Ohne angewandte Migrationen ist die Datenbank
 > leer: Dann ist kein Admin-Login möglich und die App zeigt überall
 > „Kein Stundenplan verfügbar". Genau das war der Grund, warum die App
 > zwischenzeitlich nicht funktioniert hat.
+
+Danach ist die App unter der Cloudflare-URL erreichbar.
+
+#### Schritt 6: Sofort anmelden und Passwort vergeben
+
+**Das ist zeitkritisch.** Öffne direkt nach dem ersten erfolgreichen Deploy
+`https://DEINE-URL/admin` und melde dich mit dem Benutzernamen aus
+`wrangler.toml` (`ADMIN_USER`, Standard `Admin`) und dem Standardpasswort
+`admin` an. Der Adminbereich lässt dich dann nichts anderes tun, als ein
+Passwort zu vergeben.
+
+Der Grund für die Eile: Bis zu dieser ersten Anmeldung gilt `Admin` / `admin`,
+und die Seite ist öffentlich erreichbar. Das ist kein Passwort, das man raten
+müsste — es steht hier in der Anleitung. Wer in diesem Fenster `/admin` aufruft,
+legt das Konto selbst an und vergibt das Passwort. Das Fenster schließt sich in
+dem Moment, in dem du dein eigenes Passwort gesetzt hast.
+
+Ist es doch passiert — jemand hat sich das Konto geschnappt —, hilft nur der
+Reset: das Konto löschen (siehe `docs/ADMIN.md`, Abschnitt „Passwort
+vergessen") und die Anmeldung sofort erneut durchführen.
 
 Es muss **keine** API-Adresse konfiguriert werden — Oberfläche und Schnittstelle
 laufen im selben Worker unter derselben Adresse.
@@ -154,7 +172,7 @@ Für lokales Testen und Entwickeln:
 
 ```bash
 npm install
-npm run setup          # legt .dev.vars an und migriert die lokale Datenbank
+npm run setup          # migriert die lokale Datenbank
 npm run dev            # startet alles — ein Terminal genügt
 ```
 
@@ -162,12 +180,11 @@ Dann im Browser öffnen: `http://localhost:3000`
 
 **Lokaler Admin-Login:**
 - Öffne `http://localhost:3000/admin`
-- Benutzername: `redaktion`
-- Passwort: `admin123` (steht in `.dev.vars`, siehe `.dev.vars.example`)
-- Beim ersten Login wird das Admin-Konto automatisch erstellt.
+- Benutzername: `Admin`, Passwort: `admin` (Groß-/Kleinschreibung des Namens ist beim Anmelden egal)
+- Beim ersten Login wird das Admin-Konto angelegt; anschließend musst du ein Passwort vergeben, bevor der Adminbereich etwas zulässt.
 
 Klappt die Anmeldung nicht, nennt die Anmeldeseite den Grund — meist fehlt die
-Datenbank-Migration oder das Passwort.
+Datenbank-Migration.
 
 ---
 
@@ -175,7 +192,7 @@ Datenbank-Migration oder das Passwort.
 
 | Script | Was es tut |
 |---|---|
-| `npm run setup` | Lokale Ersteinrichtung: `.dev.vars` + lokale Datenbank |
+| `npm run setup` | Lokale Ersteinrichtung: lokale Datenbank migrieren |
 | `npm run dev` | Startet die App lokal inklusive Datenbank (Port 3000) |
 | `npm run build` | Baut die App für die Produktion |
 | `npm run preview` | Führt den gebauten Worker lokal aus |
@@ -183,6 +200,6 @@ Datenbank-Migration oder das Passwort.
 | `npm run lint` | Prüft den Code (ESLint) |
 | `npm run typecheck` | Prüft die TypeScript-Typen |
 | `npm run test:unit` | Führt die automatischen Tests aus |
-| `npm run setup:cloudflare` | Cloudflare-Ersteinrichtung (D1, R2, Secret, Migration) |
+| `npm run setup:cloudflare` | Cloudflare-Ersteinrichtung (D1, R2, Migration) |
 | `npm run db:migrate` | Wendet Datenbankänderungen auf Cloudflare an |
 | `npm run db:migrate:local` | Wendet Datenbankänderungen lokal an |
