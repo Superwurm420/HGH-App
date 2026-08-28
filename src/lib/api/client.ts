@@ -9,6 +9,8 @@
  * Components direkt aus D1 (siehe src/server/services/).
  */
 
+import { arrayBufferToBase64 } from '@/lib/base64';
+
 export class ApiError extends Error {
   readonly status: number;
 
@@ -21,8 +23,13 @@ export class ApiError extends Error {
 
 async function toApiError(response: Response, fallback: string): Promise<ApiError> {
   const body = await response.json().catch(() => null);
-  const message = (body as { error?: string } | null)?.error;
-  return new ApiError(message ?? fallback, response.status);
+  const parsed = body as { error?: string; detail?: string } | null;
+  // `detail` liefern nur die Upload-Routen, damit im Adminbereich die
+  // technische Ursache sichtbar ist statt nur ein allgemeiner Satz.
+  const message = parsed?.error
+    ? parsed.detail ? `${parsed.error} (${parsed.detail})` : parsed.error
+    : fallback;
+  return new ApiError(message, response.status);
 }
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
@@ -42,19 +49,18 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-/** Upload per multipart — hier darf kein Content-Type gesetzt werden. */
-async function uploadFetch<T>(path: string, formData: FormData, fallback: string): Promise<T> {
-  const response = await fetch(path, {
+/**
+ * Schickt eine Datei als JSON-Feld (Base64) statt als Multipart.
+ *
+ * `request.formData()` scheiterte im Worker reproduzierbar auf iOS, während
+ * der JSON-Weg — den alle übrigen Admin-Aufrufe ohnehin gehen — durchkommt.
+ */
+async function postFile<T>(path: string, file: File, extra: Record<string, unknown> = {}): Promise<T> {
+  const dataBase64 = arrayBufferToBase64(await file.arrayBuffer());
+  return apiFetch<T>(path, {
     method: 'POST',
-    body: formData,
-    credentials: 'same-origin',
+    body: JSON.stringify({ filename: file.name, dataBase64, ...extra }),
   });
-
-  if (!response.ok) {
-    throw await toApiError(response, fallback);
-  }
-
-  return response.json() as Promise<T>;
 }
 
 // ── Gemeinsame Datentypen ──────────────────────────────────────────
@@ -222,10 +228,7 @@ export function adminFetchUploads(): Promise<{ uploads: UploadData[] }> {
  * Der Server parst nichts mehr selbst, prüft die Daten aber vollständig.
  */
 export function adminUploadTimetable(file: File, schedule: unknown): Promise<UploadData> {
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('schedule', JSON.stringify(schedule));
-  return uploadFetch<UploadData>('/api/admin/uploads', formData, 'Upload fehlgeschlagen.');
+  return postFile<UploadData>('/api/admin/uploads', file, { schedule });
 }
 
 export async function adminActivateUpload(id: string): Promise<void> {
@@ -259,9 +262,7 @@ export function adminFetchMedia(): Promise<{ media: MediaData[] }> {
 }
 
 export function adminUploadImage(file: File): Promise<MediaData> {
-  const formData = new FormData();
-  formData.append('file', file);
-  return uploadFetch<MediaData>('/api/admin/media', formData, 'Bild-Upload fehlgeschlagen.');
+  return postFile<MediaData>('/api/admin/media', file);
 }
 
 export async function adminDeleteMedia(id: string): Promise<void> {

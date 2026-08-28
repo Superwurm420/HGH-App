@@ -1,6 +1,7 @@
 import { withAdmin } from '@/server/guard';
-import { errorResponse, jsonResponse } from '@/server/responses';
+import { describeError, errorResponse, jsonResponse, readJsonBody } from '@/server/responses';
 import { logAudit } from '@/server/services/audit';
+import { base64ToBytes } from '@/server/services/base64';
 import {
   ScheduleValidationError,
   storeSchedule,
@@ -33,71 +34,80 @@ export async function GET(): Promise<Response> {
 /**
  * POST /api/admin/uploads
  *
- * Multipart mit zwei Feldern:
- *   `file`     — das Original-PDF (wird in R2 archiviert)
- *   `schedule` — der im Admin-Browser geparste Stundenplan als JSON
+ * JSON-Body mit drei Feldern:
+ *   `filename`   — der Original-Dateiname (liefert KW/Halbjahr/Schuljahr)
+ *   `dataBase64` — das PDF, Base64-kodiert (wird in R2 archiviert)
+ *   `schedule`   — der im Admin-Browser geparste Stundenplan
  *
- * Der Server parst kein PDF mehr (CPU-Limit des Workers-Free-Plans), prüft die
+ * Bewusst JSON und kein Multipart: `request.formData()` scheiterte im Worker
+ * reproduzierbar auf iOS, während der JSON-Weg — den alle anderen Admin-Routen
+ * ohnehin benutzen — zuverlässig durchkommt.
+ *
+ * Der Server parst kein PDF (CPU-Limit des Workers-Free-Plans), prüft die
  * gelieferten Daten aber vollständig, bevor sie nach D1 gehen.
  */
+interface UploadPayload {
+  filename?: unknown;
+  dataBase64?: unknown;
+  schedule?: unknown;
+}
+
 export async function POST(request: Request): Promise<Response> {
   return withAdmin('POST /api/admin/uploads', async ({ env, db, auth }) => {
-    const contentType = request.headers.get('Content-Type') ?? '';
-    if (!contentType.includes('multipart/form-data')) {
-      return errorResponse('Ungültiger Content-Type. Erwartet wird multipart/form-data.', 400);
-    }
-
-    let formData: FormData;
-    try {
-      formData = await request.formData();
-    } catch (error) {
-      console.error('[uploads] Multipart-Daten konnten nicht gelesen werden:', error);
+    const payload = await readJsonBody<UploadPayload>(request);
+    if (!payload) {
       return errorResponse('Der Upload konnte nicht gelesen werden. Bitte erneut versuchen.', 400);
     }
 
-    const file = formData.get('file');
-    const rawSchedule = formData.get('schedule');
-
-    if (!(file instanceof File)) {
-      return errorResponse('Keine PDF-Datei im Upload gefunden.', 400);
+    const filename = typeof payload.filename === 'string' ? payload.filename.trim() : '';
+    if (!filename) {
+      return errorResponse('Der Dateiname fehlt im Upload.', 400);
     }
-    if (!file.name.toLowerCase().endsWith('.pdf')) {
+    if (!filename.toLowerCase().endsWith('.pdf')) {
       return errorResponse('Nur PDF-Dateien sind erlaubt.', 400);
     }
-    if (file.size > MAX_PDF_SIZE) {
-      return errorResponse(`Datei zu groß. Maximum: ${MAX_PDF_SIZE / 1024 / 1024} MB.`, 400);
+    if (typeof payload.dataBase64 !== 'string' || !payload.dataBase64) {
+      return errorResponse('Die PDF-Datei fehlt im Upload.', 400);
     }
-    if (typeof rawSchedule !== 'string') {
-      return errorResponse('Die ausgewerteten Stundenplan-Daten fehlen im Upload.', 400);
+
+    let pdfBytes: Uint8Array;
+    try {
+      pdfBytes = base64ToBytes(payload.dataBase64);
+    } catch (error) {
+      console.error('[uploads] Base64-Daten konnten nicht dekodiert werden:', error);
+      return errorResponse('Die PDF-Datei konnte nicht gelesen werden. Bitte erneut versuchen.', 400);
+    }
+
+    if (pdfBytes.byteLength > MAX_PDF_SIZE) {
+      return errorResponse(`Datei zu groß. Maximum: ${MAX_PDF_SIZE / 1024 / 1024} MB.`, 400);
     }
 
     let schedule;
     try {
-      schedule = validateSchedule(JSON.parse(rawSchedule));
+      schedule = validateSchedule(payload.schedule);
     } catch (error) {
       if (error instanceof ScheduleValidationError) {
         return errorResponse(error.message, 400);
       }
-      return errorResponse('Die Stundenplan-Daten sind kein gültiges JSON.', 400);
+      return errorResponse('Die Stundenplan-Daten sind ungültig.', 400, describeError(error));
     }
 
-    const pdfData = await file.arrayBuffer();
-    const header = String.fromCharCode(...new Uint8Array(pdfData.slice(0, 5)));
+    const header = String.fromCharCode(...pdfBytes.subarray(0, 5));
     if (!header.startsWith('%PDF')) {
       return errorResponse('Die Datei ist kein gültiges PDF.', 400);
     }
 
-    const meta = parseTimetableFilename(file.name);
-    const r2Key = buildR2Key(file.name);
+    const meta = parseTimetableFilename(filename);
+    const r2Key = buildR2Key(filename);
 
     try {
-      await env.STORAGE.put(r2Key, pdfData, {
+      await env.STORAGE.put(r2Key, pdfBytes, {
         httpMetadata: { contentType: 'application/pdf' },
-        customMetadata: { originalFilename: toAsciiMetadata(file.name) },
+        customMetadata: { originalFilename: toAsciiMetadata(filename) },
       });
     } catch (error) {
       console.error('[uploads] PDF konnte nicht in R2 abgelegt werden:', error);
-      return errorResponse('Die PDF-Datei konnte nicht gespeichert werden.', 500);
+      return errorResponse('Die PDF-Datei konnte nicht gespeichert werden.', 500, describeError(error));
     }
 
     let upload: TimetableUpload | null = null;
@@ -108,9 +118,9 @@ export async function POST(request: Request): Promise<Response> {
          VALUES (?, ?, ?, ?, ?, ?, ?, 'parsed', datetime('now'), ?)
          RETURNING *`
       ).bind(
-        file.name,
+        filename,
         r2Key,
-        pdfData.byteLength,
+        pdfBytes.byteLength,
         meta?.kw ?? null,
         normalizeHalfYear(meta?.halfYear),
         meta?.yearStart ?? null,
@@ -121,7 +131,9 @@ export async function POST(request: Request): Promise<Response> {
       console.error('[uploads] INSERT in timetable_uploads fehlgeschlagen:', error);
       // R2-Objekt nicht verwaisen lassen, wenn der DB-Insert scheitert.
       await env.STORAGE.delete(r2Key).catch(() => undefined);
-      return errorResponse('Der Upload konnte nicht in der Datenbank angelegt werden.', 500);
+      return errorResponse(
+        'Der Upload konnte nicht in der Datenbank angelegt werden.', 500, describeError(error),
+      );
     }
 
     if (!upload) {
@@ -138,13 +150,13 @@ export async function POST(request: Request): Promise<Response> {
          SET status = 'error', parse_error = ?, updated_at = datetime('now')
          WHERE id = ?`
       ).bind('Die Stunden konnten nicht gespeichert werden.', upload.id).run();
-      return errorResponse('Die Stunden konnten nicht gespeichert werden.', 500);
+      return errorResponse('Die Stunden konnten nicht gespeichert werden.', 500, describeError(error));
     }
 
     const summary = summarizeSchedule(schedule);
     await logAudit(
       db, auth.userId, 'upload', 'timetable', upload.id,
-      `${file.name}: ${summary.classes} Klassen, ${summary.entries} Stunden`,
+      `${filename}: ${summary.classes} Klassen, ${summary.entries} Stunden`,
     );
 
     return jsonResponse({ ...upload, ...summary }, 201);

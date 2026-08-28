@@ -14,8 +14,20 @@ export function jsonResponse(data: unknown, status = 200, headers?: Record<strin
   });
 }
 
-export function errorResponse(message: string, status = 400): Response {
-  return jsonResponse({ error: message }, status);
+/**
+ * `detail` ist die technische Ursache in Klartext. Sie steht nur in Antworten
+ * hinter `withAdmin()`, wird also ausschließlich einem angemeldeten Admin
+ * gezeigt — und erspart eine Deploy-Runde, wenn eine Meldung allein nicht
+ * verrät, woran es lag.
+ */
+export function errorResponse(message: string, status = 400, detail?: string): Response {
+  return jsonResponse(detail ? { error: message, detail } : { error: message }, status);
+}
+
+/** Kurzfassung eines unbekannten Fehlers für das `detail`-Feld. */
+export function describeError(error: unknown): string {
+  const text = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+  return text.slice(0, 300);
 }
 
 /**
