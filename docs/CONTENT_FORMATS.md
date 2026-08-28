@@ -20,11 +20,15 @@ und niemanden aus der IT:
 > Früher lagen diese Werte als Dateien unter `public/content/`. Das ist vorbei —
 > die Dateien gibt es nicht mehr, alles steht jetzt in der Datenbank.
 
+Für den Anfang liegt eine fertige Vorlage mit deutschen Beispieltexten unter
+[`docs/tagesmeldungen.json`](tagesmeldungen.json). Ihren Inhalt kannst du komplett
+in das Feld *Tagesmeldungen* kopieren und dann anpassen.
+
 ---
 
 ## 1) Tagesmeldungen
 
-### Wofür ist die Datei?
+### Wofür ist das Feld?
 
 Die App zeigt auf der Startseite kurze Meldungen an, die zur Situation passen — z. B. morgens vor dem Unterricht, in der Pause, am Wochenende oder in den Ferien. Diese Texte trägst du im Feld *Tagesmeldungen* ein.
 
@@ -43,7 +47,7 @@ Die App wählt automatisch die passende Kategorie je nach Tageszeit und Situatio
 
 In jeder Kategorie kannst du **mehrere Texte** eintragen. Die App wählt dann zufällig einen davon aus.
 
-### So sieht die Datei aus
+### So sieht der Inhalt aus
 
 ```json
 {
@@ -114,7 +118,7 @@ Unterhalb von `"standard"` gibt es einen Bereich `"klassen"`, in dem du Texte f�
 
 ### Hinweis-Felder (`_hinweis`)
 
-In der Datei findest du Einträge, die mit `_hinweis` beginnen, z. B.:
+In der Vorlage findest du Einträge, die mit `_hinweis` beginnen, z. B.:
 
 ```json
 "_hinweis": "Tagesmeldungen für Startseite..."
@@ -193,11 +197,14 @@ Achte darauf, dass nach jeder Zeile (außer der letzten) ein **Komma** steht.
 
 ## 3) Tipps für sicheres Bearbeiten
 
-1. **Mache immer eine Sicherheitskopie**, bevor du etwas änderst. Kopiere die Datei einfach und benenne die Kopie z. B. `messages_backup.json`.
+1. **Mache immer eine Sicherheitskopie**, bevor du etwas änderst. Markiere den
+   gesamten Feldinhalt, kopiere ihn und sichere ihn außerhalb der App — etwa in
+   einer Textdatei. Ein Speichern überschreibt den bisherigen Stand; die App hält
+   keine frühere Fassung vor.
 
 2. **Prüfe deine Änderungen** mit einem Online-JSON-Prüfer:
    - Öffne [jsonlint.com](https://jsonlint.com)
-   - Kopiere den gesamten Inhalt der Datei in das Textfeld
+   - Kopiere den gesamten Feldinhalt in das Textfeld
    - Klicke auf **Validate JSON**
    - Wenn „Valid JSON" erscheint, ist alles in Ordnung
    - Wenn ein Fehler angezeigt wird, steht dabei die Zeilennummer — dort liegt das Problem

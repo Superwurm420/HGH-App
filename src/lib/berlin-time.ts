@@ -87,9 +87,15 @@ const WEEKDAY_MAP: Record<string, Weekday> = {
 /**
  * Der heutige Wochentag als Stundenplan-Code.
  * Am Wochenende gibt es keine Spalte im Plan — dann zeigen wir Montag.
+ *
+ * Auf die ersten beiden Buchstaben gekürzt: Im kombinierten Datums-/Zeit-Format
+ * hängt `de-DE` an den Kurznamen einen Punkt an („Fr." statt „Fr"). Das
+ * Nachschlagen mit dem ungekürzten Wert traf deshalb nie zu — und der Plan
+ * zeigte an jedem Wochentag den Montag.
  */
 export function weekdayForToday(date: Date = new Date()): Weekday {
-  return WEEKDAY_MAP[getBerlinNowParts(date).weekdayShort] ?? 'MO';
+  const short = getBerlinNowParts(date).weekdayShort.slice(0, 2);
+  return WEEKDAY_MAP[short] ?? 'MO';
 }
 
 // ── Deutsches Datum ──────────────────────────────────────────────────────────

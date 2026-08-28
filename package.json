@@ -6,7 +6,6 @@
     "dev": "node scripts/prebuild.mjs && next dev",
     "build": "opennextjs-cloudflare build",
     "build:next": "node scripts/prebuild.mjs && next build",
-    "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test:unit": "vitest run",

@@ -4,14 +4,20 @@
 const BUILD_VERSION = '__BUILD_VERSION__';
 const CACHE = 'hgh-pwa-v3-' + BUILD_VERSION;
 
-// HTML-Routen: network-first (immer frische Inhalte wenn online)
-const HTML_ROUTES = ['/', '/stundenplan', '/woche', '/weiteres', '/pinnwand'];
-const HTML_SET = new Set(HTML_ROUTES);
+// Routen, die bei der Installation vorgeladen werden, damit die App auch
+// offline startet.
+const PRECACHE_ROUTES = ['/', '/stundenplan', '/woche', '/weiteres', '/pinnwand'];
+
+// HTML-Routen: network-first (immer frische Inhalte wenn online).
+// /tv gehört dazu, aber nicht in den Precache: Der Wandbildschirm läuft im
+// Dauerbetrieb und braucht frische Seiten — vorladen müssten sie dafür aber
+// alle Schülergeräte, die die TV-Ansicht nie öffnen.
+const HTML_SET = new Set([...PRECACHE_ROUTES, '/tv']);
 
 // ── Install: Kern-Routen precachen ──────────────────────────────────────────
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(HTML_ROUTES))
+    caches.open(CACHE).then((cache) => cache.addAll(PRECACHE_ROUTES))
   );
   // Sofort aktivieren, ohne auf das Schließen aller Tabs zu warten
   self.skipWaiting();
