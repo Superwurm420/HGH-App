@@ -9,32 +9,40 @@
  * `getDocument` wird injiziert, damit die Funktion selbst keine pdfjs-Variante
  * festlegt und in Tests ohne echtes PDF geprüft werden kann.
  *
- * ── Vorgehen ────────────────────────────────────────────────────────
- * Das PDF ist ein Excel-Export: eine Tabelle mit einer Zeit-/Tagsspalte links
- * und je Klasse einer Spaltengruppe aus Fach und Raum. pdfjs liefert davon nur
- * lose Textschnipsel mit Koordinaten — kein Raster, keine Zelle, keine Linie.
+ * ── Zwei Wege ───────────────────────────────────────────────────────
  *
- * Der Parser baut das Raster deshalb selbst auf, und zwar aus den Daten statt
- * aus festen Annahmen:
+ * **1. Das gezeichnete Raster.** Der Plan ist ein Excel-Export, und Excel
+ * zeichnet die Zellrahmen als Striche ins PDF. Daraus lässt sich die Tabelle
+ * exakt zurückgewinnen: Spalten, Zeilen und vor allem **verbundene Zellen**.
+ * Damit ist ohne Raten klar, was ein Raum ist (es steht in der Raumspalte),
+ * welche Stunden zusammengehören (die Raumzelle reicht über beide), wo ein Tag
+ * endet (die Tagesspalte ist je Tag eine Zelle) und für welche Klassen ein
+ * Sondertermin gilt (seine Zelle reicht über deren Spalten). Siehe
+ * `pdf-grid.ts` und `parse-grid.ts`.
  *
- * 1. Textschnipsel zu Zeilen bündeln (gleiche Höhe = eine Zeile).
- * 2. Stundenzeilen an der Zeitspalte erkennen („3. 9.50 - 11.20").
- * 3. Die Kopfzeile ist alles oberhalb der ersten Stundenzeile — dort stehen die
- *    Klassen.
- * 4. Spalten aus den **senkrechten Lücken** im Textbild ableiten. Jede Klasse
- *    bekommt so ihre Fach- und (falls vorhanden) ihre Raumspalte. Das ersetzt
- *    das frühere Raten anhand des Buchstabens „R" im Kopf: fehlte der, rutschte
- *    die Raumnummer still in den Fachnamen.
- * 5. Tage an den **Neustarts der Stundenzählung** trennen (nach der 8. wieder
- *    die 1.). Früher musste dafür wörtlich „1." und „8.00" in einer Zeile
- *    stehen — ein Tag, der später beginnt, fiel damit ganz weg.
- * 6. Je Klasse und Stundenfeld die Schnipsel einsammeln und erst am Ende
- *    entscheiden, was Fach, Lehrkraft und Raum ist.
+ * **2. Das Textbild.** Zeichnet ein PDF keine Tabelle, bleiben nur die
+ * Textschnipsel mit ihren Koordinaten. Dann leitet der Parser das Raster aus
+ * den senkrechten Lücken zwischen den Texten ab, trennt die Tage am Neustart
+ * der Stundenzählung und entscheidet anhand der Zeile in der Zelle, was Fach
+ * und was Lehrkraft ist. Das ist der Rückfall — ungenauer, aber es rettet den
+ * Upload, wenn der Plan einmal anders exportiert wird.
  *
  * Was der Parser nicht sicher wissen kann, meldet er als Warnung zurück statt
  * es zu erraten — die Redaktion sieht das vor dem Hochladen.
  */
 
+import {
+  isNoValue,
+  isRoomValue,
+  isTeacherValue,
+  joinCellText,
+  mergeTimeRange,
+  normalizeTimeRange,
+  stripNoValues,
+  tidyRoom,
+} from './cell-values';
+import { parseGridPage, type GridTextItem } from './parse-grid';
+import { extractSegments, TableGrid, type PdfOperatorList, type PdfOperators } from './pdf-grid';
 import { LessonEntry, ParsedSchedule, Weekday, WeekPlan, WEEKDAYS } from './types';
 
 // ── Der Ausschnitt von pdfjs, den wir benutzen ──────────────────────
@@ -48,6 +56,7 @@ interface PdfTextItem {
 
 interface PdfPage {
   getTextContent(): Promise<{ items: PdfTextItem[] }>;
+  getOperatorList?(): Promise<PdfOperatorList>;
 }
 
 interface PdfDocument {
@@ -60,6 +69,12 @@ export type PdfGetDocument = (params: {
   verbosity?: number;
 }) => { promise: Promise<PdfDocument> };
 
+export interface ParseOptions {
+  verbosity?: number;
+  /** `pdfjs.OPS` — ohne diese Werte lassen sich die Zeichenbefehle nicht deuten. */
+  ops?: PdfOperators;
+}
+
 /** Ergebnis einer Auswertung — Plan plus alles, was unsicher blieb. */
 export interface TimetableParseResult {
   schedule: ParsedSchedule;
@@ -68,6 +83,8 @@ export interface TimetableParseResult {
   /** Wie viele Seiten das PDF hat und wie viele davon einen Plan enthielten. */
   pages: number;
   pagesWithSchedule: number;
+  /** Wurde das gezeichnete Tabellenraster genutzt oder nur das Textbild? */
+  source: 'raster' | 'textbild' | 'gemischt';
 }
 
 // ── Muster ──────────────────────────────────────────────────────────
@@ -78,62 +95,8 @@ const DAY_SET = new Set<string>(WEEKDAYS);
 /** „3. 9.50 - 11.20" am Anfang der Zeitspalte. */
 const PERIOD_ROW_PATTERN = /^(\d{1,2})\.\s*(\d{1,2}[.:]\d{2})\s*[-–—]\s*(\d{1,2}[.:]\d{2})/;
 
-/** Excel-Fehlerwerte, die im Export als Text ankommen. */
-const NO_VALUE_PATTERN = /^#(NV|N\/A|WERT!|REF!|BEZUG!|DIV\/0!|NAME\?|ZAHL!|LEER!)$/i;
-const NO_VALUE_GLOBAL = /#(NV|N\/A|WERT!|REF!|BEZUG!|DIV\/0!|NAME\?|ZAHL!|LEER!)/gi;
-
-/**
- * Ein Raumkürzel. Bewusst weiter als früher (nur Ziffern und „BS"): der Plan
- * kennt auch „T1", „W1", „BS". Entscheidend ist die Ziffer oder ein bekanntes
- * Kürzel — dadurch bleiben Lehrerkürzel wie „STI" oder „BÜ" außen vor.
- */
-const ROOM_TOKEN_PATTERN = /^(?:\d{1,3}[A-ZÄÖÜ]?|[A-ZÄÖÜ]{1,3}\d{1,3}[A-ZÄÖÜ]?|BS|TH|AULA|SPH)$/i;
-
-/** Ein Lehrerkürzel: zwei bis sechs Großbuchstaben, mehrere per „/" verbunden. */
-const TEACHER_TOKEN_PATTERN = /^[A-ZÄÖÜ]{2,6}$/;
-
 const MAX_PAGES = 12;
 const MAX_WARNINGS = 15;
-
-// ── Kleine Prüfungen auf Zellinhalte ────────────────────────────────
-
-function isNoValue(value: string): boolean {
-  const trimmed = (value ?? '').trim();
-  return !trimmed || NO_VALUE_PATTERN.test(trimmed);
-}
-
-function stripNoValues(value: string): string {
-  return (value ?? '').replace(NO_VALUE_GLOBAL, ' ').replace(/\s+/g, ' ').trim();
-}
-
-function splitTokens(value: string, separator: RegExp): string[] {
-  return (value ?? '').split(separator).map((token) => token.trim()).filter(Boolean);
-}
-
-function isRoomValue(value: string): boolean {
-  const tokens = splitTokens(value, /[\s/+]+/);
-  if (tokens.length === 0 || tokens.length > 4) return false;
-  if (!tokens.some((token) => !isNoValue(token))) return false;
-  return tokens.every((token) => isNoValue(token) || ROOM_TOKEN_PATTERN.test(token));
-}
-
-function isTeacherValue(value: string): boolean {
-  const tokens = splitTokens(value, /[\s/]+/);
-  if (tokens.length === 0 || tokens.length > 4) return false;
-  return tokens.every((token) => TEACHER_TOKEN_PATTERN.test(token));
-}
-
-/** „12.25- 13.10" und „8.00 – 8.45" auf eine Schreibweise bringen. */
-function normalizeTimeRange(value: string): string {
-  const match = value.match(/^(\d{1,2}[.:]\d{2})\s*[-–—]\s*(\d{1,2}[.:]\d{2})/);
-  return match ? `${match[1]} - ${match[2]}` : value.trim();
-}
-
-function mergeTimeRange(from: string, to: string): string {
-  const start = from.match(/^(\d{1,2}[.:]\d{2})/);
-  const end = to.match(/(\d{1,2}[.:]\d{2})\s*$/);
-  return start && end ? `${start[1]} - ${end[1]}` : from;
-}
 
 // ── Geometrie: Zeilen und Spalten aus Koordinaten ───────────────────
 
@@ -475,25 +438,9 @@ function readCell(cell: Cell, hasRoomColumn: boolean): CellValues {
     }
   }
 
-  if (room) {
-    const tokens = splitTokens(room, /\s+/);
-    const deduped: string[] = [];
-    for (const token of tokens) if (!deduped.includes(token)) deduped.push(token);
-    room = deduped.join(' ');
-  }
+  if (room) room = tidyRoom(room);
 
   return { text: text || undefined, room: room || undefined };
-}
-
-/**
- * Zwei Zeilen einer Zelle zu einem Text verbinden. Ein Trennstrich am Ende der
- * ersten Zeile ist ein Umbruch mitten im Wort („Freihand-" / „zeichnen").
- */
-function joinCellText(first: string, second: string): string {
-  if (!first) return second;
-  if (!second) return first;
-  if (first.endsWith('-')) return `${first.slice(0, -1)}${second}`;
-  return `${first} ${second}`;
 }
 
 /**
@@ -947,19 +894,22 @@ function mergeSchedules(target: ParsedSchedule, source: ParsedSchedule): void {
 export async function parseTimetablePdf(
   pdfData: ArrayBuffer,
   getDocument: PdfGetDocument,
-  verbosityLevel?: number,
+  options: ParseOptions = {},
 ): Promise<TimetableParseResult> {
   const data = new Uint8Array(pdfData);
-  const doc = await getDocument({ data, verbosity: verbosityLevel ?? 0 }).promise;
+  const doc = await getDocument({ data, verbosity: options.verbosity ?? 0 }).promise;
 
   const pages = Math.max(1, Math.min(doc.numPages ?? 1, MAX_PAGES));
   const schedule: ParsedSchedule = {};
   const warnings: string[] = [];
   let pagesWithSchedule = 0;
+  let gridPages = 0;
+  let textPages = 0;
 
   for (let pageNumber = 1; pageNumber <= pages; pageNumber++) {
     const page = await doc.getPage(pageNumber);
     const content = await page.getTextContent();
+    const label = pages > 1 ? `Seite ${pageNumber}: ` : '';
 
     const items: TextItem[] = content.items
       .map((item) => ({
@@ -974,9 +924,21 @@ export async function parseTimetablePdf(
 
     if (items.length === 0) continue;
 
+    // Zuerst das gezeichnete Raster — nur wenn das PDF keines hergibt, wird
+    // aus dem Textbild geschätzt.
+    const fromGrid = await readGrid(page, items as GridTextItem[], label, options.ops);
+    if (fromGrid) {
+      gridPages += 1;
+      pagesWithSchedule += 1;
+      warnings.push(...fromGrid.warnings);
+      mergeSchedules(schedule, fromGrid.schedule);
+      continue;
+    }
+
     const result = parsePage(items, pageNumber, pages);
     warnings.push(...result.warnings);
     if (result.hasSchedule) {
+      textPages += 1;
       pagesWithSchedule += 1;
       mergeSchedules(schedule, result.schedule);
     }
@@ -993,13 +955,42 @@ export async function parseTimetablePdf(
   if (pages > 1 && pagesWithSchedule < pages) {
     warnings.push(`${pages - pagesWithSchedule} von ${pages} Seiten enthielten keinen Stundenplan.`);
   }
+  if (textPages > 0 && gridPages === 0) {
+    warnings.push(
+      'Das PDF enthält keine gezeichnete Tabelle — der Plan wurde aus der Lage der Texte geschätzt. Bitte besonders sorgfältig prüfen.',
+    );
+  }
 
   return {
     schedule,
     warnings: warnings.slice(0, MAX_WARNINGS),
     pages,
     pagesWithSchedule,
+    source: gridPages > 0 && textPages > 0 ? 'gemischt' : gridPages > 0 ? 'raster' : 'textbild',
   };
+}
+
+/** Versucht, die Seite über ihr gezeichnetes Tabellenraster zu lesen. */
+async function readGrid(
+  page: PdfPage,
+  items: GridTextItem[],
+  label: string,
+  ops?: PdfOperators,
+): Promise<{ schedule: ParsedSchedule; warnings: string[] } | null> {
+  if (!ops || typeof page.getOperatorList !== 'function') return null;
+
+  try {
+    const list = await page.getOperatorList();
+    const grid = TableGrid.fromSegments(extractSegments(list, ops));
+    if (!grid) return null;
+
+    const result = parseGridPage(grid, items, label);
+    return result ? { schedule: result.schedule, warnings: result.warnings } : null;
+  } catch {
+    // Ein unbekanntes Format der Zeichenbefehle darf den Upload nicht kippen —
+    // dann eben über das Textbild.
+    return null;
+  }
 }
 
 /**

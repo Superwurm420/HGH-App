@@ -8,6 +8,10 @@ import { WEEKDAYS } from './types';
  * Ein ganzer Wochenplan der Schule, aus den Zellen wieder zu einem PDF-Textbild
  * gezeichnet und zurückgelesen.
  *
+ * Hier wird bewusst **nur der Text** gezeichnet, keine Tabelle: geprüft wird
+ * damit der Rückfallweg, der greift, wenn ein PDF keine Zellrahmen mitbringt
+ * (den Regelfall über das gezeichnete Raster deckt parse-grid.test.ts ab).
+ *
  * Der Parser scheitert erfahrungsgemäß nicht an einzelnen Regeln, sondern an
  * der Größe: sieben Klassenspalten nebeneinander, dazwischen schmale
  * Raumspalten, eine Klasse ganz ohne Unterricht, Blöcke über den ganzen Tag.
@@ -123,9 +127,12 @@ describe('Ganze Planwoche', () => {
     expect(lessons.filter((lesson) => lesson.subject === 'MEL' || lesson.subject === 'STI')).toEqual([]);
   });
 
-  it('meldet für eine saubere Woche keine Warnungen', async () => {
-    const { warnings } = await parseTimetablePdf(new ArrayBuffer(0), fakePdf(renderWeek(ZELLEN)));
+  it('weist darauf hin, dass ohne Tabelle nur geschätzt werden konnte', async () => {
+    const { warnings, source } = await parseTimetablePdf(new ArrayBuffer(0), fakePdf(renderWeek(ZELLEN)));
 
-    expect(warnings).toEqual([]);
+    expect(source).toBe('textbild');
+    expect(warnings).toEqual([
+      'Das PDF enthält keine gezeichnete Tabelle — der Plan wurde aus der Lage der Texte geschätzt. Bitte besonders sorgfältig prüfen.',
+    ]);
   });
 });

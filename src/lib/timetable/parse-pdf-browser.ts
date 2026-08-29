@@ -5,6 +5,8 @@ interface PdfJsModule {
   getDocument: PdfGetDocument;
   GlobalWorkerOptions: { workerSrc: string };
   VerbosityLevel?: { ERRORS?: number };
+  /** Die Zeichenbefehle — nötig, um das Tabellenraster aus dem PDF zu lesen. */
+  OPS?: Record<string, number>;
 }
 
 /**
@@ -46,5 +48,8 @@ export async function parseTimetableFileInBrowser(file: File): Promise<Timetable
   const pdfjs = await loadPdfJs();
   const data = await file.arrayBuffer();
 
-  return parseTimetablePdf(data, pdfjs.getDocument, pdfjs.VerbosityLevel?.ERRORS ?? 0);
+  return parseTimetablePdf(data, pdfjs.getDocument, {
+    verbosity: pdfjs.VerbosityLevel?.ERRORS ?? 0,
+    ops: pdfjs.OPS,
+  });
 }

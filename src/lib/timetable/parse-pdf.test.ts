@@ -30,6 +30,10 @@ describe('parseTimetableFilename', () => {
 
 // ── Nachbau eines echten Stundenplan-PDFs ───────────────────────────
 //
+// Gezeichnet wird hier nur der Text, keine Tabelle — geprüft wird damit der
+// Rückfallweg über das Textbild. Den Regelfall über das gezeichnete Raster
+// deckt parse-grid.test.ts ab.
+//
 // Maße und Aufbau stammen aus den Plänen der Schule: links Tag, Stundennummer
 // und Zeit, rechts je Klasse eine Fachspalte und eine schmale Raumspalte.
 // Eine Doppelstunde belegt zwei Zeilen — Fach oben, Lehrerkürzel darunter.

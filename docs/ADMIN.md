@@ -242,6 +242,10 @@ Diese Meldung kommt direkt nach dem Auswählen der Datei, noch vor dem Hochladen
 
 Mehrere Seiten sind kein Problem — alle Seiten werden ausgewertet und zusammengeführt.
 
+Steht in der Vorschau der Hinweis, das PDF enthalte **keine gezeichnete
+Tabelle**, wurde der Plan nur anhand der Lage der Texte geschätzt. Er stimmt
+dann meistens, aber nicht sicher — sieh ihn in dem Fall besonders genau durch.
+
 ### Die Vorschau meldet etwas zum Prüfen
 
 Findet die Auswertung eine Stelle, bei der sie sich nicht sicher ist, steht das als

@@ -128,18 +128,42 @@ Das ist kein Stilfrage, sondern notwendig: Ein `fetch('/api/…')` mit relativer
 
 Der Workers-Free-Plan erlaubt **10 ms CPU-Zeit pro Request** — das Auswerten eines Stundenplan-PDFs liegt weit darüber. Deshalb:
 
-- `src/lib/timetable/parse-pdf.ts` ist der reine Parser; `getDocument` wird injiziert (dadurch ohne echtes PDF testbar). Er gibt neben dem Plan **Warnungen** zurück — unsichere Stellen werden gemeldet, nicht geraten, und stehen in der Upload-Vorschau.
+- `parse-pdf.ts` ist der Einstieg; `getDocument` wird injiziert (dadurch ohne echtes PDF testbar). Zurück kommt neben dem Plan eine Liste **Warnungen** — unsichere Stellen werden gemeldet, nicht geraten, und stehen in der Upload-Vorschau.
 - `parse-pdf-browser.ts` lädt pdfjs **zur Laufzeit** aus `public/pdfjs/` (Import über eine Variable, damit kein Bundler die 1,5 MB einbaut) und ruft den Parser auf.
 - Der Server parst nichts, **validiert aber vollständig** (`validateSchedule`): Klassencode-Muster, Wochentage, Stundennummern, Textlängen, Mengen.
 
 **Dateinamen-Konvention**: `Stundenplan_kw_XX_HjY_YYYY_YY.pdf` (KW, Halbjahr, Schuljahr).
 
-**Wie der Parser das Raster findet**: pdfjs liefert nur Textschnipsel mit
-Koordinaten. Das Spaltenraster wird deshalb aus den **senkrechten Lücken im
-Textbild** abgeleitet — jede Klasse bekommt so ihre Fach- und ihre Raumspalte,
-ohne dass ein „R" im Kopf stehen muss. Die Tage trennt der **Neustart der
-Stundenzählung**, nicht ein fest erwartetes „1. 8.00". Beides war vorher an feste
-Annahmen geknüpft, die je nach Woche mal zutrafen und mal nicht.
+#### Wie der Parser die Tabelle liest
+
+Der Plan ist ein Excel-Export, und Excel **zeichnet die Zellrahmen** ins PDF.
+Über `getOperatorList()` sind diese Striche auslesbar — damit muss nichts
+geraten werden:
+
+| Frage | Antwort aus dem Raster |
+|---|---|
+| Was ist ein Raum? | Was in der Spalte unter „R" steht |
+| Welche Stunden gehören zusammen? | So weit, wie die Zelle reicht |
+| Wo endet ein Tag? | Die Tagesspalte ist je Tag **eine** verbundene Zelle |
+| Für wen gilt ein Sondertermin? | Für die Klassen, über deren Spalten seine Zelle reicht |
+
+Das ist entscheidend, weil sich sonst nichts davon sicher sagen lässt: Die
+Raumnummer sitzt mittig in der verbundenen Zelle und landet je nach Zeilenhöhe
+mal auf der Fach-, mal auf der Lehrerzeile; ein Sondertermin steht zentriert in
+einer Zelle über mehrere Klassen. Aus den Textabständen allein war beides nicht
+zu unterscheiden.
+
+- `pdf-grid.ts` — Zeichenbefehle → Linien → Zellen (reine Geometrie).
+- `parse-grid.ts` — Zellen → Stundenplan.
+- `cell-values.ts` — was ein Raum-, was ein Lehrerkürzel ist (nur die Form; **wo**
+  es steht, entscheidet `parse-grid.ts`).
+
+**Rückfall ohne Tabelle**: Bringt ein PDF keine Zellrahmen mit (oder ändert
+pdfjs das Format seiner Zeichenbefehle), leitet `parse-pdf.ts` das Raster aus den
+senkrechten Lücken im Textbild ab und trennt die Tage am Neustart der
+Stundenzählung. Das ist ungenauer und wird in der Vorschau ausdrücklich als
+Warnung gemeldet — aber der Upload bricht nicht ab. `result.source` sagt, welcher
+Weg gegriffen hat.
 
 Alle Seiten werden ausgewertet und zusammengeführt.
 
@@ -257,11 +281,14 @@ dem Deploy anzumelden.
 - **Vitest** (`npm run test:unit`), Testdateien als `*.test.ts` neben dem Quellcode.
 - Passwortregeln und Hashing sind in `src/server/auth.test.ts` abgedeckt.
 - Abgedeckt sind vor allem die Teile ohne Netz- und DB-Abhängigkeit: PDF-Parser (mit nachgebautem pdfjs-Dokument), Schema-Validierung der Upload-Daten, Gruppierung der Stundenplan-Zeilen, Klassenauswahl, Klassenfilter.
-- `real-week.test.ts` zeichnet eine **ganze echte Planwoche** (sieben Klassen,
-  `real-week.fixture.ts`) als PDF-Textbild und liest sie zurück. Der Parser
-  scheitert nicht an einzelnen Regeln, sondern an der Größe: viele Spalten
-  nebeneinander, eine Klasse ohne Unterricht, Blöcke über den ganzen Tag.
-  Der kleine Plan in `parse-pdf.test.ts` prüft die Regeln einzeln.
+- `parse-grid.test.ts` baut eine **gezeichnete Tabelle** nach (Linien und Text)
+  und prüft damit den Regelweg — inklusive verbundener Zellen für Sondertermine
+  und Blöcke.
+- `parse-pdf.test.ts` und `real-week.test.ts` zeichnen bewusst **nur Text** und
+  prüfen damit den Rückfallweg. `real-week.test.ts` nimmt dafür eine ganze echte
+  Planwoche (sieben Klassen, `real-week.fixture.ts`): der Parser scheitert nicht
+  an einzelnen Regeln, sondern an der Größe — viele Spalten nebeneinander, eine
+  Klasse ohne Unterricht, Blöcke über den ganzen Tag.
 - `announcements.test.ts` prüft Ablauf und Reihenfolge gegen eine nachgebaute D1 (`fakeDb`) mit fester Systemzeit — das deutsche Datumsformat lässt sich sonst nicht sinnvoll testen.
 
 ## Important Notes
