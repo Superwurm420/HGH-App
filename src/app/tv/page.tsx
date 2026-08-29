@@ -1,10 +1,10 @@
 import { Clock } from '@/components/ui/Clock';
+import { TimetableMeta } from '@/components/schedule/TimetableMeta';
 import { TvTimetableGrid } from '@/components/schedule/TvTimetableGrid';
 import { TvPageController } from '@/components/tv/TvPageController';
 import { TvSlideshow } from '@/components/tv/TvSlideshow';
 import { mediaUrl } from '@/lib/api/client';
 import { loadAnnouncements, loadAppSettings, loadSchedulePage, loadTvImages } from '@/server/page-data';
-import { formatBerlinDay } from '@/lib/berlin-time';
 
 export const dynamic = 'force-dynamic';
 
@@ -54,11 +54,11 @@ export default async function TvPage() {
             <Clock />
           </div>
 
-          {timetable.upload?.updated_at && (
-            <p className="text-sm text-muted">
-              Stand Stundenplan: {formatBerlinDay(timetable.upload.updated_at)}
-            </p>
-          )}
+          <TimetableMeta
+            upload={timetable.upload}
+            label="Stand Stundenplan"
+            className="text-sm text-muted"
+          />
         </article>
 
         <article className="tv-panel">

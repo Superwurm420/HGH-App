@@ -2,6 +2,7 @@
 
 const CLASS_KEY = 'hgh:selected-class';
 const THEME_KEY = 'hgh:theme';
+const TIMETABLE_VERSION_KEY = 'hgh:timetable-version';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -17,6 +18,19 @@ export function saveSelectedClass(value: string) {
 export function loadSelectedClass(): string | null {
   if (!hasStorage()) return null;
   return localStorage.getItem(CLASS_KEY);
+}
+
+// Der zuletzt gesehene Stundenplan-Stempel. Er liegt im Speicher und nicht nur
+// im Arbeitsspeicher, damit der Hinweis auch beim Start der App erscheint, wenn
+// der Plan zwischen zwei Besuchen gewechselt hat.
+export function saveSeenTimetableVersion(value: string) {
+  if (!hasStorage()) return;
+  localStorage.setItem(TIMETABLE_VERSION_KEY, value);
+}
+
+export function loadSeenTimetableVersion(): string | null {
+  if (!hasStorage()) return null;
+  return localStorage.getItem(TIMETABLE_VERSION_KEY);
 }
 
 // Das Farbschema wird an mehreren Stellen gelesen (Umschalter, TV-Ansicht) und

@@ -1,5 +1,6 @@
 import { getDb } from '@/server/env';
 import { jsonResponse, withErrorHandling } from '@/server/responses';
+import { loadActiveUpload } from '@/server/services/timetable';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,6 +11,10 @@ export const dynamic = 'force-dynamic';
  * neu, sobald sich der ETag ändert. Deshalb liefert er bewusst nur den Hash und
  * nicht den kompletten Stundenplan: Bei einem Bildschirm im Dauerbetrieb wären
  * das sonst über 1.400 Volldatenabfragen pro Tag und Gerät.
+ *
+ * `timetable` ist ein zweiter, engerer Stempel: Er ändert sich nur, wenn ein
+ * anderer Stundenplan aktiv wird oder der aktive sich ändert. Nur darauf zeigt
+ * die App einen Hinweis — eine bearbeitete Ankündigung ist keine Meldung wert.
  */
 export async function GET(request: Request): Promise<Response> {
   return withErrorHandling('GET /api/bootstrap', async () => {
@@ -35,7 +40,20 @@ export async function GET(request: Request): Promise<Response> {
       return new Response(null, { status: 304, headers: { ETag: etag, 'Cache-Control': 'no-cache' } });
     }
 
-    return jsonResponse({ version }, 200, { ETag: etag, 'Cache-Control': 'no-cache' });
+    const activeUpload = await loadActiveUpload(db);
+    const timetable = await hashString(
+      JSON.stringify(
+        activeUpload
+          ? {
+              id: activeUpload.id,
+              updated_at: activeUpload.updated_at,
+              calendar_week: activeUpload.calendar_week,
+            }
+          : {},
+      ),
+    );
+
+    return jsonResponse({ version, timetable }, 200, { ETag: etag, 'Cache-Control': 'no-cache' });
   });
 }
 

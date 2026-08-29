@@ -58,7 +58,7 @@ npm run setup:cloudflare # Cloudflare-Ersteinrichtung (D1, R2, Migration)
     ├── app/                   # Next.js App Router
     │   ├── page.tsx           # Startseite
     │   ├── layout.tsx
-    │   ├── stundenplan/ woche/ pinnwand/ weiteres/ tv/
+    │   ├── stundenplan/ woche/ pinnwand/ weiteres/ galerie/ tv/
     │   ├── admin/
     │   │   ├── page.tsx
     │   │   └── ui/            # AdminWorkspace + Tabs (Upload, Ankündigungen,
@@ -208,6 +208,7 @@ Alle Seiten werden ausgewertet und zusammengeführt.
 | `/woche` | Ganze Woche |
 | `/pinnwand` | Alle aktiven Ankündigungen |
 | `/weiteres` | Zusatzinfos, Links |
+| `/galerie` | Bildergalerie (dieselben Bilder wie die TV-Slideshow), verlinkt aus `/weiteres` |
 | `/tv` | Wandbildschirm — Uhr, Pinnwand, Bilder-Slideshow, Stundenplan-Raster |
 | `/admin` | Adminbereich |
 
@@ -215,7 +216,7 @@ Alle Seiten werden ausgewertet und zusammengeführt.
 
 | Endpoint | Methoden | Beschreibung |
 |---|---|---|
-| `/api/bootstrap` | GET | Versions-Hash mit ETag/304 — von `TimetableAutoRefresh` gepollt |
+| `/api/bootstrap` | GET | Versions-Hash mit ETag/304 — von `TimetableAutoRefresh` gepollt; `timetable` ist ein zweiter Stempel nur für den aktiven Plan |
 | `/api/timetable` | GET | Aktiver Stundenplan, optional `?klasse=` |
 | `/api/timetable/classes` | GET | Klassen im aktiven Plan |
 | `/api/announcements` | GET | Aktive Ankündigungen, optional `?klasse=` |
@@ -312,6 +313,13 @@ dem Deploy anzumelden.
   gibt es nicht — deshalb steht in `tailwind.config.ts`
   `darkMode: ['selector', ':root:not(.light)']`. Mit Tailwinds Standard griffe
   keine einzige `dark:`-Utility.
+- **Hinweise an den Nutzer nur beim Stundenplan**: `ServiceWorkerRegister`
+  aktualisiert die App still (neu geladen wird erst, wenn sie im Hintergrund
+  liegt) — ein App-Update ist nichts, wozu jemand entscheiden müsste. Gemeldet
+  wird ausschließlich ein neuer Stundenplan: `/api/bootstrap` liefert dafür
+  neben `version` einen engeren Stempel `timetable` (nur der aktive Upload), den
+  `TimetableAutoRefresh` gegen `hgh:timetable-version` aus dem `localStorage`
+  hält. Auf `/tv` bleibt der Hinweis aus — dort steht niemand, der ihn wegklickt.
 - D1 erlaubt **maximal 100 Statements pro `batch()`** — `storeSchedule()` teilt entsprechend auf.
 - **Tote Teile im Schema** (bewusst nicht migriert, weil ein Eingriff in die
   Live-Datenbank mehr Risiko wäre als Nutzen): die Tabelle `classes` wird nicht
