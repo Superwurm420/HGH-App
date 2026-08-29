@@ -1,6 +1,5 @@
 import Link from 'next/link';
 
-import { ClassSelector } from '@/components/schedule/ClassSelector';
 import { TodaySchedule } from '@/components/schedule/TodaySchedule';
 import { ClassFromStorage } from '@/components/schedule/ClassFromStorage';
 import { Countdown } from '@/components/ui/Countdown';
@@ -15,7 +14,7 @@ import {
   loadAppSettings,
   loadSchedulePage,
 } from '@/server/page-data';
-import { formatBerlinDay } from '@/lib/berlin-time';
+import { TimetableMeta } from '@/components/schedule/TimetableMeta';
 
 export const dynamic = 'force-dynamic';
 
@@ -63,9 +62,8 @@ export default async function HomePage({ searchParams }: PageProps) {
 
       <div className="home-dashboard">
         <div className="card surface">
-          <div className="mb-1">
-            <ClassSelector classes={timetable.classes} />
-          </div>
+          {/* Umgestellt wird auf den Reitern Tag und Woche — hier steht nur, was gilt. */}
+          <p className="text-sm text-muted mb-1">Klasse {selectedClass}</p>
 
           <div className="home-landscape-grid">
             <div className="home-landscape-info">
@@ -88,11 +86,7 @@ export default async function HomePage({ searchParams }: PageProps) {
             </div>
           </div>
 
-          {timetable.upload?.updated_at && (
-            <p className="meta-note">
-              Aktualisiert: {formatBerlinDay(timetable.upload.updated_at)}
-            </p>
-          )}
+          <TimetableMeta upload={timetable.upload} />
         </div>
 
         <div className="home-secondary-grid">

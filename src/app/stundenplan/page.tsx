@@ -1,8 +1,8 @@
 import { ClassFromStorage } from '@/components/schedule/ClassFromStorage';
 import { ClassSelector } from '@/components/schedule/ClassSelector';
 import { DayTimetable } from '@/components/schedule/DayTimetable';
+import { TimetableMeta } from '@/components/schedule/TimetableMeta';
 import { announcementsToEvents, loadAnnouncements, loadSchedulePage } from '@/server/page-data';
-import { formatBerlinDay } from '@/lib/berlin-time';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,11 +41,7 @@ export default async function StundenplanPage({ searchParams }: PageProps) {
           events={announcementsToEvents(announcements)}
         />
 
-        {timetable.upload?.updated_at && (
-          <p className="meta-note">
-            Aktualisiert: {formatBerlinDay(timetable.upload.updated_at)}
-          </p>
-        )}
+        <TimetableMeta upload={timetable.upload} />
       </div>
     </>
   );

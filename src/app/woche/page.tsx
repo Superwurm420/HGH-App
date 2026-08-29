@@ -1,8 +1,8 @@
 import { ClassFromStorage } from '@/components/schedule/ClassFromStorage';
 import { ClassSelector } from '@/components/schedule/ClassSelector';
+import { TimetableMeta } from '@/components/schedule/TimetableMeta';
 import { WeekSchedule } from '@/components/schedule/WeekSchedule';
 import { loadSchedulePage } from '@/server/page-data';
-import { formatBerlinDay } from '@/lib/berlin-time';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,11 +34,7 @@ export default async function WochePage({ searchParams }: PageProps) {
 
         <WeekSchedule week={timetable.entries[selectedClass]} todayKey={timetable.todayKey} />
 
-        {timetable.upload?.updated_at && (
-          <p className="meta-note">
-            Aktualisiert: {formatBerlinDay(timetable.upload.updated_at)}
-          </p>
-        )}
+        <TimetableMeta upload={timetable.upload} />
       </div>
     </>
   );

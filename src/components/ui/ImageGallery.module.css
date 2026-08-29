@@ -1,0 +1,100 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.tile {
+  position: relative;
+  display: block;
+  aspect-ratio: 1 / 1;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius2);
+  overflow: hidden;
+  background: var(--surface2);
+  cursor: pointer;
+  transition: transform 120ms ease;
+}
+
+@media (hover: hover) {
+  .tile:hover {
+    transform: scale(1.02);
+  }
+}
+
+.thumb {
+  /* Absolut, weil ein <img> mit height: 100% in einem Button mit
+     aspect-ratio je nach Browser nicht die volle Höhe bekommt. */
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: max(16px, env(safe-area-inset-top, 0px)) 16px
+    max(16px, env(safe-area-inset-bottom, 0px));
+  background: rgba(4, 7, 14, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.full {
+  max-width: 100%;
+  /* Platz für Leiste und Dateiname bleibt frei, sonst ragt das Bild darunter. */
+  max-height: calc(100% - 88px);
+  object-fit: contain;
+  border-radius: var(--radius2);
+}
+
+.caption {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 12px;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.control {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .control:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+}
+
+.close {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top, 0px));
+  right: 12px;
+}

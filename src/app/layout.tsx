@@ -3,7 +3,6 @@ import type { Metadata, Viewport } from 'next';
 import { ThemeScript } from '@/components/ui/ThemeScript';
 import { ServiceWorkerRegister } from '@/components/ui/ServiceWorkerRegister';
 import { TimetableAutoRefresh } from '@/components/ui/TimetableAutoRefresh';
-import { UpdateNotice } from '@/components/ui/UpdateNotice';
 import { Topbar } from '@/components/ui/Topbar';
 import { BottomNav } from '@/components/ui/BottomNav';
 
@@ -46,7 +45,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeScript />
         <ServiceWorkerRegister />
         <TimetableAutoRefresh />
-        <UpdateNotice />
         <a href="#inhalt" className="skip-link">Zum Inhalt springen</a>
         <div className="app-shell mx-auto w-full max-w-5xl px-4">
           <Topbar />

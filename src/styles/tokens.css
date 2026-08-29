@@ -15,7 +15,7 @@
 
   /* Höhe der schwebenden Navigationsleiste inkl. Abstand — damit Inhalte und
      eingeblendete Hinweise denselben Wert benutzen und nicht auseinanderlaufen. */
-  --nav-clearance: calc(102px + env(safe-area-inset-bottom, 0px));
+  --nav-clearance: calc(78px + env(safe-area-inset-bottom, 0px));
 
   color-scheme: dark;
 }

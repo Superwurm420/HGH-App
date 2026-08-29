@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 const LINKS = [
   {
     title: 'TV-Ansicht Eingangsbereich',
@@ -39,6 +41,16 @@ const INSTAGRAM = [
   { title: 'HT21', handle: '@usf_ht21', url: 'https://www.instagram.com/usf_ht21' },
   { title: 'HT22', handle: '@usf_ht22', url: 'https://www.instagram.com/usf_ht22' },
 ];
+
+function GalleryIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <circle cx="8.5" cy="9.5" r="1.5" />
+      <path d="M3 16l5-4 4 3 3-2 6 5" />
+    </svg>
+  );
+}
 
 function InstagramIcon() {
   return (
@@ -96,6 +108,20 @@ export default function WeiteresPage() {
               <span className="link-arrow" aria-hidden="true">{'\u2197'}</span>
             </a>
           ))}
+        </nav>
+      </div>
+
+      <div className="card surface mt-3">
+        <h2 className="section-title mb-3">Bilder</h2>
+        <nav className="space-y-2" aria-label="Bilder">
+          <Link className="link-card" href="/galerie">
+            <span className="link-icon" aria-hidden="true"><GalleryIcon /></span>
+            <div>
+              <div className="text-sm font-semibold">Bildergalerie</div>
+              <div className="text-xs text-muted">Fotos aus der Schule</div>
+            </div>
+            <span className="link-arrow" aria-hidden="true">{'\u2192'}</span>
+          </Link>
         </nav>
       </div>
 
