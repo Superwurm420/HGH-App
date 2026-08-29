@@ -39,7 +39,7 @@ Im Adminbereich gibt es fünf Bereiche:
 1. Wechsle zum Tab **Stundenplan**.
 2. Klicke auf **Durchsuchen** und wähle die PDF-Datei aus.
 3. Die Datei wird sofort ausgewertet — direkt hier im Browser, es wird noch nichts hochgeladen.
-4. **Prüfe die Vorschau**: Sie zeigt, wie viele Klassen und Stunden erkannt wurden und listet die Klassen auf. Sieht das falsch aus, klicke auf **Verwerfen**.
+4. **Prüfe die Vorschau**: Sie zeigt, wie viele Klassen und Stunden erkannt wurden. Klappe eine Klasse auf, um Tag für Tag zu sehen, welche Fächer, Lehrkräfte und Räume gelesen wurden. Sieht das falsch aus, klicke auf **Verwerfen**.
 5. Stimmt alles, klicke auf **Hochladen**.
 6. Klicke anschließend in der Liste auf **Aktivieren**.
 
@@ -237,14 +237,24 @@ IT-Betreuung weiter.
 Diese Meldung kommt direkt nach dem Auswählen der Datei, noch vor dem Hochladen.
 
 - Stelle sicher, dass es sich wirklich um eine PDF-Datei handelt (kein Foto, kein Scan)
-- Der Stundenplan muss auf der **ersten Seite** stehen
 - Die PDF muss echten Text enthalten. Ein eingescanntes Blatt ist nur ein Bild und kann nicht gelesen werden.
 - Versuche, die PDF neu zu exportieren (aus dem Programm, das den Stundenplan erstellt)
 
+Mehrere Seiten sind kein Problem — alle Seiten werden ausgewertet und zusammengeführt.
+
+### Die Vorschau meldet etwas zum Prüfen
+
+Findet die Auswertung eine Stelle, bei der sie sich nicht sicher ist, steht das als
+gelber Kasten in der Vorschau — zum Beispiel, wenn für eine Klasse kein einziger
+Raum erkannt wurde oder ein Wochentag fehlt. Der Plan lässt sich trotzdem
+hochladen; sieh die genannte Klasse vorher in der Vorschau durch.
+
 ### Die Vorschau zeigt zu wenige oder falsche Klassen
 
-Lade den Plan in diesem Fall **nicht** hoch, sondern klicke auf **Verwerfen** und
-gib der IT-Betreuung Bescheid — am besten zusammen mit der PDF-Datei.
+Klappe in der Vorschau die betroffene Klasse auf — dort steht Stunde für Stunde,
+was aus dem PDF gelesen wurde. Stimmt das nicht, lade den Plan **nicht** hoch,
+sondern klicke auf **Verwerfen** und gib der IT-Betreuung Bescheid — am besten
+zusammen mit der PDF-Datei.
 
 ### Änderungen sind nicht sichtbar
 

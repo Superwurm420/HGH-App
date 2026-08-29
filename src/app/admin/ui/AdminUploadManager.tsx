@@ -41,6 +41,86 @@ interface Preview {
   schedule: ParsedSchedule;
   classes: string[];
   lessons: number;
+  warnings: string[];
+}
+
+const DAY_LABELS: Record<string, string> = {
+  MO: 'Montag',
+  DI: 'Dienstag',
+  MI: 'Mittwoch',
+  DO: 'Donnerstag',
+  FR: 'Freitag',
+};
+
+/**
+ * Zeigt an, was aus dem PDF geworden ist — Stunde für Stunde.
+ *
+ * Ohne diese Ansicht ließ sich vor dem Hochladen nur die Zahl der Stunden
+ * prüfen; ob ein Raum im Fachnamen gelandet ist oder ein Tag fehlt, sah man
+ * erst hinterher in der App.
+ */
+function PreviewTable({ schedule }: { schedule: ParsedSchedule }) {
+  const [openClass, setOpenClass] = useState<string | null>(null);
+  const classes = Object.keys(schedule).sort();
+
+  return (
+    <div className="mt-3 space-y-1">
+      {classes.map((cls) => {
+        const week = schedule[cls];
+        const total = WEEKDAYS.reduce((sum, day) => sum + (week[day]?.length ?? 0), 0);
+        const isOpen = openClass === cls;
+
+        return (
+          <div key={cls} className="rounded border border-blue-200 bg-white/60 dark:border-blue-900 dark:bg-black/20">
+            <button
+              type="button"
+              onClick={() => setOpenClass(isOpen ? null : cls)}
+              className="flex w-full items-center justify-between px-2 py-1.5 text-left text-sm"
+            >
+              <span className="font-medium">{cls}</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {total} Stunden {isOpen ? '▾' : '▸'}
+              </span>
+            </button>
+
+            {isOpen && (
+              <div className="border-t border-blue-200 px-2 py-2 dark:border-blue-900">
+                {WEEKDAYS.map((day) => (
+                  <div key={day} className="mb-2 last:mb-0">
+                    <p className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">
+                      {DAY_LABELS[day]}
+                    </p>
+                    {(week[day]?.length ?? 0) === 0 ? (
+                      <p className="text-xs text-gray-400">— kein Unterricht —</p>
+                    ) : (
+                      <ul className="text-xs">
+                        {week[day].map((lesson, index) => (
+                          <li key={index} className="flex flex-wrap gap-x-2 py-0.5">
+                            <span className="w-14 shrink-0 tabular-nums text-gray-500 dark:text-gray-400">
+                              {lesson.period}
+                              {lesson.periodEnd ? `–${lesson.periodEnd}` : ''}.
+                            </span>
+                            <span className="w-24 shrink-0 tabular-nums text-gray-500 dark:text-gray-400">
+                              {lesson.time}
+                            </span>
+                            <span className="font-medium">{lesson.subject}</span>
+                            {lesson.detail && <span className="text-gray-500 dark:text-gray-400">{lesson.detail}</span>}
+                            {lesson.room && (
+                              <span className="text-gray-500 dark:text-gray-400">Raum {lesson.room}</span>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 function summarize(schedule: ParsedSchedule): { classes: string[]; lessons: number } {
@@ -101,7 +181,7 @@ export function AdminUploadManager() {
     setStatus(`${file.name} wird ausgewertet …`);
 
     try {
-      const schedule = await parseTimetableFileInBrowser(file);
+      const { schedule, warnings } = await parseTimetableFileInBrowser(file);
       const { classes, lessons } = summarize(schedule);
 
       if (classes.length === 0 || lessons === 0) {
@@ -109,7 +189,7 @@ export function AdminUploadManager() {
         return;
       }
 
-      setPreview({ file, schedule, classes, lessons });
+      setPreview({ file, schedule, classes, lessons, warnings });
       setStatus('Auswertung fertig. Bitte prüfen und dann hochladen.');
     } catch (error) {
       console.error(error);
@@ -194,6 +274,22 @@ export function AdminUploadManager() {
             <p className="mt-1 break-words text-blue-800 dark:text-blue-200">
               {preview.classes.join(' · ')}
             </p>
+
+            {preview.warnings.length > 0 && (
+              <div className="mt-3 rounded border border-amber-300 bg-amber-50 p-2 dark:border-amber-700 dark:bg-amber-950">
+                <p className="text-xs font-semibold text-amber-900 dark:text-amber-100">
+                  Bitte prüfen:
+                </p>
+                <ul className="mt-1 list-disc space-y-0.5 pl-4 text-xs text-amber-900 dark:text-amber-100">
+                  {preview.warnings.map((warning, index) => (
+                    <li key={index}>{warning}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <PreviewTable schedule={preview.schedule} />
+
             <div className="mt-3 flex gap-2">
               <button
                 type="button"

@@ -1,9 +1,8 @@
-import { parseTimetablePdf } from './parse-pdf';
-import type { ParsedSchedule } from './types';
+import { parseTimetablePdf, type PdfGetDocument, type TimetableParseResult } from './parse-pdf';
 
 /** Der Ausschnitt von pdfjs, den wir tatsächlich benutzen. */
 interface PdfJsModule {
-  getDocument: Parameters<typeof parseTimetablePdf>[1];
+  getDocument: PdfGetDocument;
   GlobalWorkerOptions: { workerSrc: string };
   VerbosityLevel?: { ERRORS?: number };
 }
@@ -43,7 +42,7 @@ function loadPdfJs(): Promise<PdfJsModule> {
  * Dort stehen 10 ms CPU-Zeit pro Request zur Verfügung, das Auswerten eines
  * Stundenplans liegt weit darüber.
  */
-export async function parseTimetableFileInBrowser(file: File): Promise<ParsedSchedule> {
+export async function parseTimetableFileInBrowser(file: File): Promise<TimetableParseResult> {
   const pdfjs = await loadPdfJs();
   const data = await file.arrayBuffer();
 

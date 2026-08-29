@@ -128,13 +128,20 @@ Das ist kein Stilfrage, sondern notwendig: Ein `fetch('/api/…')` mit relativer
 
 Der Workers-Free-Plan erlaubt **10 ms CPU-Zeit pro Request** — das Auswerten eines Stundenplan-PDFs liegt weit darüber. Deshalb:
 
-- `src/lib/timetable/parse-pdf.ts` ist der reine Parser; `getDocument` wird injiziert (dadurch ohne echtes PDF testbar).
+- `src/lib/timetable/parse-pdf.ts` ist der reine Parser; `getDocument` wird injiziert (dadurch ohne echtes PDF testbar). Er gibt neben dem Plan **Warnungen** zurück — unsichere Stellen werden gemeldet, nicht geraten, und stehen in der Upload-Vorschau.
 - `parse-pdf-browser.ts` lädt pdfjs **zur Laufzeit** aus `public/pdfjs/` (Import über eine Variable, damit kein Bundler die 1,5 MB einbaut) und ruft den Parser auf.
 - Der Server parst nichts, **validiert aber vollständig** (`validateSchedule`): Klassencode-Muster, Wochentage, Stundennummern, Textlängen, Mengen.
 
 **Dateinamen-Konvention**: `Stundenplan_kw_XX_HjY_YYYY_YY.pdf` (KW, Halbjahr, Schuljahr).
 
-**Bekannte Einschränkung**: Der Parser wertet nur Seite 1 des PDFs aus.
+**Wie der Parser das Raster findet**: pdfjs liefert nur Textschnipsel mit
+Koordinaten. Das Spaltenraster wird deshalb aus den **senkrechten Lücken im
+Textbild** abgeleitet — jede Klasse bekommt so ihre Fach- und ihre Raumspalte,
+ohne dass ein „R" im Kopf stehen muss. Die Tage trennt der **Neustart der
+Stundenzählung**, nicht ein fest erwartetes „1. 8.00". Beides war vorher an feste
+Annahmen geknüpft, die je nach Woche mal zutrafen und mal nicht.
+
+Alle Seiten werden ausgewertet und zusammengeführt.
 
 ### Admin System
 
@@ -250,6 +257,11 @@ dem Deploy anzumelden.
 - **Vitest** (`npm run test:unit`), Testdateien als `*.test.ts` neben dem Quellcode.
 - Passwortregeln und Hashing sind in `src/server/auth.test.ts` abgedeckt.
 - Abgedeckt sind vor allem die Teile ohne Netz- und DB-Abhängigkeit: PDF-Parser (mit nachgebautem pdfjs-Dokument), Schema-Validierung der Upload-Daten, Gruppierung der Stundenplan-Zeilen, Klassenauswahl, Klassenfilter.
+- `real-week.test.ts` zeichnet eine **ganze echte Planwoche** (sieben Klassen,
+  `real-week.fixture.ts`) als PDF-Textbild und liest sie zurück. Der Parser
+  scheitert nicht an einzelnen Regeln, sondern an der Größe: viele Spalten
+  nebeneinander, eine Klasse ohne Unterricht, Blöcke über den ganzen Tag.
+  Der kleine Plan in `parse-pdf.test.ts` prüft die Regeln einzeln.
 - `announcements.test.ts` prüft Ablauf und Reihenfolge gegen eine nachgebaute D1 (`fakeDb`) mit fester Systemzeit — das deutsche Datumsformat lässt sich sonst nicht sinnvoll testen.
 
 ## Important Notes
