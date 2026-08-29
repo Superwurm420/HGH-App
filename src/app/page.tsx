@@ -15,6 +15,7 @@ import {
   loadAppSettings,
   loadSchedulePage,
 } from '@/server/page-data';
+import { formatBerlinDay } from '@/lib/berlin-time';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,6 +38,7 @@ export default async function HomePage({ searchParams }: PageProps) {
   if (!schedule.hasTimetable || !schedule.selectedClass) {
     return (
       <>
+        <h1 className="sr-only">Startseite</h1>
         <div className="card surface">
           <Countdown lessons={[]} />
           <DailyMessage messages={settings.messages} schoolHolidays={settings.schoolHolidays} />
@@ -57,6 +59,7 @@ export default async function HomePage({ searchParams }: PageProps) {
   return (
     <>
       <ClassFromStorage classes={timetable.classes} />
+      <h1 className="sr-only">Stundenplan {selectedClass} – heute</h1>
 
       <div className="home-dashboard">
         <div className="card surface">
@@ -87,7 +90,7 @@ export default async function HomePage({ searchParams }: PageProps) {
 
           {timetable.upload?.updated_at && (
             <p className="meta-note">
-              Aktualisiert: {new Date(timetable.upload.updated_at).toLocaleDateString('de-DE')}
+              Aktualisiert: {formatBerlinDay(timetable.upload.updated_at)}
             </p>
           )}
         </div>

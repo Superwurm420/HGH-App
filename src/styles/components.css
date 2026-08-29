@@ -11,6 +11,15 @@
   border-radius: var(--radius);
 }
 
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--line);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
 .section-header {
   display: flex;
   flex-wrap: wrap;
@@ -59,12 +68,14 @@
   white-space: nowrap;
 }
 
-.btn:hover {
-  transform: translateY(-1px);
-}
-
 .btn:active {
   transform: translateY(1px);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .btn.secondary {
@@ -73,9 +84,17 @@
   border: 1px solid var(--line);
 }
 
-.btn.secondary:hover {
-  background: rgba(0, 122, 255, 0.12);
-  border-color: rgba(0, 122, 255, 0.35);
+/* Nur auf Geräten mit echtem Zeiger: Auf dem Touchscreen bleibt der
+   Hover-Zustand nach einer Berührung hängen, bis woanders getippt wird. */
+@media (hover: hover) {
+  .btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+
+  .btn.secondary:hover:not(:disabled) {
+    background: rgba(0, 122, 255, 0.12);
+    border-color: rgba(0, 122, 255, 0.35);
+  }
 }
 
 .icon-btn {
@@ -91,9 +110,21 @@
   transition: transform 80ms ease, background 120ms ease;
 }
 
-.icon-btn:hover {
-  background: rgba(0, 122, 255, 0.12);
-  transform: translateY(-1px);
+@media (hover: hover) {
+  .icon-btn:hover {
+    background: rgba(0, 122, 255, 0.12);
+    transform: translateY(-1px);
+  }
+}
+
+/* Monatswechsel im Kalender — bewusst kleiner als die übrigen Icon-Knöpfe,
+   damit die Kopfzeile der Karte nicht von zwei Pfeilen beherrscht wird. */
+.cal-nav-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  font-size: 15px;
+  line-height: 1;
 }
 
 .select {
@@ -110,11 +141,6 @@
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 10px center;
-}
-
-.select:focus {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
 }
 
 
@@ -190,9 +216,10 @@
   padding: 14px;
   border-radius: var(--radius2);
   border: 1px solid var(--line);
-  border-left: 3px solid #f5a623;
   background: rgba(245, 166, 35, 0.08);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  /* Als innerer Schatten statt als linker Rahmen: Ein Rahmen wird an den
+     abgerundeten Ecken angeschnitten und lief oben und unten spitz zu. */
+  box-shadow: inset 3px 0 0 #f5a623, inset 0 1px 0 rgba(255, 255, 255, 0.1);
   margin-bottom: 12px;
 }
 
@@ -217,16 +244,23 @@
   background: rgba(255, 255, 255, 0.5);
 }
 
-.link-card:hover {
+.link-card:active {
   border-color: rgba(0, 122, 255, 0.5);
   background: rgba(0, 122, 255, 0.1);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 122, 255, 0.18);
 }
 
-.link-card:hover .link-arrow {
-  transform: translate(2px, -2px);
-  color: var(--accent);
+@media (hover: hover) {
+  .link-card:hover {
+    border-color: rgba(0, 122, 255, 0.5);
+    background: rgba(0, 122, 255, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 122, 255, 0.18);
+  }
+
+  .link-card:hover .link-arrow {
+    transform: translate(2px, -2px);
+    color: var(--accent);
+  }
 }
 
 .link-arrow {
@@ -247,47 +281,54 @@
   flex-shrink: 0;
 }
 
-.cal-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
+/* Echte Tabelle statt Raster aus <div>s: Ein Monat ist tabellarisch, und
+   Vorlesehilfen können Spalten- und Zeilenbezug nur so ansagen. */
+.cal-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 2px;
 }
 
+.cal-table th {
+  padding-bottom: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* Die Zellen zeigen nur an, sie sind nicht anklickbar — deshalb weder
+   Zeiger-Cursor noch Hover-Effekt, die eine Bedienung vortäuschen würden. */
 .cal-cell {
-  aspect-ratio: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  height: 34px;
+  text-align: center;
+  vertical-align: middle;
   border-radius: 8px;
   font-size: 13px;
-  cursor: pointer;
-  transition: background 100ms;
   color: var(--muted);
+  opacity: 0.55;
 }
 
 .cal-cell.this-month {
   color: var(--text);
+  opacity: 1;
+}
+
+/* Wochenenden treten zurück — im Schulalltag zählt Mo–Fr. */
+.cal-cell.weekend.this-month {
+  color: var(--muted);
 }
 
 .cal-cell.today {
   background: var(--accent);
   color: white;
   font-weight: 700;
-  border-radius: 50%;
+  opacity: 1;
 }
-
-.cal-cell:hover:not(.today) {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-
-
 
 .text-muted {
   color: var(--muted);
 }
-
-
 
 .google-cal-wrapper {
   border-radius: var(--radius2);
@@ -295,10 +336,13 @@
   border: 1px solid var(--line);
 }
 
+/* Der Wandbildschirm soll die ganze Höhe ausfüllen — sonst steht die untere
+   Bildschirmhälfte leer, sobald wenige Klassen im Plan sind. */
 .tv-view {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  min-height: calc(100dvh - 32px);
 }
 
 .tv-branding {
@@ -441,7 +485,11 @@
   white-space: nowrap;
 }
 
+/* `1 0 auto`, nicht `1`: Das Feld füllt den freien Platz, schrumpft aber nie
+   unter seinen Inhalt — ein langer Plan würde sonst unten abgeschnitten, und
+   auf dem Wandbildschirm scrollt niemand nach. */
 .tv-timetable-panel {
+  flex: 1 0 auto;
   overflow: hidden;
 }
 
@@ -550,13 +598,12 @@
 }
 
 @media (min-width: 740px) {
-  .cal-grid {
-    gap: 4px;
+  .cal-table {
+    border-spacing: 4px;
   }
 
   .cal-cell {
-    aspect-ratio: auto;
-    min-height: 44px;
+    height: 44px;
     border: 1px solid var(--line);
   }
 }

@@ -22,7 +22,7 @@ export default async function PinnwandPage({ searchParams }: PageProps) {
       {classes.length > 0 && <ClassFromStorage classes={classes} />}
       <div className="card surface">
         <div className="section-header">
-          <h2 className="section-title">Pinnwand</h2>
+          <h1 className="section-title">Pinnwand</h1>
           {classes.length > 0 && (
             <div className="section-actions">
               <ClassSelector classes={classes} />

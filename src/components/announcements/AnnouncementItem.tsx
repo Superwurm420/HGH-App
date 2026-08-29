@@ -13,7 +13,7 @@ type AnnouncementItemProps = {
   body: string;
 };
 
-export function AnnouncementItem({ id, title, date, expires, body }: AnnouncementItemProps) {
+export function AnnouncementItem({ title, date, expires, body }: AnnouncementItemProps) {
   const [nowTs, setNowTs] = useState(() => Date.now());
 
   const expiresAt = useMemo(() => {
@@ -33,7 +33,7 @@ export function AnnouncementItem({ id, title, date, expires, body }: Announcemen
   if (isHidden) return null;
 
   return (
-    <article key={id} className={styles.card}>
+    <article className={styles.card}>
       <div className="flex items-start justify-between gap-2 mb-1">
         <h3 className="text-sm font-bold">{title || 'Ohne Titel'}</h3>
         {date && <span className="text-xs text-muted whitespace-nowrap">{date}</span>}

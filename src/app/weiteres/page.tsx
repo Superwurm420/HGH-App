@@ -53,6 +53,8 @@ function InstagramIcon() {
 export default function WeiteresPage() {
   return (
     <>
+      <h1 className="sr-only">Weiteres</h1>
+
       <div className="card surface">
         <h2 className="section-title mb-3">Links</h2>
         <nav className="space-y-2" aria-label="Wichtige Links">

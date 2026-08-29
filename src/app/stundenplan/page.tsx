@@ -2,6 +2,7 @@ import { ClassFromStorage } from '@/components/schedule/ClassFromStorage';
 import { ClassSelector } from '@/components/schedule/ClassSelector';
 import { DayTimetable } from '@/components/schedule/DayTimetable';
 import { announcementsToEvents, loadAnnouncements, loadSchedulePage } from '@/server/page-data';
+import { formatBerlinDay } from '@/lib/berlin-time';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,7 +15,7 @@ export default async function StundenplanPage({ searchParams }: PageProps) {
   if (!hasTimetable || !selectedClass) {
     return (
       <div className="card surface">
-        <h2 className="text-lg font-bold">Stundenplan</h2>
+        <h1 className="section-title">Stundenplan</h1>
         <p className="text-sm text-muted mt-2">Kein Stundenplan verfügbar.</p>
       </div>
     );
@@ -28,7 +29,7 @@ export default async function StundenplanPage({ searchParams }: PageProps) {
       <ClassFromStorage classes={timetable.classes} />
       <div className="card surface">
         <div className="section-header">
-          <h2 className="section-title">Stundenplan</h2>
+          <h1 className="section-title">Stundenplan</h1>
           <div className="section-actions">
             <ClassSelector classes={timetable.classes} />
           </div>
@@ -42,7 +43,7 @@ export default async function StundenplanPage({ searchParams }: PageProps) {
 
         {timetable.upload?.updated_at && (
           <p className="meta-note">
-            Aktualisiert: {new Date(timetable.upload.updated_at).toLocaleDateString('de-DE')}
+            Aktualisiert: {formatBerlinDay(timetable.upload.updated_at)}
           </p>
         )}
       </div>

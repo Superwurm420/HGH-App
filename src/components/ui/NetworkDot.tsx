@@ -20,6 +20,7 @@ export function NetworkDot() {
     <span
       className="net-dot"
       data-status={online ? 'online' : 'offline'}
+      role="img"
       aria-label={online ? 'Online' : 'Offline'}
     />
   );

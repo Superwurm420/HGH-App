@@ -3,7 +3,7 @@ import styles from './Topbar.module.css';
 
 export function Topbar() {
   return (
-    <header className={styles.topbar}>
+    <header className={`app-topbar ${styles.topbar}`}>
       <div className={styles.branding}>
         <div className={styles.logoBox}>
           {/* eslint-disable-next-line @next/next/no-img-element */}

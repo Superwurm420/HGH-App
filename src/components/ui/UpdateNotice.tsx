@@ -30,7 +30,13 @@ export function UpdateNotice() {
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-20 left-1/2 z-50 w-[min(92vw,540px)] -translate-x-1/2 rounded-2xl border border-[var(--line)] bg-[var(--surface2)] p-4 shadow-2xl backdrop-blur-xl">
+    // Der Hinweis setzt über der schwebenden Navigationsleiste auf — beide
+    // rechnen mit demselben Wert, sonst überdeckt er die Schaltflächen.
+    <div
+      role="status"
+      className="fixed left-1/2 z-50 w-[min(92vw,540px)] -translate-x-1/2 rounded-2xl border border-[var(--line)] bg-[var(--surface2)] p-4 shadow-2xl backdrop-blur-xl"
+      style={{ bottom: 'var(--nav-clearance)' }}
+    >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm font-semibold text-[var(--text)]">Neue Version verfügbar – Jetzt aktualisieren</p>
         <div className="flex items-center gap-2">

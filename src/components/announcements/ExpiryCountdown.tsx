@@ -9,7 +9,8 @@ function formatRemaining(seconds: number): string {
   const d = Math.floor(seconds / 86400);
   const h = Math.floor((seconds % 86400) / 3600);
   const m = Math.floor((seconds % 3600) / 60);
-  if (d > 0) return `${d} Tag${d !== 1 ? 'e' : ''}`;
+  // Dativ, weil der Text als „endet in …" ausgegeben wird: „in 32 Tagen".
+  if (d > 0) return `${d} Tag${d !== 1 ? 'en' : ''}`;
   if (h > 0) return `${h} Std ${m} Min`;
   return `${m} Min`;
 }

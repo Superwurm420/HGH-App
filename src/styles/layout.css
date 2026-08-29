@@ -1,5 +1,5 @@
 .main-content {
-  padding-bottom: calc(104px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: var(--nav-clearance);
 }
 
 .app-shell {
@@ -26,9 +26,48 @@
   min-width: 0;
 }
 
+/* Ohne Ankündigungen bleibt nur der Kalender übrig — der soll dann die ganze
+   Breite bekommen statt eine leere Spalte neben sich stehen zu lassen. */
+.home-secondary-grid > .home-secondary-card:only-child {
+  grid-column: 1 / -1;
+}
+
 .home-secondary-card > .card {
-  margin-top: 0 !important;
   height: 100%;
+}
+
+/* ── Wandbildschirm ───────────────────────────────────────────────────────────
+   Auf /tv stören App-Kopfzeile und Navigationsleiste: Dort bedient niemand
+   etwas, die Seite läuft im Vollbild. `:has()` greift schon beim ersten
+   Aufbau, die Klasse `tv-mode` (aus TvPageController) ist die Rückfallebene
+   für Browser ohne `:has()`. Beide Regeln müssen getrennt stehen — ein
+   unbekannter Selektor würde sonst die ganze Gruppe ungültig machen. */
+body:has(.tv-view) .app-topbar,
+body:has(.tv-view) .app-bottom-nav {
+  display: none;
+}
+
+body.tv-mode .app-topbar,
+body.tv-mode .app-bottom-nav {
+  display: none;
+}
+
+body:has(.tv-view) .app-shell {
+  max-width: none;
+  padding-top: 16px;
+}
+
+body.tv-mode .app-shell {
+  max-width: none;
+  padding-top: 16px;
+}
+
+body:has(.tv-view) .main-content {
+  padding-bottom: 16px;
+}
+
+body.tv-mode .main-content {
+  padding-bottom: 16px;
 }
 
 @media (min-width: 1024px) {
@@ -45,7 +84,7 @@
   }
 
   .main-content {
-    padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: var(--nav-clearance);
   }
 
   .home-landscape-grid {
@@ -58,6 +97,7 @@
   .home-landscape-info {
     display: grid;
     gap: 12px;
+    align-content: start;
   }
 
   .home-secondary-grid {
@@ -65,5 +105,4 @@
     gap: 14px;
     align-items: stretch;
   }
-
 }
