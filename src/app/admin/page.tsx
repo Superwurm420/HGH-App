@@ -7,12 +7,14 @@ export const metadata: Metadata = {
 
 export default function AdminPage() {
   return (
-    <main className="mx-auto max-w-6xl p-4 md:p-8">
+    // Kein <main>: Das Grundgerüst in layout.tsx setzt bereits eines, und zwei
+    // ineinander sind ungültig.
+    <div className="mx-auto w-full max-w-6xl py-2 md:py-6">
       <h1 className="mb-2 text-2xl font-semibold">Adminbereich</h1>
       <p className="mb-6 text-sm text-gray-600 dark:text-gray-300">
         Stundenplan hochladen, Ankündigungen und Termine verwalten, Einstellungen pflegen.
       </p>
       <AdminWorkspace />
-    </main>
+    </div>
   );
 }

@@ -1,7 +1,10 @@
+/* Kopfzeile und Datenzeilen sind je ein eigenes Raster — mit `auto` in der
+   letzten Spalte bekam jede Zeile eine andere Breite, und „Raum" stand nicht
+   über den Raumnummern. Feste Breiten halten die Spalten in einer Flucht. */
 .tt-header,
 .tt-row {
   display: grid;
-  grid-template-columns: 90px 1fr auto;
+  grid-template-columns: 90px minmax(0, 1fr) 96px;
 }
 
 .tt-header {
@@ -22,8 +25,10 @@
   border-bottom: 1px solid var(--line);
 }
 
-.tt-cell-end {
-  text-align: right;
+/* Deckt sich mit .tt-info-cell darunter — die Überschrift stand vorher
+   rechtsbündig über zentrierten Raumnummern. */
+.tt-cell-center {
+  text-align: center;
 }
 
 .tt-period-cell {
@@ -65,7 +70,7 @@
   justify-content: center;
   text-align: center;
   gap: 1px;
-  min-width: 56px;
+  overflow-wrap: anywhere;
 }
 
 .tt-room {
@@ -100,7 +105,7 @@
 @media (max-width: 739px) {
   .tt-header,
   .tt-row {
-    grid-template-columns: 78px 1fr auto;
+    grid-template-columns: 78px minmax(0, 1fr) 84px;
   }
 
   .tt-cell {
@@ -114,20 +119,12 @@
   .tt-period-time {
     font-size: 10px;
   }
-
-  .tt-info-cell {
-    min-width: 48px;
-  }
 }
 
 @media (max-width: 360px) {
   .tt-header,
   .tt-row {
-    grid-template-columns: 68px 1fr auto;
-  }
-
-  .tt-info-cell {
-    min-width: 42px;
+    grid-template-columns: 62px minmax(0, 1fr) 74px;
   }
 }
 

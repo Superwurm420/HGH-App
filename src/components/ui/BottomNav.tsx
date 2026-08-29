@@ -52,7 +52,7 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className={styles.bottomNav} role="navigation" aria-label="Hauptnavigation">
+    <nav className={`app-bottom-nav ${styles.bottomNav}`} aria-label="Hauptnavigation">
       {NAV_ITEMS.map((item) => {
         const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
         const classes = isActive ? `${styles.navItem} ${styles.navItemActive}` : styles.navItem;

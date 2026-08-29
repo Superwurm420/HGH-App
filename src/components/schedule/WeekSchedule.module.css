@@ -8,6 +8,21 @@
   -webkit-overflow-scrolling: touch;
 }
 
+/* Auf dem Handy sind nur zwei Tage gleichzeitig zu sehen — ohne Hinweis ist
+   nicht zu erkennen, dass die restlichen daneben liegen. */
+.scrollHint {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+}
+
+@media (min-width: 740px) {
+  .scrollHint {
+    display: none;
+  }
+}
+
 .grid {
   width: 100%;
   min-width: 640px;
@@ -47,9 +62,14 @@
   border-left: none;
 }
 
-.dayHeadToday {
+/* Muss `:global(.light) .dayHead` überstimmen — sonst behielt der heutige Tag
+   im hellen Design den grauen Hintergrund, während die Schrift schon weiß war:
+   weiß auf hellgrau, praktisch unlesbar. */
+.dayHead.dayHeadToday,
+:global(.light) .dayHead.dayHeadToday {
   background: linear-gradient(135deg, var(--accent), var(--accent2));
   color: white;
+  border-left-color: transparent;
 }
 
 .todayDot {

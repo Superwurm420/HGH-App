@@ -74,6 +74,36 @@ export function getIsoCalendarWeek(date: Date): number {
   return Math.ceil(((utcDate.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
 }
 
+const berlinDayFormatter = new Intl.DateTimeFormat('de-DE', {
+  timeZone: 'Europe/Berlin',
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+});
+
+/**
+ * Zeitstempel aus der Datenbank als deutsches Datum („29.08.2026").
+ *
+ * SQLite schreibt `datetime('now')` als „YYYY-MM-DD HH:MM:SS" in UTC — ohne
+ * Zeitzonenkennung. JavaScript deutet das als Ortszeit, was im Worker (UTC)
+ * zufällig stimmt, im Browser aber nicht. Hier wird die Kennung deshalb
+ * ergänzt und anschließend nach Berlin umgerechnet.
+ *
+ * `toLocaleDateString('de-DE')` ohne Optionen lieferte außerdem „29.8.2026",
+ * während Ankündigungen „01.09.2026" anzeigen — zwei Schreibweisen auf
+ * derselben Seite.
+ */
+export function formatBerlinDay(value: string): string {
+  const withZone = /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(:\d{2})?$/.test(value)
+    ? `${value.replace(' ', 'T')}Z`
+    : value;
+
+  const date = new Date(withZone);
+  if (Number.isNaN(date.getTime())) return value;
+
+  return berlinDayFormatter.format(date);
+}
+
 export function isWeekend(weekdayShort: string): boolean {
   return weekdayShort.startsWith('Sa') || weekdayShort.startsWith('So');
 }

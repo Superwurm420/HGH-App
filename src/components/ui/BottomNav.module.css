@@ -39,8 +39,10 @@
   text-decoration: none;
 }
 
-.navItem:hover {
-  color: var(--text);
+@media (hover: hover) {
+  .navItem:hover {
+    color: var(--text);
+  }
 }
 
 .navItemActive {

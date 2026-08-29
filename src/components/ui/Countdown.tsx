@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { NetworkDot } from './NetworkDot';
 import { LessonEntry } from '@/lib/timetable/types';
+import { parseLessonTimeRange } from '@/lib/timetable/lesson-times';
 import {
   getBerlinNowParts,
   getIsoCalendarWeek,
@@ -13,34 +14,19 @@ import {
 
 type CountdownSlot = {
   label: string;
-  start: string;
-  end: string;
+  start: number;
+  end: number;
 };
 
-function parseTime(s: string) {
-  const [h, m] = s.split(':').map(Number);
-  return timeToMinutes(h, m);
-}
-
-function normalizeTime(value: string): string | null {
-  const match = value.match(/(\d{1,2})[:.](\d{2})/);
-  if (!match) return null;
-  return `${match[1].padStart(2, '0')}:${match[2]}`;
-}
-
 function lessonToSlot(lesson: LessonEntry): CountdownSlot | null {
-  const parts = lesson.time.split('-').map((part) => part.trim());
-  if (parts.length < 2) return null;
-
-  const start = normalizeTime(parts[0]);
-  const end = normalizeTime(parts[1]);
-  if (!start || !end) return null;
+  const range = parseLessonTimeRange(lesson.time);
+  if (!range) return null;
 
   const label = lesson.periodEnd
     ? `${lesson.period}.${lesson.periodEnd}. Stunde`
     : `${lesson.period}. Stunde`;
 
-  return { label, start, end };
+  return { label, start: range.start, end: range.end };
 }
 
 function formatDuration(mins: number) {
@@ -93,7 +79,7 @@ export function Countdown({ lessons = [] }: { lessons?: LessonEntry[] }) {
   const lessonSlots = lessons
     .map(lessonToSlot)
     .filter((slot): slot is CountdownSlot => slot !== null)
-    .sort((a, b) => parseTime(a.start) - parseTime(b.start));
+    .sort((a, b) => a.start - b.start);
   let countdownText = '';
 
   if (weekendNow) {
@@ -102,8 +88,8 @@ export function Countdown({ lessons = [] }: { lessons?: LessonEntry[] }) {
     countdownText = 'Heute kein Unterricht';
   } else {
     const slots = lessonSlots;
-    const firstStart = parseTime(slots[0].start);
-    const lastEnd = parseTime(slots[slots.length - 1].end);
+    const firstStart = slots[0].start;
+    const lastEnd = slots[slots.length - 1].end;
 
     if (nowMins < firstStart) {
       countdownText = `${slots[0].label} beginnt ${formatIn(firstStart - nowMins)}`;
@@ -113,15 +99,14 @@ export function Countdown({ lessons = [] }: { lessons?: LessonEntry[] }) {
       let found = false;
       for (const [index, slot] of slots.entries()) {
         const nextSlot = slots[index + 1];
-        const start = parseTime(slot.start);
-        const end = parseTime(slot.end);
+        const { start, end } = slot;
 
         if (nowMins >= start && nowMins < end) {
           const remaining = end - nowMins;
           if (!nextSlot) {
             countdownText = `Schulschluss ${formatIn(remaining)}`;
           } else {
-            const nextStart = parseTime(nextSlot.start);
+            const nextStart = nextSlot.start;
             countdownText = nextStart > end
               ? `Pause beginnt ${formatIn(remaining)}`
               : `${nextSlot.label} beginnt ${formatIn(remaining)}`;
@@ -134,9 +119,8 @@ export function Countdown({ lessons = [] }: { lessons?: LessonEntry[] }) {
       if (!found) {
         // In einer Pause
         for (const slot of slots) {
-          const start = parseTime(slot.start);
-          if (start > nowMins) {
-            countdownText = `${slot.label} beginnt ${formatIn(start - nowMins)}`;
+          if (slot.start > nowMins) {
+            countdownText = `${slot.label} beginnt ${formatIn(slot.start - nowMins)}`;
             break;
           }
         }
@@ -151,7 +135,9 @@ export function Countdown({ lessons = [] }: { lessons?: LessonEntry[] }) {
         <span className="text-xs text-muted">{dateStr} · KW {String(calendarWeek).padStart(2, '0')}</span>
       </div>
       <div className="countdown-main">
-        <div className="now-time" aria-live="polite">{timeStr}</div>
+        {/* Kein aria-live: Die Uhr läuft sekündlich — ein Screenreader würde
+            sonst im Sekundentakt die Uhrzeit vorlesen. */}
+        <div className="now-time">{timeStr}</div>
         {countdownText && (
           <div className="countdown-badge">{countdownText}</div>
         )}

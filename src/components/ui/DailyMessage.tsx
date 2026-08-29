@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { LessonEntry } from '@/lib/timetable/types';
+import { parseLessonTimeRange, type TimeRange } from '@/lib/timetable/lesson-times';
 import {
   isDateInSchoolHolidayRanges,
   isLowerSaxonyPublicHoliday,
@@ -38,31 +39,13 @@ type MessagesData = {
   >;
 };
 
-function parseTime(value: string): number {
-  const [h, m] = value.split(':').map(Number);
-  return timeToMinutes(h, m);
-}
-
-function normalizeTime(value: string): string | null {
-  const match = value.match(/(\d{1,2})[:.](\d{2})/);
-  if (!match) return null;
-  return `${match[1].padStart(2, '0')}:${match[2]}`;
-}
-
 function getTimeCategoryFromLessons(
   nowMinutes: number,
   lessons: LessonEntry[],
 ): 'vorUnterricht' | 'inPause' | 'nachUnterricht' {
   const slots = lessons
-    .map((lesson) => {
-      const parts = lesson.time.split('-').map((part) => part.trim());
-      if (parts.length < 2) return null;
-      const start = normalizeTime(parts[0]);
-      const end = normalizeTime(parts[1]);
-      if (!start || !end) return null;
-      return { start: parseTime(start), end: parseTime(end) };
-    })
-    .filter((s): s is { start: number; end: number } => s !== null)
+    .map((lesson) => parseLessonTimeRange(lesson.time))
+    .filter((slot): slot is TimeRange => slot !== null)
     .sort((a, b) => a.start - b.start);
 
   if (slots.length === 0) return 'inPause';

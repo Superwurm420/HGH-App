@@ -1,69 +1,23 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { LessonEntry, ParsedSchedule, Weekday } from '@/lib/timetable/types';
-import { getBerlinMinutes } from '@/lib/berlin-time';
+import { isLessonRunning } from '@/lib/timetable/lesson-times';
+import { useMinutesOfDay } from './use-berlin-minutes';
 
 type TvTimetableGridProps = {
   schedulesByClass: ParsedSchedule;
   day: Weekday;
 };
 
-type LessonRange = {
-  startMinutes: number;
-  endMinutes: number;
-};
-
-function parseTimeRange(time: string): LessonRange | null {
-  const normalized = time.replace(/\s+/g, ' ');
-  const parts = normalized.split('-').map((part) => part.trim());
-  if (parts.length !== 2) return null;
-
-  const start = parts[0].replace('.', ':');
-  const end = parts[1].replace('.', ':');
-
-  const [startHour, startMinute] = start.split(':').map(Number);
-  const [endHour, endMinute] = end.split(':').map(Number);
-
-  if ([startHour, startMinute, endHour, endMinute].some((value) => Number.isNaN(value))) {
-    return null;
-  }
-
-  return {
-    startMinutes: startHour * 60 + startMinute,
-    endMinutes: endHour * 60 + endMinute,
-  };
-}
-
-function getBerlinMinutesNow(): number {
-  return getBerlinMinutes();
-}
-
-function findCurrentPeriod(entries: LessonEntry[], nowMinutes: number): number | null {
-  for (const entry of entries) {
-    const range = parseTimeRange(entry.time);
-    if (!range) continue;
-    if (nowMinutes >= range.startMinutes && nowMinutes < range.endMinutes) {
-      return entry.period;
-    }
-  }
-  return null;
-}
-
 function formatLesson(entry: LessonEntry): string {
   return entry.subject ?? '—';
 }
 
 export function TvTimetableGrid({ schedulesByClass, day }: TvTimetableGridProps) {
-  const [nowMinutes, setNowMinutes] = useState<number>(() => getBerlinMinutesNow());
-
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      setNowMinutes(getBerlinMinutesNow());
-    }, 30_000);
-
-    return () => window.clearInterval(timer);
-  }, []);
+  // Null am Wochenende: Der Wandbildschirm zeigt dann den Montagsplan, in dem
+  // keine Stunde laufen kann.
+  const nowMinutes = useMinutesOfDay(day);
 
   const classes = useMemo(() => Object.keys(schedulesByClass).sort(), [schedulesByClass]);
 
@@ -141,9 +95,10 @@ export function TvTimetableGrid({ schedulesByClass, day }: TvTimetableGridProps)
     const allEntries = classes.flatMap((schoolClass) => schedulesByClass[schoolClass]?.[day] ?? []);
     const active = new Set<number>();
 
+    if (nowMinutes === null) return active;
+
     for (const entry of allEntries) {
-      const current = findCurrentPeriod([entry], nowMinutes);
-      if (!current) continue;
+      if (!isLessonRunning(entry, nowMinutes)) continue;
       const periodEnd = entry.periodEnd ?? entry.period;
       for (let period = entry.period; period <= periodEnd; period += 1) {
         active.add(period);

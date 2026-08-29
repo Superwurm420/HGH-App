@@ -13,18 +13,20 @@ export function GoogleCalendar({ urls }: { urls: string[] }) {
   combined.searchParams.set('ctz', 'Europe/Berlin');
 
   return (
-    <div className="card surface mt-3">
+    // Kein eigener Außenabstand: Der Kalender steht mal allein, mal in einem
+    // Raster mit Abständen — den Abstand setzt die Seite, nicht die Komponente.
+    <div className="card surface">
       <h2 className="text-base font-bold mb-3">Kalender</h2>
       <div className="google-cal-wrapper">
         <iframe
           src={combined.toString()}
-          style={{ border: 0 }}
+          style={{ border: 0, display: 'block' }}
           width="100%"
           height="600"
           title="Google Kalender"
           loading="lazy"
           sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
-          className="rounded-xl"
+          className="h-[420px] w-full sm:h-[600px]"
         />
       </div>
     </div>

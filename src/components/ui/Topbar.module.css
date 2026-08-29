@@ -5,32 +5,53 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 0;
-  margin-bottom: 12px;
-  margin-left: -16px;
-  margin-right: -16px;
-  padding-left: 16px;
-  padding-right: 16px;
-  background: linear-gradient(180deg, var(--bg0) 60%, transparent);
+  gap: 12px;
+  padding: 14px 16px;
+  margin: 0 -16px 12px;
 }
 
-:global(.light) .topbar {
-  background: linear-gradient(180deg, var(--bg0) 60%, transparent);
+/* Hintergrund und Weichzeichner liegen in einer eigenen Ebene: Die Maske
+   blendet beides nach unten aus, ohne Logo und Schrift mitzunehmen.
+   Ohne den Weichzeichner scherte durchlaufender Inhalt im durchsichtigen
+   Teil der Leiste hart durch. */
+.topbar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, var(--bg0) 62%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  -webkit-mask-image: linear-gradient(180deg, #000 62%, transparent);
+  mask-image: linear-gradient(180deg, #000 62%, transparent);
+  pointer-events: none;
 }
 
 .branding {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
 }
 
+/* Das Logo ist dunkelblau — auf dem fast schwarzen Grund des dunklen Designs
+   war davon nichts zu erkennen. Es bekommt deshalb eine helle Platte, so wie
+   auf dem Wandbildschirm auch. Im hellen Design braucht es sie nicht. */
 .logoBox {
   width: 44px;
   height: 44px;
   display: grid;
   place-items: center;
+  padding: 4px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.92);
   overflow: hidden;
   flex-shrink: 0;
+}
+
+:global(.light) .logoBox {
+  padding: 0;
+  background: transparent;
 }
 
 .logoImage {
@@ -45,10 +66,14 @@
 
 @media (min-width: 900px) and (orientation: landscape) {
   .topbar {
-    margin-left: 0;
-    margin-right: 0;
+    margin: 0 0 14px;
     padding-left: 0;
     padding-right: 0;
-    margin-bottom: 14px;
+  }
+
+  /* Bis in die Randabstände der Hülle hinein, sonst scheint der Inhalt links
+     und rechts an der Leiste vorbei. */
+  .topbar::before {
+    inset: 0 -22px;
   }
 }

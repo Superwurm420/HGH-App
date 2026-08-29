@@ -8,6 +8,41 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Ein einziger, überall sichtbarer Fokusring. Der Standardring des Browsers
+   ist auf den dunklen Flächen kaum zu erkennen, und mehrere Elemente
+   (Buttons, Links, Tageswahl, Navigation) hatten gar keinen. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Der Sprungmarke reicht die Tastatur — mit der Maus soll sie nicht im Weg
+   stehen, deshalb wird sie erst bei Fokus sichtbar. */
+.skip-link {
+  position: absolute;
+  left: 16px;
+  top: -60px;
+  z-index: 200;
+  padding: 10px 16px;
+  border-radius: var(--radius2);
+  background: var(--accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 650;
+  text-decoration: none;
+  transition: top 140ms ease;
+}
+
+.skip-link:focus {
+  top: 12px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

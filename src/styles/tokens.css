@@ -4,7 +4,7 @@
   --surface: rgba(255, 255, 255, 0.08);
   --surface2: rgba(255, 255, 255, 0.13);
   --text: #f0f6ff;
-  --muted: rgba(240, 246, 255, 0.58);
+  --muted: rgba(240, 246, 255, 0.62);
   --line: rgba(255, 255, 255, 0.11);
   --accent: #007AFF;
   --accent2: #34aadc;
@@ -12,6 +12,10 @@
   --radius: 22px;
   --radius2: 16px;
   --blur: 44px;
+
+  /* Höhe der schwebenden Navigationsleiste inkl. Abstand — damit Inhalte und
+     eingeblendete Hinweise denselben Wert benutzen und nicht auseinanderlaufen. */
+  --nav-clearance: calc(102px + env(safe-area-inset-bottom, 0px));
 
   color-scheme: dark;
 }
@@ -22,8 +26,10 @@
   --surface: rgba(255, 255, 255, 0.58);
   --surface2: rgba(255, 255, 255, 0.76);
   --text: #0b1220;
-  --muted: rgba(11, 18, 32, 0.55);
-  --line: rgba(11, 18, 32, 0.08);
+  /* 0.55 lag auf der hellen Karte knapp unter dem Kontrastminimum für kleine
+     Schrift (Stundenzeiten, Datumszeilen sind 10–12 px). */
+  --muted: rgba(11, 18, 32, 0.66);
+  --line: rgba(11, 18, 32, 0.10);
   --shadow: 0 20px 60px rgba(10, 30, 100, 0.14), 0 4px 12px rgba(10, 30, 100, 0.07);
 
   color-scheme: light;
