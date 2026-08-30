@@ -1,5 +1,7 @@
 import Link from 'next/link';
 
+import { FeedbackForm } from '@/components/feedback/FeedbackForm';
+
 const LINKS = [
   {
     title: 'TV-Ansicht Eingangsbereich',
@@ -137,6 +139,8 @@ export default function WeiteresPage() {
           </div>
         </div>
       </div>
+
+      <FeedbackForm />
     </>
   );
 }
