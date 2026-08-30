@@ -1,6 +1,8 @@
+import Link from 'next/link';
+
 import { Clock } from '@/components/ui/Clock';
 import { TimetableMeta } from '@/components/schedule/TimetableMeta';
-import { TvTimetableGrid } from '@/components/schedule/TvTimetableGrid';
+import { TvSchedulePanel } from '@/components/schedule/TvSchedulePanel';
 import { TvPageController } from '@/components/tv/TvPageController';
 import { TvSlideshow } from '@/components/tv/TvSlideshow';
 import { mediaUrl } from '@/lib/api/client';
@@ -39,12 +41,14 @@ export default async function TvPage() {
       <section className="tv-main-grid" data-panels={slides.length > 0 ? '3' : '2'} aria-label="TV-Übersicht">
         <article className="tv-panel tv-clock-panel">
           <div className="tv-branding-row">
-            <div className="tv-branding">
-              <div className="tv-logo-wrap" aria-hidden="true">
+            {/* Der Wandbildschirm blendet die Navigation aus — das Logo ist
+                deshalb der einzige Weg zurück zur normalen App. */}
+            <Link href="/" className="tv-branding" aria-label="Zur Startseite">
+              <span className="tv-logo-wrap">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/content/branding/school-logo.svg" alt="" className="tv-logo" />
-              </div>
-            </div>
+              </span>
+            </Link>
 
             <Clock />
           </div>
@@ -75,16 +79,16 @@ export default async function TvPage() {
           )}
         </article>
 
+        {/* Ohne Überschrift: Der Platz gehört den Bildern. */}
         {slides.length > 0 && (
-          <article className="tv-panel tv-slideshow-panel">
-            <h2>Aus der Schule</h2>
+          <article className="tv-panel tv-slideshow-panel" aria-label="Aus der Schule">
             <TvSlideshow images={slides} />
           </article>
         )}
       </section>
 
       <section className="tv-panel tv-timetable-panel">
-        <TvTimetableGrid schedulesByClass={timetable.entries} day={timetable.todayKey} />
+        <TvSchedulePanel schedulesByClass={timetable.entries} day={timetable.todayKey} />
       </section>
     </div>
   );
