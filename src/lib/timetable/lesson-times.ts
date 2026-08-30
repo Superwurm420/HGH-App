@@ -40,7 +40,7 @@ export function isLessonRunning(lesson: LessonEntry, nowMinutes: number): boolea
 }
 
 /** Minuten seit Mitternacht → „08:00". */
-export function formatClock(minutes: number): string {
+function formatClock(minutes: number): string {
   const hour = Math.floor(minutes / 60) % 24;
   const minute = minutes % 60;
   return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
@@ -58,15 +58,6 @@ export function formatLessonTime(time: string): string {
   const range = parseLessonTimeRange(time);
   if (!range) return time.trim();
   return `${formatClock(range.start)}–${formatClock(range.end)}`;
-}
-
-/** Nur der Beginn einer Zeitangabe: „8.00 - 9.30" → „08:00". */
-export function formatLessonStart(time: string): string {
-  const range = parseLessonTimeRange(time);
-  if (range) return formatClock(range.start);
-
-  const start = toMinutes(time);
-  return start === null ? time.trim() : formatClock(start);
 }
 
 /**

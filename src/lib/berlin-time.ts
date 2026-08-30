@@ -3,13 +3,6 @@ import type { Weekday } from '@/lib/timetable/types';
 
 // ── Cached Intl.DateTimeFormat instances ──────────────────────────────────────
 
-const berlinTimeFormatter = new Intl.DateTimeFormat('de-DE', {
-  timeZone: 'Europe/Berlin',
-  hour: '2-digit',
-  minute: '2-digit',
-  hour12: false,
-});
-
 const berlinFullFormatter = new Intl.DateTimeFormat('de-DE', {
   timeZone: 'Europe/Berlin',
   year: 'numeric',
@@ -46,13 +39,6 @@ export function getBerlinNowParts(date: Date = new Date()): BerlinNowParts {
     minute: Number(parts.find((p) => p.type === 'minute')?.value ?? 0),
     weekdayShort: parts.find((p) => p.type === 'weekday')?.value ?? '',
   };
-}
-
-export function getBerlinMinutes(date: Date = new Date()): number {
-  const parts = berlinTimeFormatter.formatToParts(date);
-  const hour = Number(parts.find((p) => p.type === 'hour')?.value ?? 0);
-  const minute = Number(parts.find((p) => p.type === 'minute')?.value ?? 0);
-  return hour * 60 + minute;
 }
 
 export function timeToMinutes(h: number, m: number): number {

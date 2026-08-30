@@ -63,10 +63,6 @@ export function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement
   return <textarea {...props} className={`${styles.textarea} ${props.className ?? ''}`} />;
 }
 
-export function Select(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select {...props} className={`select ${props.className ?? ''}`} />;
-}
-
 export function Toggle({
   checked,
   onChange,
