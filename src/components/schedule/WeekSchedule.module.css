@@ -17,7 +17,10 @@
   text-align: center;
 }
 
-@media (min-width: 740px) {
+/* Erst ab 768px passt die Tabelle ohne Seitwaertsscrollen hinein — vorher stand
+   hier 740px, waehrend das Raster gleichzeitig ab 740px auf min-width: 760px
+   sprang. Dazwischen scrollte die Tabelle weiter, nur sagte es niemandem mehr. */
+@media (min-width: 768px) {
   .scrollHint {
     display: none;
   }
@@ -212,16 +215,19 @@
   font-size: 12px;
 }
 
-@media (min-width: 740px) {
+/* Tablet: die Tagesspalten geben ihre feste Breite auf, damit fuenf Tage plus
+   Stundenspalte in die ~690px passen, die im Hochformat innen zur Verfuegung
+   stehen. */
+@media (min-width: 768px) {
   .grid {
-    min-width: 760px;
+    min-width: 660px;
   }
 
   .dayHead {
-    width: 180px;
-    min-width: 180px;
-    font-size: 14px;
-    padding: 12px 10px;
+    width: auto;
+    min-width: 118px;
+    font-size: 13px;
+    padding: 12px 8px;
   }
 
   .periodCell {
@@ -258,5 +264,19 @@
 
   .periodTime {
     margin-top: 2px;
+  }
+}
+
+/* Ab hier ist genug Platz fuer die vollen Spaltenbreiten. */
+@media (min-width: 1024px) {
+  .grid {
+    min-width: 760px;
+  }
+
+  .dayHead {
+    width: 180px;
+    min-width: 180px;
+    font-size: 14px;
+    padding: 12px 10px;
   }
 }

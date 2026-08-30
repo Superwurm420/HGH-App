@@ -32,3 +32,15 @@
   border-color: var(--accent);
   color: var(--accent);
 }
+
+@media (min-width: 768px) {
+  .daySelector {
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .dayButton {
+    padding: 11px 22px;
+    font-size: 15px;
+  }
+}

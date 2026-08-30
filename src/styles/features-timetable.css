@@ -128,8 +128,32 @@
   }
 }
 
-@media (min-width: 900px) and (orientation: landscape) {
+/* Ohne diese Stufe wuchs die Fachspalte auf dem iPad auf ~700px aus, waehrend
+   Zeit und Raum in ihren 90/96px gedraengt blieben. */
+@media (min-width: 768px) {
+  .tt-header,
+  .tt-row {
+    grid-template-columns: 120px minmax(0, 1fr) 170px;
+  }
+
   .tt-cell {
-    padding: 11px 12px;
+    padding: 13px 16px;
+  }
+
+  .tt-period-num {
+    font-size: 16px;
+  }
+
+  .tt-period-time,
+  .tt-detail {
+    font-size: 12px;
+  }
+
+  .tt-subject-cell {
+    font-size: 16px;
+  }
+
+  .tt-room {
+    font-size: 15px;
   }
 }
