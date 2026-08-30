@@ -4,18 +4,17 @@ import { TvTimetableGrid } from '@/components/schedule/TvTimetableGrid';
 import { TvPageController } from '@/components/tv/TvPageController';
 import { TvSlideshow } from '@/components/tv/TvSlideshow';
 import { mediaUrl } from '@/lib/api/client';
-import { loadAnnouncements, loadAppSettings, loadSchedulePage, loadTvImages } from '@/server/page-data';
+import { loadAnnouncements, loadSchedulePage, loadTvImages } from '@/server/page-data';
 
 export const dynamic = 'force-dynamic';
 
 const MAX_TV_ANNOUNCEMENTS = 8;
 
 export default async function TvPage() {
-  const [schedule, announcements, images, settings] = await Promise.all([
+  const [schedule, announcements, images] = await Promise.all([
     loadSchedulePage(),
     loadAnnouncements(),
     loadTvImages(),
-    loadAppSettings(),
   ]);
 
   if (!schedule.hasTimetable) {
@@ -39,10 +38,6 @@ export default async function TvPage() {
       <TvPageController />
       <section className="tv-main-grid" data-panels={slides.length > 0 ? '3' : '2'} aria-label="TV-Übersicht">
         <article className="tv-panel tv-clock-panel">
-          <div className="tv-headline">
-            <h1>{settings.schoolName}</h1>
-          </div>
-
           <div className="tv-branding-row">
             <div className="tv-branding">
               <div className="tv-logo-wrap" aria-hidden="true">

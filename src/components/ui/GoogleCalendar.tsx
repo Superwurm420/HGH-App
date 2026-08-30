@@ -1,15 +1,21 @@
 import React from 'react';
 import { extractGoogleCalendarIds } from '@/lib/calendar/url-normalization';
 
+// Feste Farben aus Googles Embed-Palette: Ohne `color`-Parameter vergibt Google
+// mehreren Kalendern in einem Embed teils dieselbe Farbe — dann sind sie nicht
+// auseinanderzuhalten. Positionsweise zu `src` gepaart, deshalb der Index.
+const CALENDAR_COLORS = ['#4986E7', '#F83A22', '#16A765', '#FF7537', '#B99AFF', '#42D692'];
+
 export function GoogleCalendar({ urls }: { urls: string[] }) {
   const calendarIds = urls.flatMap((url) => extractGoogleCalendarIds(url));
 
   if (calendarIds.length === 0) return null;
 
   const combined = new URL('https://calendar.google.com/calendar/embed');
-  for (const id of calendarIds) {
+  calendarIds.forEach((id, index) => {
     combined.searchParams.append('src', id);
-  }
+    combined.searchParams.append('color', CALENDAR_COLORS[index % CALENDAR_COLORS.length]);
+  });
   combined.searchParams.set('ctz', 'Europe/Berlin');
 
   return (

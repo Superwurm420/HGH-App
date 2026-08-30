@@ -3,16 +3,13 @@
 import { useMemo } from 'react';
 import { LessonEntry, ParsedSchedule, Weekday } from '@/lib/timetable/types';
 import { isLessonRunning } from '@/lib/timetable/lesson-times';
+import { formatSubject } from './format-subject';
 import { useMinutesOfDay } from './use-berlin-minutes';
 
 type TvTimetableGridProps = {
   schedulesByClass: ParsedSchedule;
   day: Weekday;
 };
-
-function formatLesson(entry: LessonEntry): string {
-  return entry.subject ?? '—';
-}
 
 export function TvTimetableGrid({ schedulesByClass, day }: TvTimetableGridProps) {
   // Null am Wochenende: Der Wandbildschirm zeigt dann den Montagsplan, in dem
@@ -151,7 +148,7 @@ export function TvTimetableGrid({ schedulesByClass, day }: TvTimetableGridProps)
                     >
                       {lesson ? (
                         <div className="tv-cell-content">
-                          <span className="tv-subject">{formatLesson(lesson)}</span>
+                          <span className="tv-subject">{lesson.subject ? formatSubject(lesson.subject) : '—'}</span>
                           {lesson.room ? <span className="tv-room">Raum {lesson.room}</span> : null}
                         </div>
                       ) : (

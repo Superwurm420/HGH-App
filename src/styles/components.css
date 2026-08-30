@@ -358,31 +358,25 @@
   gap: 18px;
 }
 
-.tv-headline h1 {
-  margin: 0;
-  font-size: clamp(26px, 3vw, 40px);
-  font-weight: 900;
-}
-
 .tv-logo-wrap {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: clamp(44px, 5vw, 72px);
-  height: clamp(44px, 5vw, 72px);
-  border-radius: 12px;
+  width: clamp(76px, 9vw, 132px);
+  height: clamp(76px, 9vw, 132px);
+  border-radius: 18px;
   background: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 0 14px rgba(255, 255, 255, 0.22);
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.22);
 }
 
 .light .tv-logo-wrap {
   background: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
 }
 
 .tv-logo {
-  width: clamp(30px, 3.6vw, 56px);
-  height: clamp(30px, 3.6vw, 56px);
+  width: clamp(56px, 7vw, 104px);
+  height: clamp(56px, 7vw, 104px);
   object-fit: contain;
 }
 

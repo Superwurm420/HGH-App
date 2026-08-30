@@ -157,8 +157,7 @@ export function Notice({
  * Gespeichert wird weiterhin eine Liste wie „HT11, G21" — das Format liegt so
  * in der Datenbank und wird von den Filtern der öffentlichen Seiten erwartet.
  * Getippt werden muss es aber nicht mehr: Die Klassen kommen aus dem aktiven
- * Stundenplan. Ein freies Feld bleibt trotzdem, denn eine Klasse ohne Unterricht
- * im aktuellen Plan soll sich trotzdem eintragen lassen.
+ * Stundenplan und werden als Chips ausgewählt.
  */
 export function ClassPicker({
   value,
@@ -168,7 +167,6 @@ export function ClassPicker({
   onChange: (next: string) => void;
 }) {
   const [available, setAvailable] = useState<string[]>([]);
-  const [custom, setCustom] = useState('');
 
   useEffect(() => {
     fetchTimetableClasses()
@@ -184,16 +182,6 @@ export function ClassPicker({
       ? selected.filter((entry) => entry !== code)
       : [...selected, code];
     onChange(next.join(', '));
-  }
-
-  function addCustom() {
-    const code = custom.trim().toUpperCase();
-    if (!code || selected.includes(code)) {
-      setCustom('');
-      return;
-    }
-    onChange([...selected, code].join(', '));
-    setCustom('');
   }
 
   return (
@@ -216,22 +204,9 @@ export function ClassPicker({
         </div>
       ) : (
         <p className={styles.empty}>
-          Noch kein aktiver Stundenplan — Klassen bitte unten von Hand eintragen.
+          Noch kein aktiver Stundenplan — Klassen erscheinen, sobald ein Plan aktiv ist.
         </p>
       )}
-
-      <div className={`${styles.row} mt-2`}>
-        <TextInput
-          value={custom}
-          onChange={(e) => setCustom(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCustom(); } }}
-          placeholder="Weitere Klasse, z. B. HT11"
-          style={{ flex: '1 1 12rem', minWidth: 0 }}
-        />
-        <button type="button" onClick={addCustom} className={styles.smallBtn}>
-          Hinzufügen
-        </button>
-      </div>
     </div>
   );
 }
