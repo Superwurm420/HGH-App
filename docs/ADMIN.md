@@ -1,282 +1,268 @@
-# Admin-Anleitung — Schritt für Schritt
+# Admin-Anleitung
 
-Diese Anleitung erklärt dir alles, was du im Adminbereich der HGH-App tun kannst. Du brauchst dafür **keine technischen Vorkenntnisse**.
+Alles, was du im Adminbereich der HGH-App tun kannst — ohne technische
+Vorkenntnisse.
 
----
-
-## Was kannst du im Adminbereich tun?
-
-Im Adminbereich gibt es fünf Bereiche:
-
-1. **Stundenplan** — PDF-Dateien mit dem aktuellen Stundenplan hochladen und freischalten
-2. **Ankündigungen** — Nachrichten erstellen, die auf der Startseite und der Pinnwand erscheinen
-4. **Bilder** — Fotos hochladen, die auf dem Wandbildschirm (`/tv`) durchlaufen
-5. **Einstellungen** — Google-Kalender, Ferienzeiträume, Tagesmeldungen, Schulname, Passwort ändern
+- [Anmeldung](#anmeldung)
+- [Stundenplan](#stundenplan)
+- [Ankündigungen](#ankündigungen)
+- [Bilder](#bilder)
+- [Rückmeldungen](#rückmeldungen)
+- [Einstellungen](#einstellungen)
+- [Häufige Probleme](#häufige-probleme)
 
 ---
 
 ## Anmeldung
 
-1. Öffne die App im Browser.
-2. Hänge `/admin` an die Adresse an (z. B. `https://deine-app.de/admin`).
-3. Gib deinen Benutzernamen und dein Passwort ein:
-   - **Benutzername**: `Admin` (Standardwert, kann von der IT geändert werden; Groß-/Kleinschreibung ist beim Anmelden egal)
-   - **Passwort**: bekommst du von der IT-Betreuung. Beim allerersten Login lautet es `admin`.
-4. Klicke auf **Anmelden**.
+1. App im Browser öffnen und `/admin` an die Adresse hängen
+   (z. B. `https://deine-app.de/admin`).
+2. Benutzername (Standard `Admin`, Groß- und Kleinschreibung egal) und Passwort
+   eingeben, dann **Anmelden**.
 
-**Gut zu wissen:**
-- Beim allerersten Login wird dein Adminkonto automatisch erstellt — du musst nichts extra einrichten.
-- Danach kommst du **nur noch zur Passwortvergabe**: Solange das Standardpasswort gilt, ist der übrige Adminbereich gesperrt. Vergib dort ein eigenes Passwort, dann ist alles freigeschaltet.
-- Deine Sitzung läuft nach **12 Stunden** automatisch ab. Danach musst du dich einfach erneut anmelden.
+Das Passwort bekommst du von der IT-Betreuung; beim allerersten Login lautet es
+`admin`. Dabei wird das Konto angelegt — und der Adminbereich lässt dich
+zunächst **nur ein eigenes Passwort vergeben**. Erst danach ist alles andere
+freigeschaltet.
+
+Deine Sitzung läuft nach **12 Stunden** ab; dann meldest du dich einfach erneut
+an. Abmelden kannst du dich jederzeit über den Knopf in der Kopfzeile.
+
+Der Adminbereich hat fünf Bereiche: **Stundenplan**, **Ankündigungen**,
+**Bilder**, **Rückmeldungen** und **Einstellungen**.
 
 ---
 
-## Stundenplan verwalten
+## Stundenplan
 
-### Neuen Stundenplan hochladen
+### Plan hochladen
 
-1. Wechsle zum Tab **Stundenplan**.
-2. Klicke auf **Durchsuchen** und wähle die PDF-Datei aus.
-3. Die Datei wird sofort ausgewertet — direkt hier im Browser, es wird noch nichts hochgeladen.
-4. **Prüfe die Vorschau**: Sie zeigt, wie viele Klassen und Stunden erkannt wurden. Klappe eine Klasse auf, um Tag für Tag zu sehen, welche Fächer, Lehrkräfte und Räume gelesen wurden. Sieht das falsch aus, klicke auf **Verwerfen**.
-5. Stimmt alles, klicke auf **Hochladen**.
-6. Klicke anschließend in der Liste auf **Aktivieren**.
+1. Tab **Stundenplan** öffnen und die PDF-Datei auswählen.
+2. Die Datei wird sofort **in deinem Browser** ausgewertet — hochgeladen ist
+   noch nichts. Deshalb siehst du direkt, ob das PDF richtig gelesen wurde.
+3. **Vorschau prüfen**: Sie zeigt, wie viele Klassen und Stunden erkannt wurden.
+   Klappe eine Klasse auf, um Tag für Tag Fächer, Lehrkräfte und Räume zu sehen.
+4. Stimmt alles: **Hochladen**. Stimmt es nicht: **Verwerfen**.
 
-**Erst nach dem Aktivieren** sehen die Nutzer den neuen Stundenplan in der App!
+Oben im Tab steht der Schalter **„Immer den neuesten Plan anzeigen“**. Er ist
+eingeschaltet, solange niemand ihn ändert:
 
-> Die Auswertung passiert bewusst in deinem Browser. Deshalb siehst du sofort,
-> ob das PDF richtig gelesen wurde — und musst nicht erst hochladen und hoffen.
+| Schalter | Was passiert nach dem Hochladen |
+|---|---|
+| **an** | Der neue Plan ist sofort in der App zu sehen (der Knopf heißt dann „Hochladen und anzeigen“). |
+| **aus** | Der Plan liegt erst nur in der Liste. Er wird angezeigt, sobald du auf **Aktivieren** klickst. |
 
-### Dateiname richtig benennen
+### Dateiname
 
-Damit Kalenderwoche und Halbjahr automatisch erkannt werden, benenne die Datei nach diesem Muster:
+Damit Kalenderwoche und Halbjahr automatisch übernommen werden:
 
 ```
-Stundenplan_kw_XX_HjY_YYYY_YY.pdf
+Stundenplan_kw_XX_HjY_YYYY_YY.pdf     Beispiel: Stundenplan_kw_12_Hj2_2025_26.pdf
 ```
-
-**Beispiel:** `Stundenplan_kw_12_Hj2_2025_26.pdf`
 
 | Teil | Bedeutung | Beispiel |
 |---|---|---|
 | `kw_XX` | Kalenderwoche | `kw_12` = Woche 12 |
 | `HjY` | Halbjahr (1 oder 2) | `Hj2` = zweites Halbjahr |
-| `YYYY_YY` | Schuljahr | `2025_26` = Schuljahr 2025/26 |
+| `YYYY_YY` | Schuljahr | `2025_26` = 2025/26 |
 
-Wenn die Datei anders benannt ist, funktioniert der Upload trotzdem — nur Woche und Halbjahr werden dann nicht automatisch erkannt.
+Ein anders benannter Plan lässt sich trotzdem hochladen — dann fehlen nur Woche
+und Halbjahr.
 
-### Status-Bedeutungen
+### Status in der Liste
 
-| Status | Was bedeutet das? |
+| Status | Bedeutung |
 |---|---|
-| **Bereit zur Aktivierung** | Alles wurde erkannt — du kannst den Plan jetzt freischalten |
-| **Aktiv** | Dieser Plan wird den Nutzern aktuell angezeigt |
-| **Archiviert** | Ein früher aktiver Plan. Du kannst ihn jederzeit wieder aktivieren. |
-| **Fehler** | Beim Speichern ging etwas schief (siehe unten) |
+| **Bereit zur Aktivierung** | Eingelesen, aber noch nicht sichtbar |
+| **Aktiv** | Dieser Plan wird gerade angezeigt |
+| **Archiviert** | War einmal aktiv, lässt sich jederzeit wieder aktivieren |
+| **Fehler** | Beim Speichern ging etwas schief |
 
-Probleme beim Lesen der PDF-Datei siehst du schon vor dem Hochladen in der Vorschau —
-in der Liste taucht ein unlesbares PDF also gar nicht erst auf.
+### Gut zu wissen
 
-### Wichtige Hinweise
-
-- **Dateigröße**: Maximal 20 MB pro PDF
-- **Seiten**: Ausgewertet wird nur die **erste Seite** des PDFs
-- **Dateiformat**: Nur PDF-Dateien werden akzeptiert
-- **Nur ein aktiver Plan**: Es kann immer nur ein Stundenplan gleichzeitig aktiv sein. Wenn du einen neuen aktivierst, wird der alte automatisch archiviert.
-- **Fallback**: Falls kein Plan aktiv ist, zeigt die App automatisch den letzten archivierten Plan an.
-- Einen aktiven Plan kannst du nicht löschen — erst deaktivieren (indem du einen anderen aktivierst), dann löschen.
+- Höchstens **20 MB** pro PDF, nur PDF-Dateien.
+- **Alle Seiten** werden ausgewertet und zusammengeführt.
+- Es ist immer nur **ein** Plan aktiv; beim Aktivieren wird der bisherige
+  archiviert.
+- Ist kein Plan aktiv, zeigt die App den zuletzt archivierten.
+- Den aktiven Plan kannst du nicht löschen — erst einen anderen aktivieren.
 
 ---
 
-## Ankündigungen verwalten
+## Ankündigungen
 
-Wechsle zum Tab **Ankündigungen**. Links siehst du das Formular, rechts die Liste der vorhandenen Ankündigungen.
+Links das Formular, rechts die Liste.
 
-### Neue Ankündigung erstellen
+### Neu erstellen
 
-Fülle die folgenden Felder aus:
-
-| Feld | Pflicht? | Erklärung |
+| Feld | Pflicht | Bedeutung |
 |---|---|---|
-| **Titel** | Ja | Eine kurze Überschrift für die Ankündigung |
-| **Start (Datum + Uhrzeit)** | Ja | Ab wann die Ankündigung sichtbar sein soll |
-| **Ende/Ablauf** | Nein | Wann die Ankündigung automatisch verschwinden soll. Wenn du nichts einträgst, bleibt sie dauerhaft sichtbar. |
-| **Klassen** | Nein | Wenn die Ankündigung nur bestimmte Klassen betrifft, trage die Klassenkürzel ein, getrennt durch Kommas. Beispiel: `HT11, G21`. Wenn du das Feld leer lässt, sehen alle Klassen die Ankündigung. |
-| **Als Sondertermin anzeigen** | Nein | Wenn du dieses Häkchen setzt, wird die Ankündigung **besonders hervorgehoben oberhalb des Stundenplans** angezeigt. Nutze das für wichtige Meldungen. |
-| **Text** | Nein | Der ausführliche Inhalt der Ankündigung (mehrzeilig möglich) |
+| **Titel** | ja | Kurze Überschrift |
+| **Start** | ja | Ab wann die Ankündigung sichtbar ist |
+| **Ende/Ablauf** | nein | Wann sie verschwindet. Leer = dauerhaft sichtbar. |
+| **Klassen** | nein | Nur für diese Klassen sichtbar, z. B. `HT11, G21`. Leer = für alle. |
+| **Als Sondertermin hervorheben** | nein | Zeigt die Ankündigung zusätzlich hervorgehoben **über dem Stundenplan** — für wichtige Meldungen. |
+| **Text** | nein | Der ausführliche Inhalt, mehrzeilig möglich |
 
-Klicke anschließend auf **Erstellen**.
+Dann auf **Erstellen** klicken.
 
-### Bestehende Ankündigung bearbeiten
+### Bearbeiten und löschen
 
-1. Klicke rechts in der Liste auf den **Titel** der Ankündigung, die du ändern möchtest.
-2. Das Formular links wird mit den Daten gefüllt.
-3. Ändere, was du möchtest.
-4. Klicke auf **Aktualisieren**.
-
-### Ankündigung löschen
-
-1. Klicke rechts in der Liste beim gewünschten Eintrag auf den roten **Löschen**-Button.
-2. Bestätige die Sicherheitsabfrage.
-
-### Neues Formular
-
-Wenn du gerade eine Ankündigung bearbeitest und stattdessen eine neue erstellen möchtest, klicke auf **Neues Formular** — das setzt alle Felder zurück.
+- **Bearbeiten**: rechts in der Liste auf den Titel klicken, Felder ändern,
+  **Aktualisieren**.
+- **Löschen**: in der Liste auf **Löschen** klicken und bestätigen.
+- **Neues Formular** setzt alle Felder zurück, wenn du statt der begonnenen
+  Änderung lieber etwas Neues anlegen willst.
 
 ---
 
-## Bilder für den Wandbildschirm
+## Bilder
 
-Der Tab **Bilder** füllt die Slideshow auf der TV-Ansicht (`/tv`) — zum Beispiel
-mit Werkstücken, Plakaten oder Fotos von Schulveranstaltungen.
+Die Bilder aus diesem Tab laufen als Slideshow auf dem Wandbildschirm (`/tv`)
+und stehen in der Galerie unter **Weiteres** — zum Beispiel Werkstücke, Plakate
+oder Fotos von Veranstaltungen.
 
-1. Wechsle zum Tab **Bilder**.
-2. Wähle ein oder mehrere Bilder aus (Mehrfachauswahl ist möglich).
-3. Klicke auf **Hochladen**.
-
-Die Bilder wechseln sich auf dem Wandbildschirm alle 15 Sekunden ab, in der
-Reihenfolge, in der sie hochgeladen wurden. Die Pinnwand bleibt daneben sichtbar.
+Bilder auswählen (mehrere gleichzeitig möglich) und **Hochladen**. Sie wechseln
+sich auf dem Wandbildschirm alle 15 Sekunden in der Reihenfolge des Hochladens
+ab; die Pinnwand bleibt daneben sichtbar. Zum Entfernen auf **Löschen** unter
+dem Bild klicken.
 
 | Regel | Wert |
 |---|---|
 | Formate | JPG, PNG, GIF, WebP |
 | Maximale Größe | 8 MB pro Bild |
 
-Zum Entfernen auf **Löschen** unter dem jeweiligen Bild klicken. Solange keine
-Bilder hochgeladen sind, zeigt die TV-Ansicht einfach keine Slideshow.
+Ohne hochgeladene Bilder zeigt die TV-Ansicht einfach keine Slideshow.
+
+---
+
+## Rückmeldungen
+
+Hier landen die Meldungen aus dem Formular unter **Weiteres** — Fehler, Ideen,
+Hinweise auf falsche Stundenpläne. Zu jeder Meldung stehen Kategorie, Datum,
+die Seite, von der sie abgeschickt wurde, sowie Klasse und Kontakt, falls
+angegeben.
+
+Über den Filter siehst du **Offene**, **Erledigte** oder **Alle**. Bearbeitete
+Meldungen markierst du als **erledigt** (das lässt sich zurücknehmen) oder
+löschst sie.
 
 ---
 
 ## Einstellungen
 
-Im Tab **Einstellungen** pflegst du alles, was nicht Stundenplan, Ankündigung
-ist. Änderungen werden erst mit **Alles speichern** übernommen.
+Die Karten dieses Tabs werden gemeinsam mit **Alles speichern** übernommen —
+außer der Passwortänderung ganz unten, die einen eigenen Knopf hat.
+
+### Überschrift des Wandbildschirms
+
+Der Name der Schule, der als Überschrift auf `/tv` steht — sonst nirgends. Leer
+lassen bedeutet „Holztechnik und Gestaltung Hildesheim“.
 
 ### Google-Kalender
 
-Öffne in Google Kalender die Einstellungen des gewünschten Kalenders, gehe zu
-**Kalender integrieren** und kopiere den Einbettungs-Link. Diesen hier einfügen
-und auf **Hinzufügen** klicken. Du kannst mehrere Kalender eintragen.
-
-Ist kein Kalender eingetragen, zeigt die App einen einfachen Monatskalender.
+In Google Kalender unter **Einstellungen → Kalender integrieren** den
+Einbettungs-Link kopieren, hier einfügen und **Hinzufügen** klicken. Mehrere
+Kalender sind möglich. Ohne Eintrag zeigt die App einen einfachen Monatskalender.
 
 ### Ferien und freie Tage
 
-Trage hier die Schulferien mit Start- und Enddatum ein. In diesen Zeiträumen
-zeigt die Startseite eine Ferien-Meldung statt des Countdowns.
-
-Die **gesetzlichen Feiertage in Niedersachsen** sind bereits fest hinterlegt und
-müssen nicht eingetragen werden.
-
-### Passwort ändern
-
-Ganz unten im Tab. Du brauchst dein bisheriges Passwort. Für das neue gibt es
-**keine Vorgabe zur Länge** — wähle trotzdem etwas, das nicht zu erraten ist.
-
-Nach dem Ändern bleibst du auf diesem Gerät angemeldet — **alle anderen Geräte
-werden abgemeldet**. Das ist Absicht: Wenn ein Passwort in falsche Hände geraten
-ist, soll niemand über ein offenes Fenster angemeldet bleiben.
-
-> Ändere das Passwort auf jeden Fall einmal, wenn du den Adminbereich
-> übernimmst. Das Passwort aus der Ersteinrichtung ist oft mehreren Leuten
-> bekannt.
+Ferienzeiträume mit Start- und Enddatum eintragen. In diesen Zeiträumen zeigt
+die Startseite eine Ferien-Meldung statt des Countdowns. Die **gesetzlichen
+Feiertage in Niedersachsen** sind fest hinterlegt und brauchen keinen Eintrag.
 
 ### Tagesmeldungen
 
 Kurze Sprüche, die auf der Startseite je nach Tageszeit erscheinen. Das Feld
-erwartet JSON — Aufbau und Beispiele stehen in
-[docs/CONTENT_FORMATS.md](CONTENT_FORMATS.md). Wenn du hier nichts brauchst,
-lass einfach `{}` stehen.
+erwartet JSON; Aufbau und Beispiele stehen in
+[Tagesmeldungen und Ferienzeiten](CONTENT_FORMATS.md). Wird nichts gebraucht,
+bleibt `{}` stehen. Beim Speichern wird geprüft, ob das JSON gültig ist — bei
+einem Tippfehler bekommst du eine Meldung, statt dass die Startseite kaputtgeht.
 
-Beim Speichern wird geprüft, ob das JSON gültig ist — bei einem Tippfehler
-bekommst du eine Meldung, statt dass die Startseite kaputtgeht.
+### Passwort ändern
+
+Du brauchst dein bisheriges Passwort. Für das neue gibt es **keine Vorgabe zur
+Länge** — wähle trotzdem etwas, das nicht zu erraten ist.
+
+Nach dem Ändern bleibst du auf diesem Gerät angemeldet, **alle anderen Geräte
+werden abgemeldet**. Das ist Absicht: Ist ein Passwort in falsche Hände geraten,
+soll niemand über ein offenes Fenster angemeldet bleiben. Ändere das Passwort
+deshalb auch, wenn du den Adminbereich von jemandem übernimmst.
 
 ---
 
-## Häufige Probleme und Lösungen
+## Häufige Probleme
 
-### „Ungültige Anmeldedaten"
+### „Ungültige Anmeldedaten“
 
-- Prüfe, ob der Benutzername stimmt (Standard: `Admin`)
-- Prüfe das Passwort (Groß-/Kleinschreibung beachten)
-- Falls das System gerade erst eingerichtet wurde: frage die IT-Betreuung nach dem aktuellen Passwort
+- Benutzername prüfen (Standard `Admin`), Passwort auf Groß- und Kleinschreibung
+  prüfen.
+- Steht über dem Anmeldeformular ein **gelber Hinweis**, liegt es nicht am
+  Passwort, sondern an der Einrichtung. Gib den Hinweis genau so an die
+  IT-Betreuung weiter.
 
-Steht über dem Anmeldeformular ein **gelber Hinweis**, liegt es nicht am Passwort,
-sondern an der Einrichtung — der Hinweis sagt, was fehlt. Gib ihn genau so an die
-IT-Betreuung weiter.
+### „Im PDF wurde kein Stundenplan erkannt“
 
-### „Im PDF wurde kein Stundenplan erkannt"
+Diese Meldung kommt schon beim Auswählen der Datei, vor dem Hochladen.
 
-Diese Meldung kommt direkt nach dem Auswählen der Datei, noch vor dem Hochladen.
-
-- Stelle sicher, dass es sich wirklich um eine PDF-Datei handelt (kein Foto, kein Scan)
-- Die PDF muss echten Text enthalten. Ein eingescanntes Blatt ist nur ein Bild und kann nicht gelesen werden.
-- Versuche, die PDF neu zu exportieren (aus dem Programm, das den Stundenplan erstellt)
-
-Mehrere Seiten sind kein Problem — alle Seiten werden ausgewertet und zusammengeführt.
-
-Steht in der Vorschau der Hinweis, das PDF enthalte **keine gezeichnete
-Tabelle**, wurde der Plan nur anhand der Lage der Texte geschätzt. Er stimmt
-dann meistens, aber nicht sicher — sieh ihn in dem Fall besonders genau durch.
+- Es muss eine PDF-Datei sein, kein Foto und kein Scan: Ein eingescanntes Blatt
+  ist nur ein Bild und enthält keinen lesbaren Text.
+- Hilft das nicht, das PDF aus dem Programm, das den Plan erstellt, neu
+  exportieren.
 
 ### Die Vorschau meldet etwas zum Prüfen
 
-Findet die Auswertung eine Stelle, bei der sie sich nicht sicher ist, steht das als
-gelber Kasten in der Vorschau — zum Beispiel, wenn für eine Klasse kein einziger
-Raum erkannt wurde oder ein Wochentag fehlt. Der Plan lässt sich trotzdem
-hochladen; sieh die genannte Klasse vorher in der Vorschau durch.
+Ist sich die Auswertung an einer Stelle nicht sicher — etwa wenn für eine Klasse
+kein einziger Raum erkannt wurde oder ein Wochentag fehlt —, steht das als
+gelber Kasten in der Vorschau. Hochladen lässt sich der Plan trotzdem; sieh die
+genannte Klasse vorher durch.
+
+Steht dort, das PDF enthalte **keine gezeichnete Tabelle**, wurde der Plan nur
+anhand der Lage der Texte geschätzt. Er stimmt dann meistens, aber nicht sicher
+— in dem Fall besonders genau prüfen.
 
 ### Die Vorschau zeigt zu wenige oder falsche Klassen
 
-Klappe in der Vorschau die betroffene Klasse auf — dort steht Stunde für Stunde,
-was aus dem PDF gelesen wurde. Stimmt das nicht, lade den Plan **nicht** hoch,
-sondern klicke auf **Verwerfen** und gib der IT-Betreuung Bescheid — am besten
-zusammen mit der PDF-Datei.
+Klappe die betroffene Klasse auf: Dort steht Stunde für Stunde, was gelesen
+wurde. Stimmt das nicht, den Plan **nicht** hochladen, sondern **Verwerfen** und
+der IT-Betreuung Bescheid geben — am besten zusammen mit der PDF-Datei.
 
 ### Änderungen sind nicht sichtbar
 
-- Wurde der neue Stundenplan wirklich **aktiviert**? (Status muss „Aktiv" sein)
-- Lade die Seite im Browser neu (am besten mit **Strg + Umschalt + R** bzw. **Cmd + Umschalt + R** auf dem Mac)
-- Auf Handys: App kurz schließen und neu öffnen
+- Ist der neue Plan wirklich **aktiv**?
+- Seite neu laden (**Strg + Umschalt + R**, auf dem Mac **Cmd + Umschalt + R**).
+- Auf dem Handy die App kurz schließen und neu öffnen.
+
+### Ankündigung wird nicht angezeigt
+
+- **Start** liegt in der Zukunft, oder das **Ablaufdatum** ist vorbei.
+- Im Feld **Klassen** stehen Klassen — dann sehen nur diese die Ankündigung.
 
 ### Passwort vergessen
 
-Dafür gibt es bewusst keinen Selbstbedienungsweg (kein Mailversand, keine
-Sicherheitsfragen). Die IT-Betreuung setzt das Konto zurück:
+Dafür gibt es bewusst keinen Selbstbedienungsweg. Die IT-Betreuung setzt das
+Konto zurück:
 
 ```bash
-# Konto löschen — die Stundenpläne und Ankündigungen bleiben erhalten
+# Konto löschen — Stundenpläne und Ankündigungen bleiben erhalten
 npx wrangler d1 execute hgh-app-db --remote \
   --command "DELETE FROM users WHERE username = 'Admin'"
 ```
 
-Danach ist die Ersteinrichtung wieder aktiv: Der nächste Login mit dem
-Benutzernamen aus `ADMIN_USER` (Standard `Admin`) und dem Standardpasswort
-`admin` legt das Konto neu an.
-
-**Melde dich unmittelbar nach dem Löschen an.** In der Zeit dazwischen steht der
-Adminbereich offen: Wer den Benutzernamen kennt, kann sich das Konto nehmen. Der
-Adminbereich lässt nach dieser Anmeldung ohnehin nichts anderes zu, als ein
-Passwort zu vergeben — erst danach sind Stundenplan und Ankündigungen
-wieder erreichbar.
+Danach ist die Ersteinrichtung wieder aktiv: Der nächste Login mit `Admin` und
+dem Standardpasswort `admin` legt das Konto neu an. **Melde dich unmittelbar
+danach an** — bis dahin kann jeder, der den Benutzernamen kennt, sich das Konto
+nehmen.
 
 ### Sitzung abgelaufen
 
-- Nach 12 Stunden wirst du automatisch abgemeldet
-- Melde dich einfach erneut an — deine Daten gehen nicht verloren
-
-### Ankündigung wird nicht angezeigt
-
-- Prüfe das **Startdatum**: Liegt es in der Zukunft, wird die Ankündigung noch nicht angezeigt
-- Prüfe das **Ablaufdatum**: Ist es bereits abgelaufen, wird die Ankündigung nicht mehr angezeigt
-- Prüfe das Feld **Klassen**: Wenn dort Klassen eingetragen sind, sehen nur Nutzer mit diesen Klassen die Ankündigung
+Nach 12 Stunden meldet die App dich ab. Einfach erneut anmelden, es geht nichts
+verloren.
 
 ---
 
-## Wenn du gar nicht weiterkommst
+## Wenn gar nichts hilft
 
-1. Mache einen **Screenshot** von der Fehlermeldung oder dem Problem.
-2. Notiere, **was du direkt davor gemacht hast** (z. B. „Ich habe eine PDF hochgeladen und dann auf Aktivieren geklickt").
-3. Gib diese Infos an die **IT-Betreuung** weiter.
-
-So kann das Problem meist schnell gefunden und gelöst werden.
+Screenshot der Fehlermeldung machen, notieren, was du direkt davor getan hast
+(„PDF hochgeladen, dann auf Aktivieren geklickt“), und beides an die
+IT-Betreuung geben.

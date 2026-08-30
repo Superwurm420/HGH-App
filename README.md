@@ -1,46 +1,34 @@
-# HGH-App — Der digitale Stundenplan
+# HGH-App — der digitale Stundenplan
 
-Die HGH-App ist die Stundenplan-App der **HGH Holztechnik und Gestaltung Hildesheim**. Sie zeigt den aktuellen Stundenplan, Ankündigungen und einen Kalender an — direkt im Browser, auf jedem Gerät.
+Stundenplan-App der **HGH Holztechnik und Gestaltung Hildesheim**: Stundenplan,
+Ankündigungen, Kalender und Wandbildschirm — im Browser, auf jedem Gerät.
 
----
-
-## Für Nutzer: So nutzt du die App
-
-1. **Öffne die App** im Browser auf deinem Handy, Tablet oder Computer.
-2. **Wähle deine Klasse** aus (z. B. HT11, G21) — die Auswahl steht oben auf der Startseite und auf den Stundenplan-Seiten. Sie merkt sich deine Klasse auf diesem Gerät.
-3. Auf der **Startseite** siehst du deinen heutigen Stundenplan, aktuelle Ankündigungen und einen Countdown.
-4. Über die Navigation unten erreichst du weitere Bereiche:
-   - **Tag** — tageweise Ansicht
-   - **Woche** — die ganze Woche auf einen Blick
-   - **Weiteres** — Zusatzinfos und Links
-
-   Die **Pinnwand** mit allen aktuellen Ankündigungen erreichst du über den Link auf der Startseite.
-
-### App auf dem Startbildschirm installieren
-
-Die App lässt sich wie eine normale App auf dem Startbildschirm ablegen:
-
-- **iPhone/iPad**: Tippe auf das Teilen-Symbol (Quadrat mit Pfeil nach oben) und dann auf „Zum Home-Bildschirm".
-- **Android**: Tippe auf die drei Punkte im Browser-Menü und dann auf „Zum Startbildschirm hinzufügen" oder „App installieren".
+| Du bist … | Lies … |
+|---|---|
+| Schülerin, Schüler, Lehrkraft | [Für Nutzer](#für-nutzer) — eine Seite, mehr braucht es nicht |
+| Redaktion (Pläne und Ankündigungen pflegen) | [Admin-Anleitung](docs/ADMIN.md) |
+| IT-Betreuung (einrichten und betreiben) | [Für die IT-Betreuung](#für-die-it-betreuung) |
 
 ---
 
-## Für die Redaktion: Inhalte verwalten
+## Für Nutzer
 
-Die Redaktion verwaltet Stundenpläne, Ankündigungen und Bilder über den **Adminbereich**:
+1. App im Browser öffnen.
+2. **Klasse auswählen** (z. B. HT11) — oben auf der Startseite. Die Auswahl gilt
+   für dieses Gerät und bleibt gespeichert.
+3. Die Startseite zeigt den heutigen Plan, den Countdown und aktuelle
+   Ankündigungen. Unten führt die Navigation zu **Tag**, **Woche** und
+   **Weiteres**; die **Pinnwand** mit allen Ankündigungen ist von der Startseite
+   verlinkt.
 
-1. Öffne die App im Browser
-2. Hänge `/admin` an die Adresse an (z. B. `https://deine-app.de/admin`)
-3. Melde dich an
+Unter **Weiteres** stehen Links, die Bildergalerie und ein Formular für
+Rückmeldungen — Fehler, Wünsche, falsche Stundenpläne. Der Wandbildschirm in der
+Schule läuft unter `/tv`.
 
-**Ausführliche Anleitung:** [Admin-Anleitung (docs/ADMIN.md)](docs/ADMIN.md)
+**Auf den Startbildschirm legen:**
 
-> **Nach der Ersteinrichtung das Passwort ändern:** Adminbereich → Einstellungen →
-> *Passwort ändern*. Das Passwort aus der Einrichtung gilt sonst unbegrenzt weiter.
-
-Tagesmeldungen und Ferienzeiträume pflegst du ebenfalls im Adminbereich, unter **Einstellungen**:
-
-**Anleitung dazu:** [Tagesmeldungen und Ferienzeiten (docs/CONTENT_FORMATS.md)](docs/CONTENT_FORMATS.md)
+- **iPhone/iPad**: Teilen-Symbol → „Zum Home-Bildschirm“
+- **Android**: Browser-Menü (drei Punkte) → „App installieren“
 
 ---
 
@@ -50,157 +38,109 @@ Tagesmeldungen und Ferienzeiträume pflegst du ebenfalls im Adminbereich, unter 
 
 Die App läuft vollständig auf Cloudflare, in **einem** Worker:
 
-- **Oberfläche und Schnittstelle**: Next.js 16, ausgeliefert als Cloudflare Worker
-- **Datenbank**: Cloudflare D1 (SQLite) — Stundenpläne, Ankündigungen, Einstellungen
-- **Dateien**: Cloudflare R2 — hochgeladene PDFs und Bilder
+| Teil | Technik |
+|---|---|
+| Oberfläche und Schnittstelle | Next.js 16 als Cloudflare Worker |
+| Datenbank | Cloudflare D1 (SQLite) — Pläne, Ankündigungen, Einstellungen |
+| Dateien | Cloudflare R2 — hochgeladene PDFs und Bilder |
 
-Es gibt keine getrennte API mehr und damit auch keine API-Adresse zu konfigurieren.
-Deployment läuft automatisch über GitHub Actions.
+Oberfläche und API teilen sich Worker und Adresse: Es gibt keine API-URL zu
+konfigurieren und außer `ADMIN_USER` in `wrangler.toml` keine Variable und kein
+Secret. Deployt wird über GitHub Actions.
 
----
+### Ersteinrichtung
 
-### Ersteinrichtung (von Null auf Laufend)
+Voraussetzungen: [Node.js](https://nodejs.org/) 20 oder neuer, ein
+[Cloudflare-Account](https://dash.cloudflare.com/sign-up) (kostenloser Plan
+genügt) und ein GitHub-Account.
 
-#### Voraussetzungen
-
-- [Node.js](https://nodejs.org/) Version 20 oder neuer
-- npm (wird mit Node.js mitinstalliert)
-- Ein [Cloudflare-Account](https://dash.cloudflare.com/sign-up) (kostenloser Plan reicht)
-- Ein GitHub-Account (für den Code und automatisches Deployment)
-
-#### Schritt 1: Code herunterladen
+**1. Code holen und Abhängigkeiten installieren**
 
 ```bash
 git clone https://github.com/DEIN-ACCOUNT/HGH-App.git
 cd HGH-App
-```
-
-#### Schritt 2: Abhängigkeiten installieren
-
-```bash
 npm install
 ```
 
-#### Schritt 3: Cloudflare-Ersteinrichtung in einem Command
+**2. Cloudflare einrichten**
 
 ```bash
 npm run setup:init -- --cloudflare
 ```
 
-Der zentrale Setup-Command übernimmt die Cloudflare-Anmeldung, D1/R2-Erstellung und die Migration. Am Ende bekommst du eine kompakte Checkliste (`DB`, `Bucket`, `Admin-Konto`, `Migration`).
+Das erledigt Anmeldung, D1-Datenbank, R2-Bucket und die erste Migration und
+endet mit einer Checkliste (`DB`, `Bucket`, `Admin-Konto`, `Migration`).
 
-> Ein Admin-Passwort wird hier **nicht** gesetzt und es gibt kein Secret dafür. Für den ersten Login gilt `Admin` / `admin`; das Konto entsteht dabei und bekommt sein eigenes Passwort direkt danach im Adminbereich.
+**3. GitHub-Secrets hinterlegen**
 
-#### Schritt 4: GitHub Secrets einrichten
+Im Repository unter **Settings → Secrets and variables → Actions**:
 
-Damit das automatische Deployment funktioniert, müssen im GitHub-Repository zwei Secrets hinterlegt werden:
+| Secret | Woher |
+|---|---|
+| `CLOUDFLARE_API_TOKEN` | [Cloudflare → API Tokens](https://dash.cloudflare.com/profile/api-tokens), mit Rechten für Workers, D1 und R2 |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare-Dashboard, Übersichtsseite rechts |
 
-1. Gehe im Repository zu **Settings** → **Secrets and variables** → **Actions**
-2. Erstelle folgende Secrets:
-   - **`CLOUDFLARE_API_TOKEN`** — Ein Cloudflare API Token mit Rechten für Workers, D1 und R2. Erstelle diesen unter [Cloudflare Dashboard → API Tokens](https://dash.cloudflare.com/profile/api-tokens).
-   - **`CLOUDFLARE_ACCOUNT_ID`** — Deine Cloudflare Account-ID. Findest du im Cloudflare Dashboard auf der Übersichtsseite rechts.
-
-#### Schritt 5: Erster Deploy
-
-Pushe den Code auf den `main`-Branch. GitHub Actions baut die App automatisch und deployed sie auf Cloudflare:
+**4. Deployen**
 
 ```bash
 git push origin main
 ```
 
-Der Workflow (`.github/workflows/deploy.yml`) führt automatisch aus:
-1. Code herunterladen
-2. Abhängigkeiten installieren
-3. Code prüfen (Lint, Typen, Tests)
-4. App bauen
-5. Auf Cloudflare deployen
-6. Datenbank-Migrationen anwenden
+`.github/workflows/deploy.yml` prüft den Code (Lint, Typen, Tests), baut ihn,
+deployt auf Cloudflare und wendet **danach die Datenbank-Migrationen an**.
+Ohne diesen letzten Schritt bleibt D1 leer: kein Admin-Login, überall
+„Kein Stundenplan verfügbar“.
 
-> **Punkt 6 ist der wichtigste.** Ohne angewandte Migrationen ist die Datenbank
-> leer: Dann ist kein Admin-Login möglich und die App zeigt überall
-> „Kein Stundenplan verfügbar". Genau das war der Grund, warum die App
-> zwischenzeitlich nicht funktioniert hat.
+**5. Sofort anmelden und ein Passwort vergeben**
 
-Danach ist die App unter der Cloudflare-URL erreichbar.
+Öffne direkt nach dem ersten Deploy `https://DEINE-URL/admin` und melde dich mit
+`Admin` / `admin` an (Benutzername aus `ADMIN_USER`, Groß- und Kleinschreibung
+egal). Der Adminbereich lässt dich dann zuerst ein eigenes Passwort setzen.
 
-#### Schritt 6: Sofort anmelden und Passwort vergeben
+Das eilt: Bis zu dieser Anmeldung gilt das Standardpasswort, und `/admin` ist
+öffentlich erreichbar — wer die Adresse kennt, kann sich das Konto nehmen. Die
+erste Passwortvergabe schließt das Fenster. Ist es doch passiert, hilft nur der
+Reset (siehe [Admin-Anleitung, „Passwort vergessen“](docs/ADMIN.md#passwort-vergessen))
+und die sofortige erneute Anmeldung.
 
-**Das ist zeitkritisch.** Öffne direkt nach dem ersten erfolgreichen Deploy
-`https://DEINE-URL/admin` und melde dich mit dem Benutzernamen aus
-`wrangler.toml` (`ADMIN_USER`, Standard `Admin`) und dem Standardpasswort
-`admin` an. Der Adminbereich lässt dich dann nichts anderes tun, als ein
-Passwort zu vergeben.
+### Nur ein Deploy-Weg
 
-Der Grund für die Eile: Bis zu dieser ersten Anmeldung gilt `Admin` / `admin`,
-und die Seite ist öffentlich erreichbar. Das ist kein Passwort, das man raten
-müsste — es steht hier in der Anleitung. Wer in diesem Fenster `/admin` aufruft,
-legt das Konto selbst an und vergibt das Passwort. Das Fenster schließt sich in
-dem Moment, in dem du dein eigenes Passwort gesetzt hast.
+Deployt wird über **GitHub Actions** — der einzige Weg, der auch die Migration
+ausführt.
 
-Ist es doch passiert — jemand hat sich das Konto geschnappt —, hilft nur der
-Reset: das Konto löschen (siehe `docs/ADMIN.md`, Abschnitt „Passwort
-vergessen") und die Anmeldung sofort erneut durchführen.
+Cloudflare bietet zusätzlich eine eigene Git-Anbindung an („Workers Builds“).
+Ist sie aktiv, deployen zwei Systeme denselben Worker; sie überholen sich
+gegenseitig und der Cloudflare-Weg lässt die Migration aus. Welche Version live
+ist, wird damit zum Zufall.
 
-Es muss **keine** API-Adresse konfiguriert werden — Oberfläche und Schnittstelle
-laufen im selben Worker unter derselben Adresse.
-
----
-
-### Wichtig: nur ein Deploy-Weg
-
-Das Deployment läuft über **GitHub Actions**. Das ist der einzige Weg, der auch
-die Datenbank-Migration ausführt — und ein fehlender Migrationsschritt war die
-Ursache dafür, dass die App zwischenzeitlich nichts mehr anzeigen konnte.
-
-Cloudflare bietet zusätzlich eine eigene Git-Anbindung an („Workers Builds"),
-die bei jedem Push selbst baut und deployed. Ist die aktiv, deployen **zwei
-Systeme denselben Worker**: Sie überholen sich gegenseitig, und der Cloudflare-Weg
-lässt die Migration aus. Welche Version am Ende live ist, wird damit zum Zufall.
-
-**Prüfen und abschalten:**
-
-1. [Cloudflare Dashboard](https://dash.cloudflare.com/) → **Compute (Workers)** → Worker **`hgh-app`**
-2. Reiter **Settings** → Abschnitt **Build**
-3. Steht dort ein verbundenes Repository, auf **Disconnect** (bzw. **Manage** → Verbindung trennen)
-
-Danach deployed ausschließlich GitHub Actions. Erkennbar ist eine aktive
-Cloudflare-Anbindung auch daran, dass ein Bot namens
-*cloudflare-workers-and-pages* Deployment-Kommentare an Pull Requests schreibt.
+Prüfen und abschalten: [Cloudflare-Dashboard](https://dash.cloudflare.com/) →
+**Compute (Workers)** → Worker `hgh-app` → **Settings** → **Build**. Steht dort
+ein verbundenes Repository, die Verbindung trennen. Ein Hinweis auf eine aktive
+Anbindung ist auch ein Bot namens *cloudflare-workers-and-pages*, der
+Deployment-Kommentare an Pull Requests schreibt.
 
 ### Lokale Entwicklung
 
-Für lokales Testen und Entwickeln:
-
 ```bash
 npm install
-npm run setup          # migriert die lokale Datenbank
-npm run dev            # startet alles — ein Terminal genügt
+npm run setup          # lokale Datenbank migrieren
+npm run dev            # App inklusive Datenbank, ein Terminal genügt
 ```
 
-Dann im Browser öffnen: `http://localhost:3000`
-
-**Lokaler Admin-Login:**
-- Öffne `http://localhost:3000/admin`
-- Benutzername: `Admin`, Passwort: `admin` (Groß-/Kleinschreibung des Namens ist beim Anmelden egal)
-- Beim ersten Login wird das Admin-Konto angelegt; anschließend musst du ein Passwort vergeben, bevor der Adminbereich etwas zulässt.
-
+Dann `http://localhost:3000` öffnen; der Adminbereich liegt unter `/admin` und
+verhält sich wie oben beschrieben (`Admin` / `admin`, danach eigenes Passwort).
 Klappt die Anmeldung nicht, nennt die Anmeldeseite den Grund — meist fehlt die
-Datenbank-Migration.
+Migration.
 
----
-
-### Verfügbare Scripts
+### Scripts
 
 | Script | Was es tut |
 |---|---|
 | `npm run setup` | Lokale Ersteinrichtung: lokale Datenbank migrieren |
-| `npm run dev` | Startet die App lokal inklusive Datenbank (Port 3000) |
-| `npm run build` | Baut die App für die Produktion |
-| `npm run preview` | Führt den gebauten Worker lokal aus |
-| `npm run deploy` | Deployed die App auf Cloudflare |
-| `npm run lint` | Prüft den Code (ESLint) |
-| `npm run typecheck` | Prüft die TypeScript-Typen |
-| `npm run test:unit` | Führt die automatischen Tests aus |
 | `npm run setup:cloudflare` | Cloudflare-Ersteinrichtung (D1, R2, Migration) |
-| `npm run db:migrate` | Wendet Datenbankänderungen auf Cloudflare an |
-| `npm run db:migrate:local` | Wendet Datenbankänderungen lokal an |
+| `npm run dev` | App lokal starten (Port 3000) |
+| `npm run build` | Produktions-Build |
+| `npm run preview` | Gebauten Worker lokal ausführen |
+| `npm run deploy` | Von Hand auf Cloudflare deployen |
+| `npm run lint` · `typecheck` · `test:unit` | Code prüfen: ESLint, Typen, Tests |
+| `npm run db:migrate` · `db:migrate:local` | Migrationen anwenden (Cloudflare / lokal) |
