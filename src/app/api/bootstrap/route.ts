@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 /**
  * GET /api/bootstrap — Versionsstempel der angezeigten Inhalte.
  *
- * `TimetableAutoRefresh` pollt diesen Endpunkt im Minutentakt und lädt die Seite
+ * `TimetableAutoRefresh` pollt diesen Endpunkt alle fünf Minuten und lädt die Seite
  * neu, sobald sich der ETag ändert. Deshalb liefert er bewusst nur den Hash und
  * nicht den kompletten Stundenplan: Bei einem Bildschirm im Dauerbetrieb wären
  * das sonst über 1.400 Volldatenabfragen pro Tag und Gerät.

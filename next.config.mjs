@@ -34,6 +34,16 @@ const nextConfig = {
         ],
       },
       {
+        // pdfjs sind rund 1,5 MB, die nur der Adminbereich braucht. Der
+        // Dateiname ist unverändert, der Inhalt hängt aber an der installierten
+        // pdfjs-Version — eine Woche Cache spart die Übertragung bei jedem
+        // Upload, ohne ein Update ewig zu blockieren.
+        source: '/pdfjs/:file*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=604800, stale-while-revalidate=86400' },
+        ],
+      },
+      {
         source: '/content/branding/:icon(favicon.ico|favicon-96x96.png|apple-touch-icon.png|web-app-manifest-192x192.png|web-app-manifest-512x512.png|school-logo.svg)',
         headers: [
           { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' },
