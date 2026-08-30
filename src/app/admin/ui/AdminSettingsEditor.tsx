@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { adminFetchSettings, adminSaveSettings } from '@/lib/api/client';
 import { extractGoogleCalendarIds } from '@/lib/calendar/url-normalization';
 import { AdminPasswordChange } from './AdminPasswordChange';
+import { Card, Field, Status, TextArea, TextInput, adminStyles as styles } from './parts';
 
 interface HolidayRange {
   start: string;
@@ -13,7 +14,6 @@ interface HolidayRange {
 
 interface FormState {
   schoolName: string;
-  schoolShort: string;
   calendarUrls: string[];
   holidays: HolidayRange[];
   messages: string;
@@ -21,7 +21,6 @@ interface FormState {
 
 const EMPTY_FORM: FormState = {
   schoolName: '',
-  schoolShort: '',
   calendarUrls: [],
   holidays: [],
   messages: '{}',
@@ -62,7 +61,6 @@ export function AdminSettingsEditor() {
 
       setForm({
         schoolName: byKey.school_name ?? '',
-        schoolShort: byKey.school_short ?? '',
         calendarUrls: parseJson<string[]>(byKey.calendar_urls, []),
         holidays: Array.isArray(rawHolidays) ? rawHolidays : rawHolidays.ranges ?? [],
         messages: JSON.stringify(parseJson<unknown>(byKey.messages, {}), null, 2),
@@ -152,7 +150,6 @@ export function AdminSettingsEditor() {
     try {
       await adminSaveSettings({
         school_name: form.schoolName.trim(),
-        school_short: form.schoolShort.trim(),
         calendar_urls: JSON.stringify(form.calendarUrls),
         school_holidays: JSON.stringify({ ranges: holidays }),
         messages: JSON.stringify(messages),
@@ -166,68 +163,56 @@ export function AdminSettingsEditor() {
     }
   }
 
-  const inputClass = 'mt-1 w-full rounded border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-900';
-
   return (
-    <div className="space-y-4">
-      <div className="rounded-lg border border-gray-300 p-4 dark:border-gray-700">
-        <h2 className="mb-3 text-lg font-semibold">Schule</h2>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <label className="block text-sm font-medium">
-            Name
-            <input
-              type="text"
-              value={form.schoolName}
-              onChange={(e) => setForm({ ...form, schoolName: e.target.value })}
-              className={inputClass}
-            />
-          </label>
-          <label className="block text-sm font-medium">
-            Kurzform
-            <input
-              type="text"
-              value={form.schoolShort}
-              onChange={(e) => setForm({ ...form, schoolShort: e.target.value })}
-              className={inputClass}
-            />
-          </label>
-        </div>
-      </div>
+    <div className={styles.stack}>
+      <Card
+        title="Überschrift des Wandbildschirms"
+        hint={<>
+          Dieser Name steht als Überschrift auf <code>/tv</code>, dem Wandbildschirm in der Schule —
+          sonst nirgends. Die Kopfzeile der App selbst ist fest eingebaut. Leer lassen heißt:
+          „Holztechnik und Gestaltung Hildesheim“.
+        </>}
+      >
+        <Field label="Name der Schule">
+          <TextInput
+            type="text"
+            value={form.schoolName}
+            onChange={(e) => setForm({ ...form, schoolName: e.target.value })}
+            placeholder="Holztechnik und Gestaltung Hildesheim"
+          />
+        </Field>
+      </Card>
 
-      <div className="rounded-lg border border-gray-300 p-4 dark:border-gray-700">
-        <h2 className="mb-1 text-lg font-semibold">Google-Kalender</h2>
-        <p className="mb-3 text-sm text-gray-600 dark:text-gray-300">
+      <Card
+        title="Google-Kalender"
+        hint={<>
           Im Google Kalender unter Einstellungen → &bdquo;Kalender integrieren&ldquo; den Einbettungs-Link
           kopieren und hier einfügen. Ohne Eintrag zeigt die App den einfachen Monatskalender.
-        </p>
-
-        <div className="flex flex-wrap gap-2">
-          <input
+        </>}
+      >
+        <div className={styles.row}>
+          <TextInput
             type="url"
             value={newCalendarUrl}
             onChange={(e) => setNewCalendarUrl(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCalendarUrl(); } }}
             placeholder="https://calendar.google.com/calendar/embed?src=…"
-            className="min-w-0 flex-1 rounded border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-900"
+            style={{ flex: '1 1 16rem', minWidth: 0 }}
           />
-          <button
-            type="button"
-            onClick={addCalendarUrl}
-            className="rounded bg-blue-600 px-3 py-2 text-sm text-white"
-          >
+          <button type="button" onClick={addCalendarUrl} className="btn">
             Hinzufügen
           </button>
         </div>
 
         {form.calendarUrls.length > 0 && (
-          <ul className="mt-3 space-y-2">
+          <ul className={`${styles.list} mt-3`}>
             {form.calendarUrls.map((url) => (
-              <li key={url} className="flex items-center gap-2 rounded border border-gray-200 p-2 dark:border-gray-700">
+              <li key={url} className={`${styles.listItem} ${styles.row}`}>
                 <span className="min-w-0 flex-1 truncate text-sm">{url}</span>
                 <button
                   type="button"
                   onClick={() => removeCalendarUrl(url)}
-                  className="rounded border border-red-300 px-2 py-1 text-xs text-red-600"
+                  className={`${styles.smallBtn} ${styles.danger}`}
                 >
                   Entfernen
                 </button>
@@ -235,48 +220,41 @@ export function AdminSettingsEditor() {
             ))}
           </ul>
         )}
-      </div>
+      </Card>
 
-      <div className="rounded-lg border border-gray-300 p-4 dark:border-gray-700">
-        <div className="mb-1 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Ferien und freie Tage</h2>
-          <button type="button" onClick={addHoliday} className="text-sm text-blue-600 underline">
+      <Card
+        title="Ferien und freie Tage"
+        action={
+          <button type="button" onClick={addHoliday} className={styles.linkBtn}>
             Zeitraum hinzufügen
           </button>
-        </div>
-        <p className="mb-3 text-sm text-gray-600 dark:text-gray-300">
-          In diesen Zeiträumen zeigt die Startseite eine Ferien-Meldung statt des Stundenplan-Countdowns.
-          Gesetzliche Feiertage in Niedersachsen sind bereits fest hinterlegt.
-        </p>
-
+        }
+        hint="In diesen Zeiträumen zeigt die Startseite eine Ferien-Meldung statt des Stundenplan-Countdowns. Gesetzliche Feiertage in Niedersachsen sind bereits fest hinterlegt."
+      >
         {form.holidays.length === 0 ? (
-          <p className="text-sm text-gray-500 dark:text-gray-400">Keine Ferienzeiträume eingetragen.</p>
+          <p className={styles.empty}>Keine Ferienzeiträume eingetragen.</p>
         ) : (
-          <div className="space-y-2">
+          <div className={styles.stack}>
             {form.holidays.map((range, index) => (
-              <div key={index} className="flex flex-wrap items-end gap-2">
-                <label className="text-sm font-medium">
-                  Von
-                  <input
+              <div key={index} className={styles.row}>
+                <Field label="Von">
+                  <TextInput
                     type="date"
                     value={range.start}
                     onChange={(e) => updateHoliday(index, 'start', e.target.value)}
-                    className={inputClass}
                   />
-                </label>
-                <label className="text-sm font-medium">
-                  Bis
-                  <input
+                </Field>
+                <Field label="Bis">
+                  <TextInput
                     type="date"
                     value={range.end}
                     onChange={(e) => updateHoliday(index, 'end', e.target.value)}
-                    className={inputClass}
                   />
-                </label>
+                </Field>
                 <button
                   type="button"
                   onClick={() => removeHoliday(index)}
-                  className="rounded border border-red-300 px-2 py-2 text-xs text-red-600"
+                  className={`${styles.smallBtn} ${styles.danger}`}
                 >
                   Entfernen
                 </button>
@@ -284,38 +262,32 @@ export function AdminSettingsEditor() {
             ))}
           </div>
         )}
-      </div>
+      </Card>
 
-      <div className="rounded-lg border border-gray-300 p-4 dark:border-gray-700">
-        <h2 className="mb-1 text-lg font-semibold">Tagesmeldungen</h2>
-        <p className="mb-3 text-sm text-gray-600 dark:text-gray-300">
+      <Card
+        title="Tagesmeldungen"
+        hint={<>
           Kurze Sprüche, die auf der Startseite je nach Tageszeit erscheinen. Aufbau und Beispiele
           stehen in <code>docs/CONTENT_FORMATS.md</code>. Leer lassen mit <code>{'{}'}</code>.
-        </p>
-        <textarea
+        </>}
+      >
+        <TextArea
           value={form.messages}
           onChange={(e) => setForm({ ...form, messages: e.target.value })}
           rows={12}
           spellCheck={false}
-          className="w-full rounded border border-gray-300 p-2 font-mono text-xs dark:border-gray-700 dark:bg-gray-900"
+          className={styles.mono}
         />
-      </div>
+      </Card>
 
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={save}
-          disabled={isBusy}
-          className="rounded bg-blue-600 px-4 py-2 text-sm text-white disabled:opacity-50"
-        >
+      <div className={styles.row}>
+        <button type="button" onClick={save} disabled={isBusy} className="btn">
           Alles speichern
         </button>
-        {status && <p className="text-sm text-gray-600 dark:text-gray-300">{status}</p>}
+        <Status text={status} />
       </div>
 
       {/* Eigener Bereich mit eigenem Knopf — „Alles speichern" oben betrifft ihn nicht. */}
-      <hr className="border-gray-200 dark:border-gray-800" />
-
       <AdminPasswordChange />
     </div>
   );

@@ -1,14 +1,20 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 
-import { AdminAnnouncementEditor } from './AdminAnnouncementEditor';
+import { AdminContentEditor } from './AdminContentEditor';
 import { AdminUploadManager } from './AdminUploadManager';
-import { AdminEventEditor } from './AdminEventEditor';
 import { AdminMediaManager } from './AdminMediaManager';
 import { AdminSettingsEditor } from './AdminSettingsEditor';
 import { AdminPasswordChange } from './AdminPasswordChange';
+import { Card, Field, Notice, Segmented, Status, TextInput, adminStyles as styles } from './parts';
 import { DEFAULT_ADMIN_PASSWORD } from '@/lib/admin-defaults';
+import {
+  getAdminAuthenticated,
+  serverAdminAuthenticated,
+  setAdminAuthenticated,
+  subscribeAdminAuth,
+} from '@/lib/storage/admin-session';
 import {
   adminLogin,
   adminLogout,
@@ -17,14 +23,13 @@ import {
   type SetupStatus,
 } from '@/lib/api/client';
 
-type Tab = 'uploads' | 'announcements' | 'events' | 'media' | 'settings';
+type Tab = 'uploads' | 'content' | 'media' | 'settings';
 
-const TABS: { key: Tab; label: string }[] = [
-  { key: 'uploads', label: 'Stundenplan' },
-  { key: 'announcements', label: 'Ankündigungen' },
-  { key: 'events', label: 'Termine' },
-  { key: 'media', label: 'Bilder' },
-  { key: 'settings', label: 'Einstellungen' },
+const TABS: { value: Tab; label: string }[] = [
+  { value: 'uploads', label: 'Stundenplan' },
+  { value: 'content', label: 'Ankündigungen & Termine' },
+  { value: 'media', label: 'Bilder' },
+  { value: 'settings', label: 'Einstellungen' },
 ];
 
 /**
@@ -63,22 +68,24 @@ function SetupHints({ setupStatus, apiReachable }: { setupStatus: SetupStatus | 
   if (hints.length === 0) return null;
 
   return (
-    <div className="mb-4 space-y-2">
+    <div className={`${styles.stack} mb-4`}>
       {hints.map((hint) => (
-        <div
-          key={hint.message}
-          className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm dark:border-amber-700 dark:bg-amber-950"
-        >
-          <p className="font-medium text-amber-800 dark:text-amber-200">{hint.message}</p>
-          <p className="mt-1 text-amber-700 dark:text-amber-300">{hint.detail}</p>
-        </div>
+        <Notice key={hint.message} title={hint.message}>
+          {hint.detail}
+        </Notice>
       ))}
     </div>
   );
 }
 
 export function AdminWorkspace() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // Der Anmeldezustand liegt außerhalb dieser Komponente, weil der
+  // Abmelden-Knopf in der Kopfzeile sitzt (siehe lib/storage/admin-session).
+  const isAuthenticated = useSyncExternalStore(
+    subscribeAdminAuth,
+    getAdminAuthenticated,
+    serverAdminAuthenticated,
+  );
   const [mustSetPassword, setMustSetPassword] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [username, setUsername] = useState('');
@@ -102,7 +109,7 @@ export function AdminWorkspace() {
     try {
       const res = await checkAdminSession();
       setApiReachable(true);
-      setIsAuthenticated(res.authenticated);
+      setAdminAuthenticated(res.authenticated);
       setMustSetPassword(res.mustSetPassword === true);
       if (!res.authenticated) {
         await fetchSetupStatus();
@@ -118,13 +125,21 @@ export function AdminWorkspace() {
     checkSession();
   }, [checkSession]);
 
+  // Abgemeldet wird in der Kopfzeile — hier muss danach nur der eigene
+  // Zustand nachgezogen werden.
+  useEffect(() => {
+    if (isAuthenticated || !isReady) return;
+    setMustSetPassword(false);
+    fetchSetupStatus();
+  }, [isAuthenticated, isReady, fetchSetupStatus]);
+
   async function login() {
     setIsLoginPending(true);
     try {
       const res = await adminLogin(username, password);
       setUsername('');
       setPassword('');
-      setIsAuthenticated(true);
+      setAdminAuthenticated(true);
       setMustSetPassword(res.mustSetPassword === true);
       setSetupStatus(null);
       setStatus('');
@@ -142,14 +157,12 @@ export function AdminWorkspace() {
     } catch {
       // Auch wenn der Server nicht antwortet: lokal abmelden.
     }
-    setIsAuthenticated(false);
-    setMustSetPassword(false);
+    setAdminAuthenticated(false);
     setStatus('Abgemeldet.');
-    await fetchSetupStatus();
   }
 
   if (!isReady) {
-    return <p className="text-sm text-gray-600 dark:text-gray-300">Wird geladen …</p>;
+    return <p className={styles.status}>Wird geladen …</p>;
   }
 
   if (!isAuthenticated) {
@@ -161,44 +174,40 @@ export function AdminWorkspace() {
     return (
       <section className="mx-auto max-w-md">
         <SetupHints setupStatus={setupStatus} apiReachable={apiReachable} />
-        <div className="rounded-lg border border-gray-300 p-6 dark:border-gray-700">
-          <h2 className="mb-2 text-lg font-semibold">Anmeldung</h2>
-          <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">
-            {isSetup
+        <Card
+          title="Anmeldung"
+          hint={
+            isSetup
               ? `Ersteinrichtung: Benutzername "${setupStatus?.adminUser}", Passwort "${DEFAULT_ADMIN_PASSWORD}". Ein eigenes Passwort vergibst du im nächsten Schritt.`
-              : 'Bitte Benutzername und Passwort eingeben.'}
-          </p>
-          <label className="block text-sm font-medium">
-            Benutzername
-            <input
-              type="text"
-              value={username}
-              autoComplete="username"
-              onChange={(e) => setUsername(e.target.value)}
-              className="mt-1 w-full rounded border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-900"
-            />
-          </label>
-          <label className="mt-3 block text-sm font-medium">
-            Passwort
-            <input
-              type="password"
-              value={password}
-              autoComplete="current-password"
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); login(); } }}
-              className="mt-1 w-full rounded border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-900"
-            />
-          </label>
-          <button
-            type="button"
-            onClick={login}
-            disabled={isLoginPending}
-            className="mt-4 rounded bg-blue-600 px-3 py-2 text-white disabled:opacity-50"
-          >
-            {isLoginPending ? 'Wird geprüft …' : 'Anmelden'}
-          </button>
-          {status && <p className="mt-3 text-sm text-red-600">{status}</p>}
-        </div>
+              : 'Bitte Benutzername und Passwort eingeben.'
+          }
+        >
+          <div className={styles.stack}>
+            <Field label="Benutzername">
+              <TextInput
+                type="text"
+                value={username}
+                autoComplete="username"
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </Field>
+            <Field label="Passwort">
+              <TextInput
+                type="password"
+                value={password}
+                autoComplete="current-password"
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); login(); } }}
+              />
+            </Field>
+            <div className={styles.row}>
+              <button type="button" onClick={login} disabled={isLoginPending} className="btn">
+                {isLoginPending ? 'Wird geprüft …' : 'Anmelden'}
+              </button>
+              <Status text={status} />
+            </div>
+          </div>
+        </Card>
       </section>
     );
   }
@@ -209,64 +218,30 @@ export function AdminWorkspace() {
   // Redaktion nur eine Reihe von Fehlermeldungen.
   if (mustSetPassword) {
     return (
-      <section className="mx-auto max-w-md space-y-4">
-        <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm dark:border-amber-700 dark:bg-amber-950">
-          <p className="font-medium text-amber-800 dark:text-amber-200">
-            Bitte vergib jetzt ein Passwort.
-          </p>
-          <p className="mt-1 text-amber-700 dark:text-amber-300">
-            Bis dahin gilt das Standardpasswort &bdquo;{DEFAULT_ADMIN_PASSWORD}&ldquo; — das steht
-            in der Anleitung und ist damit allgemein bekannt. Der Adminbereich bleibt
-            gesperrt, solange kein eigenes Passwort gesetzt ist.
-          </p>
-        </div>
+      <section className={`${styles.stack} mx-auto max-w-md`}>
+        <Notice title="Bitte vergib jetzt ein Passwort.">
+          Bis dahin gilt das Standardpasswort &bdquo;{DEFAULT_ADMIN_PASSWORD}&ldquo; — das steht
+          in der Anleitung und ist damit allgemein bekannt. Der Adminbereich bleibt
+          gesperrt, solange kein eigenes Passwort gesetzt ist.
+        </Notice>
 
         <AdminPasswordChange initial onDone={() => setMustSetPassword(false)} />
 
-        <button
-          type="button"
-          onClick={logout}
-          className="rounded border border-gray-300 px-3 py-2 text-sm dark:border-gray-700"
-        >
-          Abmelden
-        </button>
+        <div>
+          <button type="button" onClick={logout} className="btn secondary">
+            Abmelden
+          </button>
+        </div>
       </section>
     );
   }
 
   return (
-    <section className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <nav className="flex flex-wrap gap-1">
-          {TABS.map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              onClick={() => setActiveTab(tab.key)}
-              aria-current={activeTab === tab.key ? 'page' : undefined}
-              className={`rounded px-3 py-2 text-sm font-medium ${
-                activeTab === tab.key
-                  ? 'bg-blue-600 text-white'
-                  : 'border border-gray-300 dark:border-gray-700'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </nav>
-
-        <button
-          type="button"
-          onClick={logout}
-          className="rounded border border-gray-300 px-3 py-2 text-sm dark:border-gray-700"
-        >
-          Abmelden
-        </button>
-      </div>
+    <section className={styles.stack}>
+      <Segmented<Tab> label="Bereiche" value={activeTab} options={TABS} onChange={setActiveTab} />
 
       {activeTab === 'uploads' && <AdminUploadManager />}
-      {activeTab === 'announcements' && <AdminAnnouncementEditor />}
-      {activeTab === 'events' && <AdminEventEditor />}
+      {activeTab === 'content' && <AdminContentEditor />}
       {activeTab === 'media' && <AdminMediaManager />}
       {activeTab === 'settings' && <AdminSettingsEditor />}
     </section>

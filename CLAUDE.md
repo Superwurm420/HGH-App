@@ -61,8 +61,8 @@ npm run setup:cloudflare # Cloudflare-Ersteinrichtung (D1, R2, Migration)
     │   ├── stundenplan/ woche/ pinnwand/ weiteres/ galerie/ tv/
     │   ├── admin/
     │   │   ├── page.tsx
-    │   │   └── ui/            # AdminWorkspace + Tabs (Upload, Ankündigungen,
-    │   │                      #   Termine, Bilder, Einstellungen)
+    │   │   └── ui/            # AdminWorkspace + Tabs (Upload, Inhalte,
+    │   │                      #   Bilder, Einstellungen), parts.tsx
     │   └── api/               # ── die komplette API ──
     │       ├── bootstrap/ timetable/ announcements/ events/ settings/ media/
     │       └── admin/         # login, logout, session, setup-status,
@@ -197,7 +197,26 @@ Alle Seiten werden ausgewertet und zusammengeführt.
   Anmeldung gerade nicht klappt — inklusive `needsPassword`.
 - Jeder Admin-Handler ist in `withAdmin()` aus `src/server/guard.ts` gekapselt — Bindings, Auth und Fehlerbehandlung an einer Stelle.
 - Alle Änderungen landen im `audit_logs`.
-- Tabs: Stundenplan · Ankündigungen · Termine · Bilder · Einstellungen.
+- Tabs: Stundenplan · Ankündigungen & Termine · Bilder · Einstellungen.
+- **Gemeinsame Oberfläche**: `src/app/admin/ui/parts.tsx` und `admin.module.css`
+  liefern Karten, Felder, Schalter, Listen und die Klassenauswahl. Der
+  Adminbereich benutzt damit dieselben Tokens wie der Rest der App statt
+  eigener Grautöne.
+- Ankündigungen und Termine liegen unter **einem** Reiter (`AdminContentEditor`,
+  Umschalter oben). Die Daten bleiben getrennt — Ankündigungen laufen ab und
+  stehen auf der Pinnwand, Termine haben ein Datum —, die Bedienung nicht.
+- **Klassen wählt man aus**, statt sie zu tippen: `ClassPicker` liest die
+  Klassen des aktiven Plans aus `GET /api/timetable/classes`. Gespeichert wird
+  weiterhin die Liste `HT11, G21`, weil die Filter der öffentlichen Seiten
+  darauf aufbauen; ein freies Feld bleibt für Klassen ohne Unterricht im Plan.
+- **Abmelden sitzt in der Kopfzeile** neben hell/dunkel. Der Anmeldezustand
+  steht dafür in `src/lib/storage/admin-session.ts` — nur im Speicher, die
+  Wahrheit bleibt das Session-Cookie.
+- **Automatik für den aktiven Plan**: `timetable_auto_activate` ('1'/'0', ohne
+  Eintrag an). Ist sie an, aktiviert `POST /api/admin/uploads` den frischen
+  Upload sofort; ist sie aus, wählt der Adminbereich von Hand aus. Das
+  Aktivieren selbst steht in `services/activation.ts`, damit beide Wege
+  denselben `batch()` benutzen und nie zwei Pläne aktiv sind.
 
 ### Pages / Routes
 

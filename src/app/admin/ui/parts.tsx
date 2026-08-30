@@ -1,0 +1,239 @@
+'use client';
+
+import { useEffect, useState, type ReactNode } from 'react';
+
+import { fetchTimetableClasses } from '@/lib/api/client';
+import styles from './admin.module.css';
+
+/**
+ * Gemeinsame Bausteine des Adminbereichs.
+ *
+ * Ankündigungen, Termine, Uploads und Einstellungen bauten dieselben Karten,
+ * Felder und Listen jeweils neu aus Tailwind-Klassen zusammen — und jede
+ * Abschrift wich ein wenig ab. Hier steht das Aussehen einmal.
+ */
+
+export function Card({
+  title,
+  action,
+  hint,
+  children,
+}: {
+  title?: string;
+  action?: ReactNode;
+  hint?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <section className={styles.card}>
+      {(title || action) && (
+        <header className={styles.cardHeader}>
+          {title && <h2 className={styles.cardTitle}>{title}</h2>}
+          {action}
+        </header>
+      )}
+      {hint && <p className={styles.hint}>{hint}</p>}
+      {children}
+    </section>
+  );
+}
+
+export function Field({
+  label,
+  children,
+}: {
+  label: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <label className={styles.field}>
+      <span className={styles.fieldLabel}>{label}</span>
+      {children}
+    </label>
+  );
+}
+
+type InputProps = React.InputHTMLAttributes<HTMLInputElement>;
+
+export function TextInput(props: InputProps) {
+  return <input {...props} className={`${styles.input} ${props.className ?? ''}`} />;
+}
+
+export function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return <textarea {...props} className={`${styles.textarea} ${props.className ?? ''}`} />;
+}
+
+export function Select(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
+  return <select {...props} className={`select ${props.className ?? ''}`} />;
+}
+
+export function Toggle({
+  checked,
+  onChange,
+  title,
+  hint,
+}: {
+  checked: boolean;
+  onChange: (next: boolean) => void;
+  title: string;
+  hint?: string;
+}) {
+  return (
+    <div className={styles.switchRow} onClick={() => onChange(!checked)}>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        aria-label={title}
+        className={styles.switch}
+        onClick={(e) => { e.stopPropagation(); onChange(!checked); }}
+      />
+      <div className={styles.switchText}>
+        <div className={styles.switchTitle}>{title}</div>
+        {hint && <div className={styles.switchHint}>{hint}</div>}
+      </div>
+    </div>
+  );
+}
+
+export function Segmented<T extends string>({
+  value,
+  options,
+  onChange,
+  label,
+}: {
+  value: T;
+  options: { value: T; label: string }[];
+  onChange: (next: T) => void;
+  label: string;
+}) {
+  return (
+    <div className={styles.segmented} role="tablist" aria-label={label}>
+      {options.map((option) => (
+        <button
+          key={option.value}
+          type="button"
+          role="tab"
+          aria-selected={value === option.value}
+          onClick={() => onChange(option.value)}
+          className={styles.segment}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export function Status({ text }: { text: string }) {
+  if (!text) return null;
+  // Fehlermeldungen der API enden nicht auf einem freundlichen Wort, sondern
+  // enthalten „fehlgeschlagen"/„Fehler" — das reicht, um sie rot zu zeigen,
+  // ohne jede Aufrufstelle um ein zweites Feld zu erweitern.
+  const isError = /fehl|ungültig|nicht/i.test(text);
+  return <p className={styles.status} data-tone={isError ? 'error' : undefined}>{text}</p>;
+}
+
+export function Notice({
+  title,
+  children,
+  tone,
+}: {
+  title?: string;
+  children: ReactNode;
+  tone?: 'warn' | 'info';
+}) {
+  return (
+    <div className={styles.notice} data-tone={tone === 'info' ? 'info' : undefined}>
+      {title && <p className={styles.noticeTitle}>{title}</p>}
+      <div>{children}</div>
+    </div>
+  );
+}
+
+/**
+ * Klassenauswahl für Ankündigungen und Termine.
+ *
+ * Gespeichert wird weiterhin eine Liste wie „HT11, G21" — das Format liegt so
+ * in der Datenbank und wird von den Filtern der öffentlichen Seiten erwartet.
+ * Getippt werden muss es aber nicht mehr: Die Klassen kommen aus dem aktiven
+ * Stundenplan. Ein freies Feld bleibt trotzdem, denn eine Klasse ohne Unterricht
+ * im aktuellen Plan soll sich trotzdem eintragen lassen.
+ */
+export function ClassPicker({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (next: string) => void;
+}) {
+  const [available, setAvailable] = useState<string[]>([]);
+  const [custom, setCustom] = useState('');
+
+  useEffect(() => {
+    fetchTimetableClasses()
+      .then((res) => setAvailable(res.classes))
+      .catch(() => setAvailable([]));
+  }, []);
+
+  const selected = value.split(',').map((entry) => entry.trim()).filter(Boolean);
+  const options = [...new Set([...available, ...selected])].sort();
+
+  function toggle(code: string) {
+    const next = selected.includes(code)
+      ? selected.filter((entry) => entry !== code)
+      : [...selected, code];
+    onChange(next.join(', '));
+  }
+
+  function addCustom() {
+    const code = custom.trim().toUpperCase();
+    if (!code || selected.includes(code)) {
+      setCustom('');
+      return;
+    }
+    onChange([...selected, code].join(', '));
+    setCustom('');
+  }
+
+  return (
+    <div>
+      <span className={styles.fieldLabel}>Klassen (leer = alle)</span>
+
+      {options.length > 0 ? (
+        <div className={styles.chips}>
+          {options.map((code) => (
+            <button
+              key={code}
+              type="button"
+              aria-pressed={selected.includes(code)}
+              onClick={() => toggle(code)}
+              className={styles.chip}
+            >
+              {code}
+            </button>
+          ))}
+        </div>
+      ) : (
+        <p className={styles.empty}>
+          Noch kein aktiver Stundenplan — Klassen bitte unten von Hand eintragen.
+        </p>
+      )}
+
+      <div className={`${styles.row} mt-2`}>
+        <TextInput
+          value={custom}
+          onChange={(e) => setCustom(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCustom(); } }}
+          placeholder="Weitere Klasse, z. B. HT11"
+          style={{ flex: '1 1 12rem', minWidth: 0 }}
+        />
+        <button type="button" onClick={addCustom} className={styles.smallBtn}>
+          Hinzufügen
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export { styles as adminStyles };

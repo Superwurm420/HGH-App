@@ -1,6 +1,7 @@
 import { withAdmin } from '@/server/guard';
 import { describeError, errorResponse, jsonResponse, readJsonBody } from '@/server/responses';
 import { logAudit } from '@/server/services/audit';
+import { activateUpload, isAutoActivateEnabled } from '@/server/services/activation';
 import { base64ToBytes } from '@/server/services/base64';
 import {
   ScheduleValidationError,
@@ -159,6 +160,20 @@ export async function POST(request: Request): Promise<Response> {
       `${filename}: ${summary.classes} Klassen, ${summary.entries} Stunden`,
     );
 
-    return jsonResponse({ ...upload, ...summary }, 201);
+    // Automatik: Der frisch hochgeladene Plan ist immer der neueste, also wird
+    // er direkt aktiv. Scheitert das, bleibt der Upload trotzdem bestehen — er
+    // lässt sich dann von Hand aktivieren, und ein 500 nach erfolgreichem
+    // Upload wäre schlicht irreführend.
+    let activated = false;
+    if (await isAutoActivateEnabled(db)) {
+      try {
+        await activateUpload(db, upload, auth.userId);
+        activated = true;
+      } catch (error) {
+        console.error('[uploads] Automatische Aktivierung fehlgeschlagen:', error);
+      }
+    }
+
+    return jsonResponse({ ...upload, ...summary, activated }, 201);
   });
 }

@@ -10,10 +10,10 @@ import { AppSetting } from '../types';
  */
 export const EDITABLE_SETTING_KEYS = [
   'school_name',
-  'school_short',
   'calendar_urls',
   'messages',
   'school_holidays',
+  'timetable_auto_activate',
 ] as const;
 
 export function isEditableSettingKey(key: string): boolean {

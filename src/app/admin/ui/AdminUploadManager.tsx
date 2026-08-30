@@ -5,12 +5,15 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   adminActivateUpload,
   adminDeleteUpload,
+  adminFetchSettings,
   adminFetchUploads,
+  adminSaveSetting,
   adminUploadTimetable,
   type UploadData,
 } from '@/lib/api/client';
 import { parseTimetableFileInBrowser } from '@/lib/timetable/parse-pdf-browser';
 import { WEEKDAYS, type ParsedSchedule } from '@/lib/timetable/types';
+import { Card, Notice, Status, Toggle, adminStyles as styles } from './parts';
 
 const STATUS_LABELS: Record<string, string> = {
   parsed: 'Bereit zur Aktivierung',
@@ -21,13 +24,10 @@ const STATUS_LABELS: Record<string, string> = {
   parsing: 'Wird ausgewertet …',
 };
 
-const STATUS_COLORS: Record<string, string> = {
-  parsed: 'bg-blue-100 text-blue-800',
-  active: 'bg-green-100 text-green-800',
-  archived: 'bg-gray-100 text-gray-500',
-  error: 'bg-red-100 text-red-800',
-  uploaded: 'bg-gray-100 text-gray-700',
-  parsing: 'bg-yellow-100 text-yellow-800',
+const STATUS_TONES: Record<string, string | undefined> = {
+  parsed: 'ready',
+  active: 'active',
+  error: 'error',
 };
 
 function formatFileSize(bytes: number): string {
@@ -71,43 +71,39 @@ function PreviewTable({ schedule }: { schedule: ParsedSchedule }) {
         const isOpen = openClass === cls;
 
         return (
-          <div key={cls} className="rounded border border-blue-200 bg-white/60 dark:border-blue-900 dark:bg-black/20">
+          <div key={cls} className={styles.listItem}>
             <button
               type="button"
               onClick={() => setOpenClass(isOpen ? null : cls)}
-              className="flex w-full items-center justify-between px-2 py-1.5 text-left text-sm"
+              className={`${styles.listTitleBtn} flex items-center justify-between`}
             >
-              <span className="font-medium">{cls}</span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">
+              <span>{cls}</span>
+              <span className={styles.listMeta}>
                 {total} Stunden {isOpen ? '▾' : '▸'}
               </span>
             </button>
 
             {isOpen && (
-              <div className="border-t border-blue-200 px-2 py-2 dark:border-blue-900">
+              <div className="mt-2 border-t pt-2" style={{ borderColor: 'var(--line)' }}>
                 {WEEKDAYS.map((day) => (
                   <div key={day} className="mb-2 last:mb-0">
-                    <p className="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">
-                      {DAY_LABELS[day]}
-                    </p>
+                    <p className={styles.listMeta}>{DAY_LABELS[day]}</p>
                     {(week[day]?.length ?? 0) === 0 ? (
-                      <p className="text-xs text-gray-400">— kein Unterricht —</p>
+                      <p className={styles.empty}>— kein Unterricht —</p>
                     ) : (
                       <ul className="text-xs">
                         {week[day].map((lesson, index) => (
                           <li key={index} className="flex flex-wrap gap-x-2 py-0.5">
-                            <span className="w-14 shrink-0 tabular-nums text-gray-500 dark:text-gray-400">
+                            <span className="w-14 shrink-0 tabular-nums" style={{ color: 'var(--muted)' }}>
                               {lesson.period}
                               {lesson.periodEnd ? `–${lesson.periodEnd}` : ''}.
                             </span>
-                            <span className="w-24 shrink-0 tabular-nums text-gray-500 dark:text-gray-400">
+                            <span className="w-24 shrink-0 tabular-nums" style={{ color: 'var(--muted)' }}>
                               {lesson.time}
                             </span>
                             <span className="font-medium">{lesson.subject}</span>
-                            {lesson.detail && <span className="text-gray-500 dark:text-gray-400">{lesson.detail}</span>}
-                            {lesson.room && (
-                              <span className="text-gray-500 dark:text-gray-400">Raum {lesson.room}</span>
-                            )}
+                            {lesson.detail && <span style={{ color: 'var(--muted)' }}>{lesson.detail}</span>}
+                            {lesson.room && <span style={{ color: 'var(--muted)' }}>Raum {lesson.room}</span>}
                           </li>
                         ))}
                       </ul>
@@ -139,6 +135,7 @@ export function AdminUploadManager() {
   const [preview, setPreview] = useState<Preview | null>(null);
   const [status, setStatus] = useState('');
   const [isBusy, setIsBusy] = useState(false);
+  const [autoActivate, setAutoActivate] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const loadUploads = useCallback(async () => {
@@ -150,9 +147,38 @@ export function AdminUploadManager() {
     }
   }, []);
 
+  const loadAutoActivate = useCallback(async () => {
+    try {
+      const { settings } = await adminFetchSettings();
+      const row = settings.find((entry) => entry.key === 'timetable_auto_activate');
+      // Kein Eintrag heißt „noch nie entschieden" — dann gilt die Automatik,
+      // genau wie im Server (services/activation.ts).
+      setAutoActivate(row?.value !== '0');
+    } catch {
+      // Der Schalter bleibt dann auf der Vorgabe; die Liste darunter ist
+      // wichtiger als diese eine Einstellung.
+    }
+  }, []);
+
   useEffect(() => {
     loadUploads();
-  }, [loadUploads]);
+    loadAutoActivate();
+  }, [loadUploads, loadAutoActivate]);
+
+  async function changeAutoActivate(next: boolean) {
+    setAutoActivate(next);
+    try {
+      await adminSaveSetting('timetable_auto_activate', next ? '1' : '0');
+      setStatus(
+        next
+          ? 'Automatik an: Ein neu hochgeladener Plan wird sofort angezeigt.'
+          : 'Automatik aus: Der angezeigte Plan wird von Hand ausgewählt.',
+      );
+    } catch (error) {
+      setAutoActivate(!next);
+      setStatus(error instanceof Error ? error.message : 'Einstellung konnte nicht gespeichert werden.');
+    }
+  }
 
   function resetSelection() {
     setPreview(null);
@@ -206,8 +232,12 @@ export function AdminUploadManager() {
     setStatus(`${preview.file.name} wird hochgeladen …`);
 
     try {
-      await adminUploadTimetable(preview.file, preview.schedule);
-      setStatus(`${preview.file.name} hochgeladen. Jetzt noch aktivieren, damit der Plan sichtbar wird.`);
+      const result = await adminUploadTimetable(preview.file, preview.schedule);
+      setStatus(
+        result.activated
+          ? `${preview.file.name} hochgeladen und aktiviert — der Plan ist jetzt sichtbar.`
+          : `${preview.file.name} hochgeladen. Jetzt noch aktivieren, damit der Plan sichtbar wird.`,
+      );
       resetSelection();
       await loadUploads();
     } catch (error) {
@@ -244,96 +274,102 @@ export function AdminUploadManager() {
     }
   }
 
+  const activeUpload = uploads.find((upload) => upload.status === 'active');
+
   return (
-    <div className="space-y-4">
-      <div className="rounded-lg border border-gray-300 p-4 dark:border-gray-700">
-        <h2 className="mb-3 text-lg font-semibold">Stundenplan-PDF hochladen</h2>
-
-        <label className="block text-sm font-medium">
-          PDF-Datei
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".pdf,application/pdf"
-            onChange={handleFileSelected}
-            disabled={isBusy}
-            className="mt-1 block w-full text-sm"
+    <div className={styles.stack}>
+      <Card title="Welcher Plan wird angezeigt?">
+        <div className={styles.stack}>
+          <Toggle
+            checked={autoActivate}
+            onChange={changeAutoActivate}
+            title="Immer den neuesten Plan anzeigen"
+            hint="An: Ein hochgeladener Plan geht sofort online. Aus: Du wählst unten selbst aus, welcher Plan gilt."
           />
-        </label>
+          <p className={styles.status}>
+            {activeUpload
+              ? `Aktiv: ${activeUpload.filename}`
+              : 'Zurzeit ist kein Plan aktiviert — angezeigt wird der zuletzt hochgeladene.'}
+          </p>
+        </div>
+      </Card>
 
-        <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-          Dateiname möglichst nach dem Muster <code>Stundenplan_kw_XX_HjY_YYYY_YY.pdf</code> —
-          daraus werden Kalenderwoche und Halbjahr übernommen.
-        </p>
+      <Card
+        title="Stundenplan-PDF hochladen"
+        hint={<>Dateiname möglichst nach dem Muster <code>Stundenplan_kw_XX_HjY_YYYY_YY.pdf</code> — daraus werden Kalenderwoche und Halbjahr übernommen.</>}
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".pdf,application/pdf"
+          onChange={handleFileSelected}
+          disabled={isBusy}
+          className="block w-full text-sm"
+        />
 
         {preview && (
-          <div className="mt-4 rounded border border-blue-300 bg-blue-50 p-3 text-sm dark:border-blue-800 dark:bg-blue-950">
-            <p className="font-medium text-blue-900 dark:text-blue-100">
-              {preview.classes.length} Klassen mit {preview.lessons} Stunden erkannt
-            </p>
-            <p className="mt-1 break-words text-blue-800 dark:text-blue-200">
-              {preview.classes.join(' · ')}
-            </p>
+          <div className="mt-4">
+            <Notice tone="info" title={`${preview.classes.length} Klassen mit ${preview.lessons} Stunden erkannt`}>
+              <p className="break-words">{preview.classes.join(' · ')}</p>
 
-            {preview.warnings.length > 0 && (
-              <div className="mt-3 rounded border border-amber-300 bg-amber-50 p-2 dark:border-amber-700 dark:bg-amber-950">
-                <p className="text-xs font-semibold text-amber-900 dark:text-amber-100">
-                  Bitte prüfen:
-                </p>
-                <ul className="mt-1 list-disc space-y-0.5 pl-4 text-xs text-amber-900 dark:text-amber-100">
-                  {preview.warnings.map((warning, index) => (
-                    <li key={index}>{warning}</li>
-                  ))}
-                </ul>
+              {preview.warnings.length > 0 && (
+                <div className="mt-3">
+                  <Notice title="Bitte prüfen:">
+                    <ul className="list-disc space-y-0.5 pl-4">
+                      {preview.warnings.map((warning, index) => (
+                        <li key={index}>{warning}</li>
+                      ))}
+                    </ul>
+                  </Notice>
+                </div>
+              )}
+
+              <PreviewTable schedule={preview.schedule} />
+
+              <div className={`${styles.row} mt-3`}>
+                <button type="button" onClick={handleUpload} disabled={isBusy} className="btn">
+                  {autoActivate ? 'Hochladen und anzeigen' : 'Hochladen'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { resetSelection(); setStatus(''); }}
+                  disabled={isBusy}
+                  className="btn secondary"
+                >
+                  Verwerfen
+                </button>
               </div>
-            )}
-
-            <PreviewTable schedule={preview.schedule} />
-
-            <div className="mt-3 flex gap-2">
-              <button
-                type="button"
-                onClick={handleUpload}
-                disabled={isBusy}
-                className="rounded bg-blue-600 px-4 py-2 text-sm text-white disabled:opacity-50"
-              >
-                Hochladen
-              </button>
-              <button
-                type="button"
-                onClick={() => { resetSelection(); setStatus(''); }}
-                disabled={isBusy}
-                className="rounded border border-gray-300 px-4 py-2 text-sm disabled:opacity-50 dark:border-gray-700"
-              >
-                Verwerfen
-              </button>
-            </div>
+            </Notice>
           </div>
         )}
 
-        {status && <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{status}</p>}
-      </div>
+        <div className="mt-3">
+          <Status text={status} />
+        </div>
+      </Card>
 
-      <div className="rounded-lg border border-gray-300 p-4 dark:border-gray-700">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Uploads</h2>
-          <button type="button" onClick={loadUploads} className="text-sm text-blue-600 underline">
+      <Card
+        title="Hochgeladene Pläne"
+        action={
+          <button type="button" onClick={loadUploads} className={styles.linkBtn}>
             Aktualisieren
           </button>
-        </div>
-
+        }
+      >
         {uploads.length === 0 ? (
-          <p className="text-sm text-gray-500 dark:text-gray-400">Noch keine Uploads vorhanden.</p>
+          <p className={styles.empty}>Noch keine Uploads vorhanden.</p>
         ) : (
-          <div className="space-y-2">
+          <ul className={styles.list} style={{ maxHeight: 'none' }}>
             {uploads.map((upload) => (
-              <div
+              <li
                 key={upload.id}
-                className="flex flex-wrap items-center gap-3 rounded border border-gray-200 p-3 dark:border-gray-700"
+                className={`${styles.listItem} ${styles.row}`}
+                data-selected={upload.status === 'active'}
+                style={{ justifyContent: 'space-between' }}
               >
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{upload.filename}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="truncate text-sm font-semibold">{upload.filename}</p>
+                  <p className={styles.listMeta}>
                     {formatFileSize(upload.file_size)}
                     {upload.calendar_week != null && ` · KW ${upload.calendar_week}`}
                     {upload.half_year != null && ` · Hj ${upload.half_year}`}
@@ -341,23 +377,25 @@ export function AdminUploadManager() {
                     {` · ${new Date(upload.created_at).toLocaleDateString('de-DE')}`}
                   </p>
                   {upload.parse_error && (
-                    <p className="mt-1 text-xs text-red-600">{upload.parse_error}</p>
+                    <p className={styles.status} data-tone="error">{upload.parse_error}</p>
                   )}
                 </div>
 
-                <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[upload.status] ?? ''}`}>
+                <span className={styles.badge} data-tone={STATUS_TONES[upload.status]}>
                   {STATUS_LABELS[upload.status] ?? upload.status}
                 </span>
 
-                <div className="flex gap-1">
-                  {upload.status !== 'active' && upload.entry_count > 0 && (
+                <div className={styles.row}>
+                  {/* Bei eingeschalteter Automatik gibt es nichts auszuwählen —
+                      der nächste Upload würde die Wahl ohnehin überschreiben. */}
+                  {!autoActivate && upload.status !== 'active' && upload.entry_count > 0 && (
                     <button
                       type="button"
                       onClick={() => handleActivate(upload)}
                       disabled={isBusy}
-                      className="rounded bg-green-600 px-2 py-1 text-xs text-white disabled:opacity-50"
+                      className={styles.smallBtn}
                     >
-                      Aktivieren
+                      Anzeigen
                     </button>
                   )}
                   {upload.status !== 'active' && (
@@ -365,17 +403,17 @@ export function AdminUploadManager() {
                       type="button"
                       onClick={() => handleDelete(upload)}
                       disabled={isBusy}
-                      className="rounded border border-red-300 px-2 py-1 text-xs text-red-600 disabled:opacity-50"
+                      className={`${styles.smallBtn} ${styles.danger}`}
                     >
                       Löschen
                     </button>
                   )}
                 </div>
-              </div>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
-      </div>
+      </Card>
     </div>
   );
 }
