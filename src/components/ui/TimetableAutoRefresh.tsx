@@ -28,6 +28,15 @@ const MAX_POLL_MS = 3_600_000;
 const MIN_GAP_MS = 60_000;
 
 /**
+ * Takt der TV-Ansicht. Der Wandbildschirm läuft rund um die Uhr und ist damit
+ * das einzige Gerät, das wirklich jeden Tag durchpollt — gleichzeitig schaut
+ * niemand darauf, ob eine Ankündigung eine halbe Stunde früher erscheint. Die
+ * Uhr, der Countdown und der Wechsel auf die nächste Stunde laufen ohnehin im
+ * Browser weiter und brauchen keine Anfrage.
+ */
+const TV_POLL_MS = 1_800_000;
+
+/**
  * Hält die angezeigten Inhalte aktuell und meldet einen neuen Stundenplan.
  *
  * Inhaltliche Änderungen (Ankündigungen, Termine, Einstellungen) werden still
@@ -54,7 +63,10 @@ export function TimetableAutoRefresh() {
     let etag: string | null = null;
     let running = false;
     let lastCheckAt = 0;
-    let delay = POLL_MS;
+    // Auf `/tv` gilt der träge Takt. Der Wert wird bei jedem Zurücksetzen neu
+    // gelesen, damit ein Wechsel auf die TV-Ansicht sofort greift.
+    const basePoll = () => (silentRef.current ? TV_POLL_MS : POLL_MS);
+    let delay = basePoll();
     let timerId: number | null = null;
     let stopped = false;
     const debug = process.env.NODE_ENV !== 'production';
@@ -96,7 +108,7 @@ export function TimetableAutoRefresh() {
         });
 
         if (response.status === 304) {
-          delay = POLL_MS;
+          delay = basePoll();
           return;
         }
         if (!response.ok) {
@@ -105,7 +117,7 @@ export function TimetableAutoRefresh() {
           return;
         }
 
-        delay = POLL_MS;
+        delay = basePoll();
 
         const nextEtag = response.headers.get('etag');
         const payload = (await response.json().catch(() => null)) as { timetable?: unknown } | null;
