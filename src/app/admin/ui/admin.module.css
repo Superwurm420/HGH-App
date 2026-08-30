@@ -137,6 +137,28 @@
   gap: 10px;
 }
 
+/*
+ * Zeile aus zwei Datumsfeldern und einem Knopf (Ferienzeiträume).
+ * `.row` zentriert senkrecht — dabei stand der Knopf auf Höhe der
+ * Feldbeschriftung statt auf Höhe der Eingabefelder, und die Felder mit
+ * `width: 100%` schrumpften nebeneinander auf die Breite ihres Inhalts.
+ */
+.rangeRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.rangeRow > .field {
+  flex: 1 1 10rem;
+  min-width: 9rem;
+}
+
+.rangeRow > button {
+  margin-bottom: 1px;
+}
+
 /* ── Umschalter (Reiter, Ankündigung/Termin) ────────────────────── */
 
 .segmented {

@@ -90,7 +90,6 @@ export function announcementsToEvents(announcements: Announcement[]) {
     .map((item) => ({
       id: item.id,
       title: item.title,
-      audience: item.audience,
       startsAt: item.date,
       endsAt: item.expires ?? undefined,
       details: item.body,

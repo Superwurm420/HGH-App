@@ -71,22 +71,10 @@ export interface AnnouncementData {
   body: string;
   date: string;
   expires: string | null;
-  audience: string;
   classes: string;
   highlight: number;
   created_at: string;
   updated_at: string;
-}
-
-export interface EventData {
-  id: string;
-  title: string;
-  description: string;
-  start_date: string;
-  end_date: string | null;
-  all_day: number;
-  category: string;
-  classes: string;
 }
 
 export interface UploadData {
@@ -185,24 +173,6 @@ export function adminUpdateAnnouncement(id: string, data: Partial<AnnouncementDa
 
 export async function adminDeleteAnnouncement(id: string): Promise<void> {
   await apiFetch(`/api/admin/announcements/${id}`, { method: 'DELETE' });
-}
-
-// ── Termine ────────────────────────────────────────────────────────
-
-export function adminFetchEvents(): Promise<{ events: EventData[] }> {
-  return apiFetch('/api/admin/events');
-}
-
-export function adminCreateEvent(data: Partial<EventData>): Promise<EventData> {
-  return apiFetch('/api/admin/events', { method: 'POST', body: JSON.stringify(data) });
-}
-
-export function adminUpdateEvent(id: string, data: Partial<EventData>): Promise<EventData> {
-  return apiFetch(`/api/admin/events/${id}`, { method: 'PUT', body: JSON.stringify(data) });
-}
-
-export async function adminDeleteEvent(id: string): Promise<void> {
-  await apiFetch(`/api/admin/events/${id}`, { method: 'DELETE' });
 }
 
 // ── Rückmeldungen ──────────────────────────────────────────────────

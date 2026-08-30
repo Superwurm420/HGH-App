@@ -26,8 +26,6 @@ export async function GET(request: Request): Promise<Response> {
          (SELECT COUNT(*) FROM timetable_uploads WHERE status = 'active') AS active_uploads,
          (SELECT COALESCE(MAX(updated_at), '') FROM announcements) AS announcements_at,
          (SELECT COUNT(*) FROM announcements) AS announcements_count,
-         (SELECT COALESCE(MAX(updated_at), '') FROM events) AS events_at,
-         (SELECT COUNT(*) FROM events) AS events_count,
          (SELECT COALESCE(MAX(updated_at), '') FROM app_settings) AS settings_at,
          (SELECT COALESCE(MAX(created_at), '') FROM media_files) AS media_at,
          (SELECT COUNT(*) FROM media_files) AS media_count`

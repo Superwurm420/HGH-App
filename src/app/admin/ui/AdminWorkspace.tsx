@@ -28,7 +28,7 @@ type Tab = 'uploads' | 'content' | 'media' | 'feedback' | 'settings';
 
 const TABS: { value: Tab; label: string }[] = [
   { value: 'uploads', label: 'Stundenplan' },
-  { value: 'content', label: 'Ankündigungen & Termine' },
+  { value: 'content', label: 'Ankündigungen' },
   { value: 'media', label: 'Bilder' },
   { value: 'feedback', label: 'Rückmeldungen' },
   { value: 'settings', label: 'Einstellungen' },

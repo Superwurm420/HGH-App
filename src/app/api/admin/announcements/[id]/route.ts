@@ -23,7 +23,7 @@ export async function PUT(request: Request, { params }: Params): Promise<Respons
 
     const updated = await db.prepare(
       `UPDATE announcements SET
-         title = ?, body = ?, date = ?, expires = ?, audience = ?, classes = ?, highlight = ?,
+         title = ?, body = ?, date = ?, expires = ?, classes = ?, highlight = ?,
          updated_at = datetime('now')
        WHERE id = ?
        RETURNING *`
@@ -32,7 +32,6 @@ export async function PUT(request: Request, { params }: Params): Promise<Respons
       (body.body ?? '').trim(),
       date,
       (body.expires ?? '').trim() || null,
-      (body.audience ?? 'alle').trim(),
       (body.classes ?? '').trim(),
       body.highlight ? 1 : 0,
       id,
