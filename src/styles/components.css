@@ -602,7 +602,7 @@
   }
 }
 
-@media (min-width: 900px) and (orientation: landscape) {
+@media (min-width: 768px) {
   .card {
     padding: 20px;
   }
@@ -611,4 +611,44 @@
     margin: 4px 0 0;
   }
 
+}
+
+/* ── Listen, die sich die Breite teilen ───────────────────────────────────────
+   Alle drei benutzen `auto-fit` statt einer festen Spaltenzahl: dieselben
+   Komponenten stehen mal ueber die volle Breite (/pinnwand, /weiteres), mal in
+   einer schmalen Spalte (Ankuendigungen auf der Startseite). Reicht der Platz
+   nicht fuer zwei Spalten, bleibt es von allein einspaltig — ein zweiter Satz
+   Klassen fuer den schmalen Fall waere unnoetig.
+
+   `auto-fit` und nicht `auto-fill`: leere Spuren fallen damit zusammen. Sonst
+   stuende die Liste „Bilder" mit ihrem einen Eintrag auf dem Desktop als
+   Viertel-Kachel neben drei leeren Spalten. */
+.announcement-list {
+  display: grid;
+  gap: 8px;
+}
+
+.link-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.page-split-grid {
+  display: grid;
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .announcement-list {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  }
+
+  .link-grid {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+
+  .page-split-grid {
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    align-items: start;
+  }
 }

@@ -98,3 +98,10 @@
   top: max(12px, env(safe-area-inset-top, 0px));
   right: 12px;
 }
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+  }
+}

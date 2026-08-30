@@ -109,6 +109,15 @@
   align-items: start;
 }
 
+/* Auf dem Tablet reicht der Platz schon fuer beide Spalten, die Liste bekommt
+   dort aber eine Mindestbreite — mit 2fr/1fr blieben ihr bei ~770px nur rund
+   250px, zu wenig fuer Titel und Datum nebeneinander. */
+@media (min-width: 768px) {
+  .editorGrid {
+    grid-template-columns: minmax(0, 1.5fr) minmax(250px, 1fr);
+  }
+}
+
 @media (min-width: 1024px) {
   .editorGrid {
     grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);

@@ -46,7 +46,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ServiceWorkerRegister />
         <TimetableAutoRefresh />
         <a href="#inhalt" className="skip-link">Zum Inhalt springen</a>
-        <div className="app-shell mx-auto w-full max-w-5xl px-4">
+        <div className="app-shell mx-auto w-full">
           <Topbar />
           <main id="inhalt" className="main-content">
             {children}

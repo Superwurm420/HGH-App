@@ -2,8 +2,13 @@
   padding-bottom: var(--nav-clearance);
 }
 
+/* Die Breite der Hülle steht nur hier — nicht zusätzlich als Tailwind-Utility
+   im JSX. Zwei Quellen, die sich über gleiche Spezifität und Quellreihenfolge
+   überstimmen, waren der Grund, warum `max-w-6xl` im Adminbereich still
+   wirkungslos blieb. */
 .app-shell {
-  padding-top: 6px;
+  max-width: 1024px;
+  padding: 6px 16px 0;
 }
 
 .home-dashboard {
@@ -17,7 +22,12 @@
   gap: 12px;
 }
 
-.home-landscape-grid {
+.home-split-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.home-split-info {
   display: grid;
   gap: 12px;
 }
@@ -70,33 +80,26 @@ body.tv-mode .main-content {
   padding-bottom: 16px;
 }
 
-@media (min-width: 1024px) {
-  .main-content {
-    padding-bottom: 0;
-  }
-}
-
-@media (min-width: 900px) and (orientation: landscape) {
+/* ── Tablet und aufwärts ──────────────────────────────────────────────────────
+   Die Schwelle hängt allein an der Breite. Vorher stand hier
+   `(min-width: 900px) and (orientation: landscape)` — dasselbe iPad bekam damit
+   quer das zweispaltige Layout und hoch das Handy-Layout, obwohl beide Male
+   rund 1000 px zur Verfügung standen. 768px ist Tailwinds `md`, damit die hand-
+   geschriebenen Regeln und die Utility-Klassen dieselben Schwellen benutzen. */
+@media (min-width: 768px) {
   .app-shell {
     max-width: 1200px;
     padding-left: 22px;
     padding-right: 22px;
   }
 
-  .main-content {
-    padding-bottom: var(--nav-clearance);
-  }
-
-  .home-landscape-grid {
-    display: grid;
+  .home-split-grid {
     grid-template-columns: minmax(260px, 0.85fr) minmax(0, 1.15fr);
     gap: 16px;
     align-items: start;
   }
 
-  .home-landscape-info {
-    display: grid;
-    gap: 12px;
+  .home-split-info {
     align-content: start;
   }
 

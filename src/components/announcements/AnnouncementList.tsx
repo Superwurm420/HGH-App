@@ -15,7 +15,7 @@ export function AnnouncementList({ items }: { items: DisplayAnnouncement[] }) {
   }
 
   return (
-    <div className="space-y-2">
+    <div className="announcement-list">
       {items.map((item) => (
         <AnnouncementItem key={item.id} {...item} />
       ))}

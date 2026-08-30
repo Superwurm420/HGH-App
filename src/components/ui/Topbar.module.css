@@ -71,7 +71,7 @@
   color: var(--muted);
 }
 
-@media (min-width: 900px) and (orientation: landscape) {
+@media (min-width: 768px) {
   .topbar {
     margin: 0 0 14px;
     padding-left: 0;

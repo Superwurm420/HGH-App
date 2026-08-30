@@ -71,7 +71,7 @@ export default function WeiteresPage() {
 
       <div className="card surface">
         <h2 className="section-title mb-3">Links</h2>
-        <nav className="space-y-2" aria-label="Wichtige Links">
+        <nav className="link-grid" aria-label="Wichtige Links">
           {LINKS.map((link) => (
             <a
               key={link.url}
@@ -93,7 +93,7 @@ export default function WeiteresPage() {
 
       <div className="card surface mt-3">
         <h2 className="section-title mb-3">Instagram</h2>
-        <nav className="space-y-2" aria-label="Instagram">
+        <nav className="link-grid" aria-label="Instagram">
           {INSTAGRAM.map((ig) => (
             <a
               key={ig.url}
@@ -115,7 +115,7 @@ export default function WeiteresPage() {
 
       <div className="card surface mt-3">
         <h2 className="section-title mb-3">Bilder</h2>
-        <nav className="space-y-2" aria-label="Bilder">
+        <nav className="link-grid" aria-label="Bilder">
           <Link className="link-card" href="/galerie">
             <span className="link-icon" aria-hidden="true"><GalleryIcon /></span>
             <div>
@@ -127,20 +127,24 @@ export default function WeiteresPage() {
         </nav>
       </div>
 
-      <div className="card surface mt-3">
-        <h2 className="section-title mb-3">Informationen</h2>
-        <div className="space-y-4 text-sm">
-          <div>
-            <h3 className="font-semibold mb-1">Installation</h3>
-            <ul className="space-y-1 text-muted">
-              <li><strong>Android:</strong> Browser-Menü &rarr; &bdquo;App installieren&ldquo;</li>
-              <li><strong>iOS:</strong> Teilen &rarr; &bdquo;Zum Home-Bildschirm&ldquo;</li>
-            </ul>
+      {/* Die Info-Karte ist kurz — allein hat sie auf dem Tablet 1200px Breite
+          fuer zwei Zeilen. Neben dem Formular steht sie richtig. */}
+      <div className="page-split-grid mt-3">
+        <div className="card surface">
+          <h2 className="section-title mb-3">Informationen</h2>
+          <div className="space-y-4 text-sm">
+            <div>
+              <h3 className="font-semibold mb-1">Installation</h3>
+              <ul className="space-y-1 text-muted">
+                <li><strong>Android:</strong> Browser-Menü &rarr; &bdquo;App installieren&ldquo;</li>
+                <li><strong>iOS:</strong> Teilen &rarr; &bdquo;Zum Home-Bildschirm&ldquo;</li>
+              </ul>
+            </div>
           </div>
         </div>
-      </div>
 
-      <FeedbackForm />
+        <FeedbackForm />
+      </div>
     </>
   );
 }

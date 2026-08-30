@@ -53,7 +53,7 @@ export function FeedbackForm() {
 
   if (isSent) {
     return (
-      <div className="card surface mt-3">
+      <div className="card surface">
         <h2 className="section-title mb-3">Rückmeldung</h2>
         <p className="text-sm">Danke! Deine Rückmeldung ist angekommen.</p>
         <button
@@ -73,7 +73,7 @@ export function FeedbackForm() {
   }
 
   return (
-    <div className="card surface mt-3">
+    <div className="card surface">
       <h2 className="section-title mb-3">Rückmeldung</h2>
       <p className="text-xs text-muted mb-3">
         Fehler gefunden, etwas veraltet oder eine Idee? Schreib es hier hinein — es
