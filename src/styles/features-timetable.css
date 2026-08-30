@@ -52,9 +52,16 @@
   line-height: 1.2;
 }
 
+/* `formatSubject` liefert je Teil vor/nach '/' ein eigenes <span>. Ohne
+   `flex-wrap` stehen die Teile als Flex-Elemente nebeneinander und brechen
+   jeder für sich mitten im Wort („Deu/tsch" neben „Kommunikati/on"). Mit
+   Umbruch rutscht der zweite Teil als Ganzes in die nächste Zeile — das, was
+   das Zero-Width-Space dort erreichen soll. */
 .tt-subject-cell {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  align-content: center;
   font-size: 14px;
   font-weight: 500;
   line-height: 1.35;

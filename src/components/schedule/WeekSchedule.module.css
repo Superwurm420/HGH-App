@@ -267,15 +267,16 @@
   }
 }
 
-/* Ab hier ist genug Platz fuer die vollen Spaltenbreiten. */
+/* Nur groessere Schrift und Polsterung — die Tagesspalten behalten `width: auto`
+   und teilen sich die Breite. Eine feste Spaltenbreite (frueher 180px) ergab
+   5x180 + Stundenspalte = 970px und lief damit bei 1024px Viewport wieder um
+   20px ueber, waehrend der Scroll-Hinweis schon ausgeblendet war. */
 @media (min-width: 1024px) {
   .grid {
     min-width: 760px;
   }
 
   .dayHead {
-    width: 180px;
-    min-width: 180px;
     font-size: 14px;
     padding: 12px 10px;
   }
