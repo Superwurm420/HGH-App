@@ -35,7 +35,10 @@ const nextConfig = {
         source: '/:path(|stundenplan|woche|pinnwand|weiteres|galerie)',
         missing: [{ type: 'header', key: 'RSC' }],
         headers: [
-          { key: 'Cache-Control', value: 'public, max-age=60, stale-while-revalidate=600' },
+          // `private`, nicht `public`: Der gerenderte Plan hängt an der Klasse
+          // aus dem Cookie. In einem gemeinsamen Cache bekäme sonst die halbe
+          // Schule die Klasse dessen, der die Seite zuerst geöffnet hat.
+          { key: 'Cache-Control', value: 'private, max-age=60, stale-while-revalidate=600' },
         ],
       },
       {

@@ -1,5 +1,7 @@
 'use client';
 
+import { CLASS_COOKIE } from '@/lib/timetable/select-class';
+
 const CLASS_KEY = 'hgh:selected-class';
 const THEME_KEY = 'hgh:theme';
 const TIMETABLE_VERSION_KEY = 'hgh:timetable-version';
@@ -10,9 +12,30 @@ function hasStorage(): boolean {
   return typeof window !== 'undefined' && typeof localStorage !== 'undefined';
 }
 
+/**
+ * Die Klasse wird doppelt gespeichert: im lokalen Speicher für den Browser und
+ * als Cookie, damit der Server schon beim ersten Rendern die richtige Klasse
+ * kennt (siehe `CLASS_COOKIE`). Ein Jahr Laufzeit, `Lax` reicht — die Auswahl
+ * ist keine Anmeldung.
+ */
 export function saveSelectedClass(value: string) {
   if (!hasStorage()) return;
   localStorage.setItem(CLASS_KEY, value);
+  writeClassCookie(value);
+}
+
+function writeClassCookie(value: string) {
+  if (typeof document === 'undefined') return;
+  document.cookie = `${CLASS_COOKIE}=${encodeURIComponent(value)}; path=/; max-age=31536000; samesite=lax`;
+}
+
+/**
+ * Trägt eine bereits gespeicherte Klasse ins Cookie nach. Geräte, die die App
+ * schon vor dem Cookie benutzt haben, hätten sonst weiterhin den kurzen
+ * Fehlrender beim ersten Aufruf.
+ */
+export function syncSelectedClassCookie(value: string) {
+  writeClassCookie(value);
 }
 
 export function loadSelectedClass(): string | null {

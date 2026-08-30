@@ -28,3 +28,15 @@ export function resolveSelectedClass(
   if (classes.length === 0) return null;
   return matchClass(classes, requested) ?? matchClass(classes, stored) ?? classes[0];
 }
+
+/**
+ * Name des Cookies, in dem die gewählte Klasse zusätzlich zum lokalen Speicher
+ * liegt.
+ *
+ * Der lokale Speicher ist im Browser, der Stundenplan wird aber auf dem Server
+ * gerendert: Ohne `?klasse=` in der URL wählte der Server die erste Klasse des
+ * Plans, und erst danach schaltete `ClassFromStorage` im Browser um. Bei jedem
+ * Wechsel zwischen den Ansichten blitzte dadurch kurz ein fremder Plan auf.
+ * Über das Cookie kennt der Server die Auswahl schon beim ersten Rendern.
+ */
+export const CLASS_COOKIE = 'hgh_klasse';

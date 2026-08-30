@@ -5,7 +5,8 @@ import { loadActiveAnnouncements } from './services/announcements';
 import { loadPublicSettings, parseJsonSetting } from './services/settings';
 import { loadSlideshowImages } from './services/media';
 import { Announcement, MediaFile } from './types';
-import { resolveSelectedClass } from '@/lib/timetable/select-class';
+import { cookies } from 'next/headers';
+import { CLASS_COOKIE, resolveSelectedClass } from '@/lib/timetable/select-class';
 import type { SchoolHolidayRange } from '@/lib/calendar/lowerSaxonySchoolFreeDays';
 
 /**
@@ -46,10 +47,29 @@ export interface SchedulePageData {
   hasTimetable: boolean;
 }
 
-/** Stundenplan plus aufgelöster Klassenauswahl. */
+/** Liest die gemerkte Klasse aus dem Cookie. */
+function readClassCookie(store: Awaited<ReturnType<typeof cookies>>): string | null {
+  const raw = store.get(CLASS_COOKIE)?.value;
+  if (!raw) return null;
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return raw;
+  }
+}
+
+/**
+ * Stundenplan plus aufgelöster Klassenauswahl.
+ *
+ * Ohne `?klasse=` gilt die Klasse aus dem Cookie. Sonst rendert der Server die
+ * erste Klasse des Plans und `ClassFromStorage` schaltet erst im Browser um —
+ * bei jedem Wechsel zwischen den Ansichten blitzte dadurch kurz ein fremder
+ * Plan auf.
+ */
 export async function loadSchedulePage(requestedClass?: string): Promise<SchedulePageData> {
   const timetable = await loadTimetable(await getDb(), weekdayForToday());
-  const selectedClass = resolveSelectedClass(timetable.classes, requestedClass);
+  const storedClass = readClassCookie(await cookies());
+  const selectedClass = resolveSelectedClass(timetable.classes, requestedClass, storedClass);
 
   return {
     timetable,
