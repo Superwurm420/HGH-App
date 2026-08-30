@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { LessonEntry, ParsedSchedule, Weekday } from '@/lib/timetable/types';
-import { isLessonRunning } from '@/lib/timetable/lesson-times';
+import { collectPeriodStartTimes, isLessonRunning } from '@/lib/timetable/lesson-times';
 import { formatSubject } from './format-subject';
 import { useMinutesOfDay } from './use-berlin-minutes';
 
@@ -70,23 +70,12 @@ export function TvTimetableGrid({ schedulesByClass, day }: TvTimetableGridProps)
     return map;
   }, [classes, day, schedulesByClass]);
 
-  const periodTimeByPeriod = useMemo(() => {
-    const map = new Map<number, string>();
-
-    for (const schoolClass of classes) {
-      const entries = schedulesByClass[schoolClass]?.[day] ?? [];
-      for (const entry of entries) {
-        const end = entry.periodEnd ?? entry.period;
-        for (let period = entry.period; period <= end; period += 1) {
-          if (!map.has(period) && entry.time) {
-            map.set(period, entry.time);
-          }
-        }
-      }
-    }
-
-    return map;
-  }, [classes, day, schedulesByClass]);
+  // Je Stunde die eigene Anfangszeit — ein Block darf nicht allen seinen
+  // Stunden seine Startzeit aufdrücken.
+  const periodTimeByPeriod = useMemo(
+    () => collectPeriodStartTimes(classes.flatMap((schoolClass) => schedulesByClass[schoolClass]?.[day] ?? [])),
+    [classes, day, schedulesByClass],
+  );
 
   const currentPeriods = useMemo(() => {
     const allEntries = classes.flatMap((schoolClass) => schedulesByClass[schoolClass]?.[day] ?? []);
@@ -123,13 +112,13 @@ export function TvTimetableGrid({ schedulesByClass, day }: TvTimetableGridProps)
         <tbody>
           {periods.map((period) => {
             const isCurrent = currentPeriods.has(period);
-            const periodTime = periodTimeByPeriod.get(period) ?? '—';
+            const periodTime = periodTimeByPeriod.get(period);
 
             return (
               <tr key={period} data-current={isCurrent ? 'true' : 'false'}>
                 <th scope="row" className="tv-period-cell">
                   <span className="tv-period">{period}.</span>
-                  <span className="tv-period-time">{periodTime}</span>
+                  {periodTime && <span className="tv-period-time">{periodTime}</span>}
                 </th>
                 {classes.map((schoolClass) => {
                   const lesson = lessonByClassAndPeriod.get(`${schoolClass}-${period}`);

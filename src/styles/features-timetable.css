@@ -44,12 +44,16 @@
   font-size: 14px;
   font-weight: 700;
   line-height: 1.2;
+  font-variant-numeric: tabular-nums;
 }
 
+/* Nicht umbrechen: „08:00–09:30" gehört als eine Angabe zusammen. */
 .tt-period-time {
   font-size: 11px;
   color: var(--muted);
   line-height: 1.2;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 /* `formatSubject` liefert je Teil vor/nach '/' ein eigenes <span>. Ohne

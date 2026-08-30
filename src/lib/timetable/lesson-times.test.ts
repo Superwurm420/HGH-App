@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { isLessonRunning, parseLessonTimeRange } from './lesson-times';
+import {
+  collectPeriodStartTimes,
+  formatLessonTime,
+  formatPeriodLabel,
+  isLessonRunning,
+  parseLessonTimeRange,
+} from './lesson-times';
 
 describe('parseLessonTimeRange', () => {
   it('liest die Schreibweise mit Punkt aus dem PDF', () => {
@@ -47,5 +53,51 @@ describe('isLessonRunning', () => {
 
   it('markiert eine Stunde ohne lesbare Zeit nicht', () => {
     expect(isLessonRunning({ period: 1, time: 'ganztägig' }, 600)).toBe(false);
+  });
+});
+
+describe('formatLessonTime', () => {
+  it('vereinheitlicht die Schreibweise aus dem PDF', () => {
+    expect(formatLessonTime('8.00 - 9.30')).toBe('08:00–09:30');
+    expect(formatLessonTime('08:00-09:30')).toBe('08:00–09:30');
+  });
+
+  it('lässt stehen, was keine Zeitspanne ist', () => {
+    expect(formatLessonTime(' ganztägig ')).toBe('ganztägig');
+  });
+});
+
+describe('formatPeriodLabel', () => {
+  it('schreibt eine einzelne Stunde', () => {
+    expect(formatPeriodLabel(3)).toBe('3.');
+    expect(formatPeriodLabel(3, 3)).toBe('3.');
+  });
+
+  it('schreibt einen Block als Spanne', () => {
+    expect(formatPeriodLabel(1, 2)).toBe('1.–2.');
+  });
+});
+
+describe('collectPeriodStartTimes', () => {
+  it('gibt jeder Stunde eines Blocks ihre eigene Anfangszeit', () => {
+    const times = collectPeriodStartTimes([
+      { period: 1, periodEnd: 2, time: '8.00 - 9.30' },
+    ]);
+
+    expect(times.get(1)).toBe('08:00');
+    expect(times.get(2)).toBe('08:45');
+  });
+
+  it('bevorzugt die echte Zeit einer Einzelstunde vor der Schätzung aus dem Block', () => {
+    const times = collectPeriodStartTimes([
+      { period: 1, periodEnd: 2, time: '8.00 - 9.30' },
+      { period: 2, time: '8.50 - 9.35' },
+    ]);
+
+    expect(times.get(2)).toBe('08:50');
+  });
+
+  it('übergeht Einträge ohne lesbare Zeit', () => {
+    expect(collectPeriodStartTimes([{ period: 1, time: 'ganztägig' }]).size).toBe(0);
   });
 });

@@ -13,6 +13,7 @@ import {
 } from '@/lib/api/client';
 import { parseTimetableFileInBrowser } from '@/lib/timetable/parse-pdf-browser';
 import { WEEKDAYS, type ParsedSchedule } from '@/lib/timetable/types';
+import { formatLessonTime, formatPeriodLabel } from '@/lib/timetable/lesson-times';
 import { Card, Notice, Status, Toggle, adminStyles as styles } from './parts';
 
 const STATUS_LABELS: Record<string, string> = {
@@ -95,11 +96,10 @@ function PreviewTable({ schedule }: { schedule: ParsedSchedule }) {
                         {week[day].map((lesson, index) => (
                           <li key={index} className="flex flex-wrap gap-x-2 py-0.5">
                             <span className="w-14 shrink-0 tabular-nums" style={{ color: 'var(--muted)' }}>
-                              {lesson.period}
-                              {lesson.periodEnd ? `–${lesson.periodEnd}` : ''}.
+                              {formatPeriodLabel(lesson.period, lesson.periodEnd)}
                             </span>
                             <span className="w-24 shrink-0 tabular-nums" style={{ color: 'var(--muted)' }}>
-                              {lesson.time}
+                              {formatLessonTime(lesson.time)}
                             </span>
                             <span className="font-medium">{lesson.subject}</span>
                             {lesson.detail && <span style={{ color: 'var(--muted)' }}>{lesson.detail}</span>}
