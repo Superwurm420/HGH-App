@@ -1,3 +1,4 @@
+import { AdminLogoutButton } from './AdminLogoutButton';
 import { ThemeToggle } from './ThemeToggle';
 import styles from './Topbar.module.css';
 
@@ -14,7 +15,10 @@ export function Topbar() {
           <div className={`text-xs ${styles.subtitle}`}>Hildesheim</div>
         </div>
       </div>
-      <ThemeToggle />
+      <div className={styles.actions}>
+        <AdminLogoutButton />
+        <ThemeToggle />
+      </div>
     </header>
   );
 }

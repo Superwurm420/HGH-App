@@ -9,6 +9,7 @@ import {
   mediaUrl,
   type MediaData,
 } from '@/lib/api/client';
+import { Card, Status, adminStyles as styles } from './parts';
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -83,63 +84,58 @@ export function AdminMediaManager() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-lg border border-gray-300 p-4 dark:border-gray-700">
-        <h2 className="mb-1 text-lg font-semibold">Bilder für die TV-Ansicht</h2>
-        <p className="mb-3 text-sm text-gray-600 dark:text-gray-300">
-          Diese Bilder wechseln sich auf <code>/tv</code> alle 15 Sekunden ab.
-          Erlaubt sind JPG, PNG, GIF und WebP bis 8 MB.
-        </p>
-
-        <div className="flex flex-wrap items-end gap-3">
-          <label className="block text-sm font-medium">
-            Bilder auswählen
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/gif,image/webp"
-              multiple
-              className="mt-1 block w-full text-sm"
-            />
-          </label>
-          <button
-            type="button"
-            onClick={handleUpload}
-            disabled={isBusy}
-            className="rounded bg-blue-600 px-4 py-2 text-sm text-white disabled:opacity-50"
-          >
+    <div className={styles.stack}>
+      <Card
+        title="Bilder für Wandbildschirm und Galerie"
+        hint={<>
+          Diese Bilder wechseln sich auf <code>/tv</code> alle 15 Sekunden ab und stehen
+          zusätzlich in der Galerie. Erlaubt sind JPG, PNG, GIF und WebP bis 8 MB.
+        </>}
+      >
+        <div className={styles.row}>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/gif,image/webp"
+            multiple
+            className="block text-sm"
+          />
+          <button type="button" onClick={handleUpload} disabled={isBusy} className="btn">
             Hochladen
           </button>
         </div>
 
-        {status && <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{status}</p>}
-      </div>
+        <div className="mt-3">
+          <Status text={status} />
+        </div>
+      </Card>
 
-      <div className="rounded-lg border border-gray-300 p-4 dark:border-gray-700">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Hochgeladene Bilder</h2>
-          <button type="button" onClick={load} className="text-sm text-blue-600 underline">
+      <Card
+        title="Hochgeladene Bilder"
+        action={
+          <button type="button" onClick={load} className={styles.linkBtn}>
             Aktualisieren
           </button>
-        </div>
-
+        }
+      >
         {media.length === 0 ? (
-          <p className="text-sm text-gray-500 dark:text-gray-400">Noch keine Bilder hochgeladen.</p>
+          <p className={styles.empty}>Noch keine Bilder hochgeladen.</p>
         ) : (
-          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-3">
             {media.map((item) => (
-              <li key={item.id} className="overflow-hidden rounded border border-gray-200 dark:border-gray-700">
+              <li key={item.id} className={`${styles.listItem} overflow-hidden`} style={{ padding: 0 }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={mediaUrl(item.id)}
                   alt={item.filename}
-                  className="h-40 w-full bg-gray-100 object-contain dark:bg-gray-900"
+                  className="h-40 w-full object-contain"
+                  style={{ background: 'var(--surface)' }}
                   loading="lazy"
                 />
-                <div className="flex items-center gap-2 p-2">
+                <div className={`${styles.row} p-2`}>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{item.filename}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="truncate text-sm font-semibold">{item.filename}</p>
+                    <p className={styles.listMeta}>
                       {formatFileSize(item.file_size)} · {new Date(item.created_at).toLocaleDateString('de-DE')}
                     </p>
                   </div>
@@ -147,7 +143,7 @@ export function AdminMediaManager() {
                     type="button"
                     onClick={() => handleDelete(item)}
                     disabled={isBusy}
-                    className="rounded border border-red-300 px-2 py-1 text-xs text-red-600 disabled:opacity-50"
+                    className={`${styles.smallBtn} ${styles.danger}`}
                   >
                     Löschen
                   </button>
@@ -156,7 +152,7 @@ export function AdminMediaManager() {
             ))}
           </ul>
         )}
-      </div>
+      </Card>
     </div>
   );
 }

@@ -8,6 +8,17 @@ import {
   adminDeleteEvent,
   type EventData,
 } from '@/lib/api/client';
+import {
+  Card,
+  ClassPicker,
+  Field,
+  Select,
+  Status,
+  TextArea,
+  TextInput,
+  Toggle,
+  adminStyles as styles,
+} from './parts';
 
 const CATEGORY_OPTIONS = [
   { value: 'general', label: 'Allgemein' },
@@ -81,10 +92,10 @@ export function AdminEventEditor() {
 
       if (selectedId) {
         await adminUpdateEvent(selectedId, payload);
-        setStatus(`Termin "${form.title}" aktualisiert.`);
+        setStatus(`Termin „${form.title}“ aktualisiert.`);
       } else {
         await adminCreateEvent(payload);
-        setStatus(`Termin "${form.title}" erstellt.`);
+        setStatus(`Termin „${form.title}“ erstellt.`);
         setForm(EMPTY_FORM);
         setSelectedId(null);
       }
@@ -101,7 +112,7 @@ export function AdminEventEditor() {
     setIsBusy(true);
     try {
       await adminDeleteEvent(id);
-      setStatus(`Termin "${title}" gelöscht.`);
+      setStatus(`Termin „${title}“ gelöscht.`);
       if (selectedId === id) {
         setSelectedId(null);
         setForm(EMPTY_FORM);
@@ -125,134 +136,116 @@ export function AdminEventEditor() {
       category: event.category,
       classes: event.classes,
     });
-    setStatus(`Termin "${event.title}" geladen.`);
+    setStatus(`Termin „${event.title}“ geladen.`);
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[2fr,1fr]">
-      <div className="rounded-lg border border-gray-300 p-4 dark:border-gray-700">
-        <h2 className="mb-4 text-lg font-semibold">
-          {selectedId ? 'Termin bearbeiten' : 'Neuer Termin'}
-        </h2>
-
-        <label className="block text-sm font-medium">
-          Titel *
-          <input
-            value={form.title}
-            onChange={(e) => updateField('title', e.target.value)}
-            className="mt-1 w-full rounded border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-900"
-          />
-        </label>
-
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <label className="block text-sm font-medium">
-            Startdatum *
-            <input
-              type="date"
-              value={form.start_date}
-              onChange={(e) => updateField('start_date', e.target.value)}
-              className="mt-1 w-full rounded border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-900"
+    <div className={styles.editorGrid}>
+      <Card title={selectedId ? 'Termin bearbeiten' : 'Neuer Termin'}>
+        <div className={styles.stack}>
+          <Field label="Titel *">
+            <TextInput
+              value={form.title}
+              onChange={(e) => updateField('title', e.target.value)}
+              placeholder="Worum geht es?"
             />
-          </label>
-          <label className="block text-sm font-medium">
-            Enddatum (optional)
-            <input
-              type="date"
-              value={form.end_date}
-              onChange={(e) => updateField('end_date', e.target.value)}
-              className="mt-1 w-full rounded border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-900"
-            />
-          </label>
-        </div>
+          </Field>
 
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <label className="block text-sm font-medium">
-            Kategorie
-            <select
+          <div className={styles.grid2}>
+            <Field label="Startdatum *">
+              <TextInput
+                type="date"
+                value={form.start_date}
+                onChange={(e) => updateField('start_date', e.target.value)}
+              />
+            </Field>
+            <Field label="Enddatum (optional)">
+              <TextInput
+                type="date"
+                value={form.end_date}
+                onChange={(e) => updateField('end_date', e.target.value)}
+              />
+            </Field>
+          </div>
+
+          <Field label="Kategorie">
+            <Select
               value={form.category}
               onChange={(e) => updateField('category', e.target.value)}
-              className="mt-1 w-full rounded border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-900"
             >
               {CATEGORY_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
-            </select>
-          </label>
-          <label className="block text-sm font-medium">
-            Klassen (optional)
-            <input
-              value={form.classes}
-              onChange={(e) => updateField('classes', e.target.value)}
-              placeholder="z.B. HT11, G21"
-              className="mt-1 w-full rounded border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-900"
-            />
-          </label>
-        </div>
+            </Select>
+          </Field>
 
-        <label className="mt-4 block text-sm font-medium">
-          Beschreibung
-          <textarea
-            value={form.description}
-            onChange={(e) => updateField('description', e.target.value)}
-            rows={4}
-            className="mt-1 w-full rounded border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-900"
+          <ClassPicker value={form.classes} onChange={(next) => updateField('classes', next)} />
+
+          <Toggle
+            checked={form.all_day}
+            onChange={(next) => updateField('all_day', next)}
+            title="Ganztägig"
+            hint="Aus, wenn der Termin nur einen Teil des Tages betrifft."
           />
-        </label>
 
-        <div className="mt-4 flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={isBusy}
-            className="rounded bg-blue-600 px-3 py-2 text-sm text-white disabled:opacity-50"
-          >
-            {selectedId ? 'Aktualisieren' : 'Erstellen'}
-          </button>
-          {selectedId && (
-            <button
-              type="button"
-              onClick={() => { setSelectedId(null); setForm(EMPTY_FORM); setStatus('Formular zurückgesetzt.'); }}
-              className="rounded border border-gray-300 px-3 py-2 text-sm dark:border-gray-700"
-            >
-              Neues Formular
+          <Field label="Beschreibung">
+            <TextArea
+              value={form.description}
+              onChange={(e) => updateField('description', e.target.value)}
+              rows={5}
+            />
+          </Field>
+
+          <div className={styles.row}>
+            <button type="button" onClick={handleSave} disabled={isBusy} className="btn">
+              {selectedId ? 'Aktualisieren' : 'Erstellen'}
             </button>
-          )}
+            {selectedId && (
+              <button
+                type="button"
+                onClick={() => { setSelectedId(null); setForm(EMPTY_FORM); setStatus('Formular zurückgesetzt.'); }}
+                className="btn secondary"
+              >
+                Neuer Termin
+              </button>
+            )}
+            <Status text={status} />
+          </div>
         </div>
+      </Card>
 
-        {status && <p className="mt-3 text-sm text-gray-600 dark:text-gray-300">{status}</p>}
-      </div>
-
-      <aside className="rounded-lg border border-gray-300 p-4 dark:border-gray-700">
-        <h2 className="mb-2 text-lg font-semibold">Vorhandene Termine</h2>
-        <ul className="max-h-96 space-y-2 overflow-auto text-sm">
-          {events.map((event) => (
-            <li key={event.id} className="rounded border border-gray-200 p-2 dark:border-gray-700">
-              <button
-                type="button"
-                onClick={() => selectEvent(event)}
-                className="block w-full text-left font-medium text-blue-700 underline"
-              >
-                {event.title}
-              </button>
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                {event.start_date}
-                {event.end_date ? ` – ${event.end_date}` : ''}
-              </p>
-              <button
-                type="button"
-                onClick={() => handleDelete(event.id, event.title)}
-                disabled={isBusy}
-                className="mt-2 rounded border border-red-300 px-2 py-1 text-xs text-red-600 disabled:opacity-50"
-              >
-                Löschen
-              </button>
-            </li>
-          ))}
-          {events.length === 0 && (
-            <li className="text-sm text-gray-500 dark:text-gray-400">Noch keine Termine vorhanden.</li>
-          )}
-        </ul>
-      </aside>
+      <Card title="Vorhandene Termine">
+        {events.length === 0 ? (
+          <p className={styles.empty}>Noch keine Termine vorhanden.</p>
+        ) : (
+          <ul className={styles.list}>
+            {events.map((event) => (
+              <li key={event.id} className={styles.listItem} data-selected={selectedId === event.id}>
+                <button
+                  type="button"
+                  onClick={() => selectEvent(event)}
+                  className={styles.listTitleBtn}
+                >
+                  {event.title}
+                </button>
+                <p className={styles.listMeta}>
+                  {event.start_date}
+                  {event.end_date ? ` – ${event.end_date}` : ''}
+                  {event.classes ? ` · ${event.classes}` : ''}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => handleDelete(event.id, event.title)}
+                  disabled={isBusy}
+                  className={`${styles.smallBtn} ${styles.danger} mt-2`}
+                >
+                  Löschen
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
     </div>
   );
 }

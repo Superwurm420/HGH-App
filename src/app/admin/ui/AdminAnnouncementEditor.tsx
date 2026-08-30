@@ -8,6 +8,17 @@ import {
   adminDeleteAnnouncement,
   type AnnouncementData,
 } from '@/lib/api/client';
+import {
+  Card,
+  ClassPicker,
+  Field,
+  Select,
+  Status,
+  TextArea,
+  TextInput,
+  Toggle,
+  adminStyles as styles,
+} from './parts';
 
 const AUDIENCE_OPTIONS = ['alle', 'Schülerinnen und Schüler', 'Lehrkräfte', 'Eltern', 'Ausbildungspartner'];
 
@@ -101,10 +112,10 @@ export function AdminAnnouncementEditor() {
 
       if (selectedId) {
         await adminUpdateAnnouncement(selectedId, payload);
-        setStatus(`Ankündigung "${form.title}" aktualisiert.`);
+        setStatus(`Ankündigung „${form.title}“ aktualisiert.`);
       } else {
         await adminCreateAnnouncement(payload);
-        setStatus(`Ankündigung "${form.title}" erstellt.`);
+        setStatus(`Ankündigung „${form.title}“ erstellt.`);
         setForm(EMPTY_FORM);
         setSelectedId(null);
       }
@@ -121,7 +132,7 @@ export function AdminAnnouncementEditor() {
     setIsBusy(true);
     try {
       await adminDeleteAnnouncement(id);
-      setStatus(`Ankündigung "${title}" gelöscht.`);
+      setStatus(`Ankündigung „${title}“ gelöscht.`);
       if (selectedId === id) {
         setSelectedId(null);
         setForm(EMPTY_FORM);
@@ -145,140 +156,115 @@ export function AdminAnnouncementEditor() {
       classes: a.classes,
       highlight: a.highlight === 1,
     });
-    setStatus(`Ankündigung "${a.title}" geladen.`);
+    setStatus(`Ankündigung „${a.title}“ geladen.`);
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[2fr,1fr]">
-      <div className="rounded-lg border border-gray-300 p-4 dark:border-gray-700">
-        <h2 className="mb-4 text-lg font-semibold">
-          {selectedId ? 'Ankündigung bearbeiten' : 'Neue Ankündigung'}
-        </h2>
-
-        <label className="block text-sm font-medium">
-          Titel *
-          <input
-            value={form.title}
-            onChange={(e) => updateField('title', e.target.value)}
-            className="mt-1 w-full rounded border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-900"
-          />
-        </label>
-
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <label className="block text-sm font-medium">
-            Start (Datum + Uhrzeit) *
-            <input
-              type="datetime-local"
-              value={toDateTimeLocal(form.date)}
-              onChange={(e) => updateField('date', fromDateTimeLocal(e.target.value))}
-              className="mt-1 w-full rounded border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-900"
+    <div className={styles.editorGrid}>
+      <Card title={selectedId ? 'Ankündigung bearbeiten' : 'Neue Ankündigung'}>
+        <div className={styles.stack}>
+          <Field label="Titel *">
+            <TextInput
+              value={form.title}
+              onChange={(e) => updateField('title', e.target.value)}
+              placeholder="Worum geht es?"
             />
-          </label>
-          <label className="block text-sm font-medium">
-            Ende/Ablauf (optional)
-            <input
-              type="datetime-local"
-              value={toDateTimeLocal(form.expires)}
-              onChange={(e) => updateField('expires', fromDateTimeLocal(e.target.value))}
-              className="mt-1 w-full rounded border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-900"
-            />
-          </label>
-        </div>
+          </Field>
 
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <label className="block text-sm font-medium">
-            Zielgruppe
-            <select
+          <div className={styles.grid2}>
+            <Field label="Sichtbar ab *">
+              <TextInput
+                type="datetime-local"
+                value={toDateTimeLocal(form.date)}
+                onChange={(e) => updateField('date', fromDateTimeLocal(e.target.value))}
+              />
+            </Field>
+            <Field label="Läuft ab (optional)">
+              <TextInput
+                type="datetime-local"
+                value={toDateTimeLocal(form.expires)}
+                onChange={(e) => updateField('expires', fromDateTimeLocal(e.target.value))}
+              />
+            </Field>
+          </div>
+
+          <Field label="Zielgruppe">
+            <Select
               value={form.audience}
               onChange={(e) => updateField('audience', e.target.value)}
-              className="mt-1 w-full rounded border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-900"
             >
               {AUDIENCE_OPTIONS.map((opt) => (
                 <option key={opt} value={opt}>{opt}</option>
               ))}
-            </select>
-          </label>
-          <label className="block text-sm font-medium">
-            Klassen (optional)
-            <input
-              value={form.classes}
-              onChange={(e) => updateField('classes', e.target.value)}
-              placeholder="z.B. HT11, G21"
-              className="mt-1 w-full rounded border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-900"
-            />
-          </label>
-        </div>
+            </Select>
+          </Field>
 
-        <label className="mt-4 flex items-center gap-3 rounded border border-gray-300 p-3 text-sm dark:border-gray-700">
-          <input
-            type="checkbox"
+          <ClassPicker value={form.classes} onChange={(next) => updateField('classes', next)} />
+
+          <Toggle
             checked={form.highlight}
-            onChange={(e) => updateField('highlight', e.target.checked)}
+            onChange={(next) => updateField('highlight', next)}
+            title="Als Sondertermin hervorheben"
+            hint="Erscheint dann oberhalb des Stundenplans statt nur auf der Pinnwand."
           />
-          Als Sondertermin oberhalb des Stundenplans anzeigen
-        </label>
 
-        <label className="mt-4 block text-sm font-medium">
-          Text
-          <textarea
-            value={form.body}
-            onChange={(e) => updateField('body', e.target.value)}
-            rows={6}
-            className="mt-1 w-full rounded border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-900"
-          />
-        </label>
+          <Field label="Text">
+            <TextArea
+              value={form.body}
+              onChange={(e) => updateField('body', e.target.value)}
+              rows={6}
+            />
+          </Field>
 
-        <div className="mt-4 flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={isBusy}
-            className="rounded bg-blue-600 px-3 py-2 text-sm text-white disabled:opacity-50"
-          >
-            {selectedId ? 'Aktualisieren' : 'Erstellen'}
-          </button>
-          {selectedId && (
-            <button
-              type="button"
-              onClick={() => { setSelectedId(null); setForm(EMPTY_FORM); setStatus('Formular zurückgesetzt.'); }}
-              className="rounded border border-gray-300 px-3 py-2 text-sm dark:border-gray-700"
-            >
-              Neues Formular
+          <div className={styles.row}>
+            <button type="button" onClick={handleSave} disabled={isBusy} className="btn">
+              {selectedId ? 'Aktualisieren' : 'Erstellen'}
             </button>
-          )}
+            {selectedId && (
+              <button
+                type="button"
+                onClick={() => { setSelectedId(null); setForm(EMPTY_FORM); setStatus('Formular zurückgesetzt.'); }}
+                className="btn secondary"
+              >
+                Neue Ankündigung
+              </button>
+            )}
+            <Status text={status} />
+          </div>
         </div>
+      </Card>
 
-        {status && <p className="mt-3 text-sm text-gray-600 dark:text-gray-300">{status}</p>}
-      </div>
-
-      <aside className="rounded-lg border border-gray-300 p-4 dark:border-gray-700">
-        <h2 className="mb-2 text-lg font-semibold">Vorhandene Ankündigungen</h2>
-        <ul className="max-h-96 space-y-2 overflow-auto text-sm">
-          {announcements.map((a) => (
-            <li key={a.id} className="rounded border border-gray-200 p-2 dark:border-gray-700">
-              <button
-                type="button"
-                onClick={() => selectAnnouncement(a)}
-                className="block w-full text-left font-medium text-blue-700 underline"
-              >
-                {a.title || 'Ohne Titel'}
-              </button>
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{a.date || 'ohne Datum'}</p>
-              <button
-                type="button"
-                onClick={() => handleDelete(a.id, a.title)}
-                disabled={isBusy}
-                className="mt-2 rounded border border-red-300 px-2 py-1 text-xs text-red-600 disabled:opacity-50"
-              >
-                Löschen
-              </button>
-            </li>
-          ))}
-          {announcements.length === 0 && (
-            <li className="text-sm text-gray-500 dark:text-gray-400">Noch keine Ankündigungen vorhanden.</li>
-          )}
-        </ul>
-      </aside>
+      <Card title="Vorhandene Ankündigungen">
+        {announcements.length === 0 ? (
+          <p className={styles.empty}>Noch keine Ankündigungen vorhanden.</p>
+        ) : (
+          <ul className={styles.list}>
+            {announcements.map((a) => (
+              <li key={a.id} className={styles.listItem} data-selected={selectedId === a.id}>
+                <button
+                  type="button"
+                  onClick={() => selectAnnouncement(a)}
+                  className={styles.listTitleBtn}
+                >
+                  {a.title || 'Ohne Titel'}
+                </button>
+                <p className={styles.listMeta}>
+                  {a.date || 'ohne Datum'}
+                  {a.classes ? ` · ${a.classes}` : ''}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => handleDelete(a.id, a.title)}
+                  disabled={isBusy}
+                  className={`${styles.smallBtn} ${styles.danger} mt-2`}
+                >
+                  Löschen
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
     </div>
   );
 }

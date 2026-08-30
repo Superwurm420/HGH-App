@@ -215,8 +215,16 @@ export function adminFetchUploads(): Promise<{ uploads: UploadData[] }> {
  * Lädt PDF und den im Browser ausgewerteten Stundenplan gemeinsam hoch.
  * Der Server parst nichts mehr selbst, prüft die Daten aber vollständig.
  */
-export function adminUploadTimetable(file: File, schedule: unknown): Promise<UploadData> {
-  return postFile<UploadData>('/api/admin/uploads', file, { schedule });
+export function adminUploadTimetable(
+  file: File,
+  schedule: unknown,
+): Promise<UploadData & { activated?: boolean }> {
+  return postFile('/api/admin/uploads', file, { schedule });
+}
+
+/** Klassen des aktiven Stundenplans — Vorlage für die Klassenauswahl. */
+export function fetchTimetableClasses(): Promise<{ classes: string[] }> {
+  return apiFetch('/api/timetable/classes');
 }
 
 export async function adminActivateUpload(id: string): Promise<void> {
@@ -241,6 +249,11 @@ export function adminFetchSettings(): Promise<{ settings: SettingRow[] }> {
 
 export async function adminSaveSettings(settings: Record<string, string>): Promise<void> {
   await apiFetch('/api/admin/settings', { method: 'PUT', body: JSON.stringify({ settings }) });
+}
+
+/** Einzelne Einstellung speichern — für Schalter, die sofort gelten sollen. */
+export async function adminSaveSetting(key: string, value: string): Promise<void> {
+  await apiFetch('/api/admin/settings', { method: 'PUT', body: JSON.stringify({ key, value }) });
 }
 
 // ── Bilder (TV-Slideshow) ──────────────────────────────────────────

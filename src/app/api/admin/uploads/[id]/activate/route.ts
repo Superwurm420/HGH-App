@@ -1,6 +1,6 @@
 import { withAdmin } from '@/server/guard';
 import { errorResponse, jsonResponse } from '@/server/responses';
-import { logAudit } from '@/server/services/audit';
+import { activateUpload } from '@/server/services/activation';
 import { TimetableUpload } from '@/server/types';
 
 export const dynamic = 'force-dynamic';
@@ -42,22 +42,7 @@ export async function POST(_request: Request, { params }: Params): Promise<Respo
       return errorResponse('Dieser Upload enthält keine Stunden und kann nicht aktiviert werden.', 400);
     }
 
-    await db.batch([
-      db.prepare(
-        "UPDATE timetable_uploads SET status = 'archived', updated_at = datetime('now') WHERE status = 'active'"
-      ),
-      db.prepare(
-        "UPDATE timetable_uploads SET status = 'active', updated_at = datetime('now') WHERE id = ?"
-      ).bind(id),
-      db.prepare(
-        `INSERT INTO app_settings (key, value, updated_at, updated_by)
-         VALUES ('active_timetable_id', ?, datetime('now'), ?)
-         ON CONFLICT(key) DO UPDATE SET
-           value = excluded.value, updated_at = excluded.updated_at, updated_by = excluded.updated_by`
-      ).bind(id, auth.userId),
-    ]);
-
-    await logAudit(db, auth.userId, 'activate', 'timetable', id, `Stundenplan aktiviert: ${upload.filename}`);
+    await activateUpload(db, upload, auth.userId);
 
     return jsonResponse({ ok: true, activated: id });
   });

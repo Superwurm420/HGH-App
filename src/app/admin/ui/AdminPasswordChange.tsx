@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import { adminChangePassword } from '@/lib/api/client';
+import { Card, Field, TextInput, adminStyles as styles } from './parts';
 
 interface AdminPasswordChangeProps {
   /**
@@ -71,80 +72,57 @@ export function AdminPasswordChange({ initial = false, onDone }: AdminPasswordCh
     }
   }
 
-  const inputClass = 'mt-1 w-full rounded border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-900';
-
   return (
-    <div className="rounded-lg border border-gray-300 p-4 dark:border-gray-700">
-      <h2 className="mb-1 text-lg font-semibold">
-        {initial ? 'Passwort vergeben' : 'Passwort ändern'}
-      </h2>
-      <p className="mb-3 text-sm text-gray-600 dark:text-gray-300">
-        {initial
+    <Card
+      title={initial ? 'Passwort vergeben' : 'Passwort ändern'}
+      hint={
+        initial
           ? 'Ersetzt das Standardpasswort und gilt ab sofort für die Anmeldung am Adminbereich. Es gibt keine Vorgabe zur Länge — wähle etwas, das nicht zu erraten ist.'
-          : 'Gilt für die Anmeldung am Adminbereich. Nach dem Ändern bleibst du hier angemeldet; alle anderen Geräte werden abgemeldet.'}
-      </p>
-
-      <div className="grid max-w-md gap-3">
+          : 'Gilt für die Anmeldung am Adminbereich. Nach dem Ändern bleibst du hier angemeldet; alle anderen Geräte werden abgemeldet.'
+      }
+    >
+      <div className={styles.stack} style={{ maxWidth: '26rem' }}>
         {!initial && (
-          <div>
-            <label htmlFor="pw-current" className="block text-sm font-medium">
-              Bisheriges Passwort
-            </label>
-            <input
-              id="pw-current"
+          <Field label="Bisheriges Passwort">
+            <TextInput
               type="password"
               value={current}
               autoComplete="current-password"
               onChange={(e) => setCurrent(e.target.value)}
-              className={inputClass}
             />
-          </div>
+          </Field>
         )}
 
-        <div>
-          <label htmlFor="pw-new" className="block text-sm font-medium">
-            {initial ? 'Passwort' : 'Neues Passwort'}
-          </label>
-          <input
-            id="pw-new"
+        <Field label={initial ? 'Passwort' : 'Neues Passwort'}>
+          <TextInput
             type="password"
             value={next}
             autoComplete="new-password"
             onChange={(e) => setNext(e.target.value)}
-            className={inputClass}
           />
-        </div>
+        </Field>
 
-        <div>
-          <label htmlFor="pw-repeat" className="block text-sm font-medium">
-            {initial ? 'Passwort wiederholen' : 'Neues Passwort wiederholen'}
-          </label>
-          <input
-            id="pw-repeat"
+        <Field label={initial ? 'Passwort wiederholen' : 'Neues Passwort wiederholen'}>
+          <TextInput
             type="password"
             value={repeat}
             autoComplete="new-password"
             onChange={(e) => setRepeat(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submit(); } }}
-            className={inputClass}
           />
+        </Field>
+
+        <div className={styles.row}>
+          <button type="button" onClick={submit} disabled={isBusy} className="btn">
+            {initial ? 'Passwort speichern' : 'Passwort ändern'}
+          </button>
+          {status && (
+            <p className={styles.status} data-tone={isError ? 'error' : undefined}>
+              {status}
+            </p>
+          )}
         </div>
       </div>
-
-      <button
-        type="button"
-        onClick={submit}
-        disabled={isBusy}
-        className="mt-4 rounded bg-blue-600 px-4 py-2 text-sm text-white disabled:opacity-50"
-      >
-        {initial ? 'Passwort speichern' : 'Passwort ändern'}
-      </button>
-
-      {status && (
-        <p className={`mt-3 text-sm ${isError ? 'text-red-600' : 'text-green-700 dark:text-green-400'}`}>
-          {status}
-        </p>
-      )}
-    </div>
+    </Card>
   );
 }
