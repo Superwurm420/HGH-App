@@ -24,7 +24,7 @@
   letter-spacing: 0.01em;
 }
 
-@media (min-width: 900px) and (orientation: landscape) {
+@media (min-width: 768px) {
   .dailyMessage {
     min-height: 78px;
   }

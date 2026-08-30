@@ -60,18 +60,12 @@
   border-radius: 2px;
 }
 
-@media (min-width: 1024px) {
+/* Die Leiste bleibt auf jeder Breite unten und schwebend — nur die Ziele werden
+   größer. Der frühere 1024px-Block machte sie `position: static` und hängte sie
+   ans Seitenende; durch die Kaskade griff das ausgerechnet nur im Hochformat,
+   also genau auf dem iPad Pro, wo sie damit aus dem Sichtfeld rutschte. */
+@media (min-width: 768px) {
   .bottomNav {
-    position: static;
-    max-width: 480px;
-    margin: 0 auto 16px;
-    border-radius: var(--radius);
-  }
-}
-
-@media (min-width: 900px) and (orientation: landscape) {
-  .bottomNav {
-    position: fixed;
     left: max(22px, env(safe-area-inset-left, 0px) + 10px);
     right: max(22px, env(safe-area-inset-right, 0px) + 10px);
     bottom: max(16px, env(safe-area-inset-bottom, 0px) + 8px);

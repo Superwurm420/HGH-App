@@ -61,8 +61,8 @@ export default async function HomePage({ searchParams }: PageProps) {
 
       <div className="home-dashboard">
         <div className="card surface">
-          <div className="home-landscape-grid">
-            <div className="home-landscape-info">
+          <div className="home-split-grid">
+            <div className="home-split-info">
               <Countdown lessons={todayLessons} />
 
               <DailyMessage

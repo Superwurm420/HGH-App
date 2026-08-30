@@ -602,7 +602,7 @@
   }
 }
 
-@media (min-width: 900px) and (orientation: landscape) {
+@media (min-width: 768px) {
   .card {
     padding: 20px;
   }
