@@ -14,7 +14,6 @@ import {
   loadAppSettings,
   loadSchedulePage,
 } from '@/server/page-data';
-import { TimetableMeta } from '@/components/schedule/TimetableMeta';
 
 export const dynamic = 'force-dynamic';
 
@@ -62,9 +61,6 @@ export default async function HomePage({ searchParams }: PageProps) {
 
       <div className="home-dashboard">
         <div className="card surface">
-          {/* Umgestellt wird auf den Reitern Tag und Woche — hier steht nur, was gilt. */}
-          <p className="text-sm text-muted mb-1">Klasse {selectedClass}</p>
-
           <div className="home-landscape-grid">
             <div className="home-landscape-info">
               <Countdown lessons={todayLessons} />
@@ -85,8 +81,6 @@ export default async function HomePage({ searchParams }: PageProps) {
               />
             </div>
           </div>
-
-          <TimetableMeta upload={timetable.upload} />
         </div>
 
         <div className="home-secondary-grid">
