@@ -22,6 +22,23 @@ const nextConfig = {
   async headers() {
     return [
       {
+        // Öffentliche Seiten dürfen kurz aus dem Browser-Cache kommen. Sie sind
+        // `force-dynamic` und wurden damit bei jedem Aufruf neu gerendert —
+        // inklusive D1-Abfragen. Tagesmeldung und Countdown laufen im Browser
+        // weiter, eine Minute Versatz ist dort ohne Bedeutung.
+        //
+        // `missing: RSC` grenzt das auf die Dokument-Anfrage ein: Die
+        // RSC-Anfragen von `router.refresh()` bleiben ungecacht, sonst könnte
+        // ein frisch aktivierter Stundenplan hinter einer alten Antwort
+        // hängenbleiben — also genau in dem Fall nicht ankommen, für den die
+        // Aktualisierung da ist.
+        source: '/:path(|stundenplan|woche|pinnwand|weiteres|galerie)',
+        missing: [{ type: 'header', key: 'RSC' }],
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=60, stale-while-revalidate=600' },
+        ],
+      },
+      {
         source: '/sw.js',
         headers: [
           { key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' },
@@ -31,6 +48,16 @@ const nextConfig = {
         source: '/manifest.webmanifest',
         headers: [
           { key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' },
+        ],
+      },
+      {
+        // pdfjs sind rund 1,5 MB, die nur der Adminbereich braucht. Der
+        // Dateiname ist unverändert, der Inhalt hängt aber an der installierten
+        // pdfjs-Version — eine Woche Cache spart die Übertragung bei jedem
+        // Upload, ohne ein Update ewig zu blockieren.
+        source: '/pdfjs/:file*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=604800, stale-while-revalidate=86400' },
         ],
       },
       {

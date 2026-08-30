@@ -11,6 +11,14 @@ import { useEffect } from 'react';
  * neu geladen wird erst, wenn die App im Hintergrund liegt. So springt die
  * Seite niemandem unter den Händen weg.
  */
+/**
+ * Abstand zwischen zwei Update-Prüfungen. Jede davon lädt `/sw.js` neu (die
+ * Datei darf nicht gecacht werden) und kostet damit eine Worker-Anfrage. Im
+ * Minutentakt war das ein zweiter Dauerläufer neben `/api/bootstrap`, für etwas,
+ * das höchstens nach einem Deploy ein anderes Ergebnis hat.
+ */
+const UPDATE_INTERVAL_MS = 1_800_000;
+
 export function ServiceWorkerRegister() {
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return;
@@ -20,6 +28,19 @@ export function ServiceWorkerRegister() {
     const debug = process.env.NODE_ENV !== 'production';
     let intervalId: ReturnType<typeof setInterval> | null = null;
     let registrationRef: ServiceWorkerRegistration | null = null;
+    let lastUpdateAt = 0;
+
+    /**
+     * Prüft auf eine neue Fassung — aber nie öfter als `UPDATE_INTERVAL_MS`.
+     * Ohne die Bremse löste jeder App-Wechsel eine eigene `/sw.js`-Anfrage aus.
+     */
+    const requestUpdate = (source: string) => {
+      if (Date.now() - lastUpdateAt < UPDATE_INTERVAL_MS) return;
+      lastUpdateAt = Date.now();
+      registrationRef?.update().catch((error) => {
+        if (debug) console.warn(`[SW] Update fehlgeschlagen (${source}):`, error);
+      });
+    };
 
     const activateWaitingWorker = (source: string) => {
       const waitingWorker = registrationRef?.waiting;
@@ -52,9 +73,7 @@ export function ServiceWorkerRegister() {
         return;
       }
 
-      registrationRef?.update().catch((error) => {
-        if (debug) console.warn('[SW] Update bei Sichtbarkeitswechsel fehlgeschlagen:', error);
-      });
+      requestUpdate('visibilitychange');
     };
 
     navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
@@ -78,17 +97,13 @@ export function ServiceWorkerRegister() {
           });
         });
 
-        registration.update().catch((error) => {
-          if (debug) console.warn('[SW] Initiales Update fehlgeschlagen:', error);
-        });
+        requestUpdate('register');
 
         intervalId = setInterval(() => {
           if (document.visibilityState === 'visible') {
-            registration.update().catch((error) => {
-              if (debug) console.warn('[SW] Periodisches Update fehlgeschlagen:', error);
-            });
+            requestUpdate('interval');
           }
-        }, 60_000);
+        }, UPDATE_INTERVAL_MS);
       })
       .catch((error) => {
         if (debug) console.warn('[SW] Registrierung fehlgeschlagen:', error);

@@ -5,7 +5,36 @@ import { usePathname, useRouter } from 'next/navigation';
 
 import { loadSeenTimetableVersion, saveSeenTimetableVersion } from '@/lib/storage/preferences';
 
-const POLL_MS = 60_000;
+/**
+ * Abfragetakt. Bewusst großzügig: Inhalte ändern sich hier höchstens ein paar
+ * Mal pro Woche, die Abfrage lief aber jede Minute — auf dem Cloudflare-Gratis-
+ * Abo (100.000 Anfragen pro Tag) ist der Wandbildschirm damit allein bei 1.440
+ * Anfragen täglich, jedes Schülergerät bei bis zu 480. Fünf Minuten kosten ein
+ * Fünftel davon, ohne dass jemand einen Unterschied bemerkt.
+ */
+const POLL_MS = 300_000;
+
+/**
+ * Nach einem Fehler wird der Abstand verdoppelt (bis zu einer Stunde). Ist das
+ * Netz weg oder der Worker am Tageslimit, hämmert die App nicht weiter dagegen.
+ */
+const MAX_POLL_MS = 3_600_000;
+
+/**
+ * Kürzester Abstand zwischen zwei Abfragen. Ohne diese Bremse löst jeder
+ * Wechsel in die App eine eigene Abfrage aus — beim Hin- und Herschalten
+ * zwischen Apps sind das schnell mehr Anfragen als der Minutentakt vorher.
+ */
+const MIN_GAP_MS = 60_000;
+
+/**
+ * Takt der TV-Ansicht. Der Wandbildschirm läuft rund um die Uhr und ist damit
+ * das einzige Gerät, das wirklich jeden Tag durchpollt — gleichzeitig schaut
+ * niemand darauf, ob eine Ankündigung eine halbe Stunde früher erscheint. Die
+ * Uhr, der Countdown und der Wechsel auf die nächste Stunde laufen ohnehin im
+ * Browser weiter und brauchen keine Anfrage.
+ */
+const TV_POLL_MS = 1_800_000;
 
 /**
  * Hält die angezeigten Inhalte aktuell und meldet einen neuen Stundenplan.
@@ -33,6 +62,13 @@ export function TimetableAutoRefresh() {
   useEffect(() => {
     let etag: string | null = null;
     let running = false;
+    let lastCheckAt = 0;
+    // Auf `/tv` gilt der träge Takt. Der Wert wird bei jedem Zurücksetzen neu
+    // gelesen, damit ein Wechsel auf die TV-Ansicht sofort greift.
+    const basePoll = () => (silentRef.current ? TV_POLL_MS : POLL_MS);
+    let delay = basePoll();
+    let timerId: number | null = null;
+    let stopped = false;
     const debug = process.env.NODE_ENV !== 'production';
 
     const checkTimetableVersion = (version: unknown) => {
@@ -61,7 +97,9 @@ export function TimetableAutoRefresh() {
 
     const check = async () => {
       if (running || document.visibilityState !== 'visible') return;
+      if (Date.now() - lastCheckAt < MIN_GAP_MS) return;
       running = true;
+      lastCheckAt = Date.now();
       try {
         const response = await fetch('/api/bootstrap', {
           method: 'GET',
@@ -69,11 +107,17 @@ export function TimetableAutoRefresh() {
           headers: etag ? { 'If-None-Match': etag } : {},
         });
 
-        if (response.status === 304) return;
-        if (!response.ok) {
-          if (debug) console.warn('[TT_BOOTSTRAP_FETCH_FAILED]', response.status);
+        if (response.status === 304) {
+          delay = basePoll();
           return;
         }
+        if (!response.ok) {
+          if (debug) console.warn('[TT_BOOTSTRAP_FETCH_FAILED]', response.status);
+          delay = Math.min(delay * 2, MAX_POLL_MS);
+          return;
+        }
+
+        delay = basePoll();
 
         const nextEtag = response.headers.get('etag');
         const payload = (await response.json().catch(() => null)) as { timetable?: unknown } | null;
@@ -93,26 +137,36 @@ export function TimetableAutoRefresh() {
         etag = nextEtag;
       } catch (error) {
         if (debug) console.warn('[TT_BOOTSTRAP_NETWORK_FAILED]', error);
+        delay = Math.min(delay * 2, MAX_POLL_MS);
       } finally {
         running = false;
       }
     };
 
+    // Kein festes Intervall: Der nächste Termin wird erst nach der Antwort
+    // gesetzt, damit der Rückfalltakt aus `delay` überhaupt greifen kann.
+    const schedule = () => {
+      if (stopped) return;
+      if (timerId !== null) window.clearTimeout(timerId);
+      timerId = window.setTimeout(async () => {
+        await check();
+        schedule();
+      }, delay);
+    };
+
     const onVisible = () => {
       if (document.visibilityState === 'visible') {
-        void check();
+        void check().then(schedule);
       }
     };
 
-    void check();
+    void check().then(schedule);
     document.addEventListener('visibilitychange', onVisible);
-    const intervalId = window.setInterval(() => {
-      void check();
-    }, POLL_MS);
 
     return () => {
+      stopped = true;
       document.removeEventListener('visibilitychange', onVisible);
-      window.clearInterval(intervalId);
+      if (timerId !== null) window.clearTimeout(timerId);
     };
   }, [router]);
 

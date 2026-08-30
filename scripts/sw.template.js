@@ -5,14 +5,21 @@ const BUILD_VERSION = '__BUILD_VERSION__';
 const CACHE = 'hgh-pwa-v3-' + BUILD_VERSION;
 
 // Routen, die bei der Installation vorgeladen werden, damit die App auch
-// offline startet.
-const PRECACHE_ROUTES = ['/', '/stundenplan', '/woche', '/weiteres', '/pinnwand'];
+// offline startet. Bewusst nur die Startseite: Jede weitere Route wäre eine
+// zusätzliche Anfrage pro Gerät und Build — und offline landet ohnehin alles
+// beim Rückfall auf '/' (siehe unten), solange die Seite nicht schon besucht
+// und dabei gecacht wurde.
+const PRECACHE_ROUTES = ['/'];
+
+// Routen, die als HTML behandelt werden (network-first). Nicht alle davon
+// werden vorgeladen — sie landen im Cache, sobald sie einmal besucht wurden.
+const HTML_ROUTES = ['/', '/stundenplan', '/woche', '/weiteres', '/pinnwand'];
 
 // HTML-Routen: network-first (immer frische Inhalte wenn online).
 // /tv gehört dazu, aber nicht in den Precache: Der Wandbildschirm läuft im
 // Dauerbetrieb und braucht frische Seiten — vorladen müssten sie dafür aber
 // alle Schülergeräte, die die TV-Ansicht nie öffnen.
-const HTML_SET = new Set([...PRECACHE_ROUTES, '/tv']);
+const HTML_SET = new Set([...HTML_ROUTES, '/tv']);
 
 // ── Install: Kern-Routen precachen ──────────────────────────────────────────
 self.addEventListener('install', (event) => {
@@ -78,8 +85,12 @@ self.addEventListener('fetch', (event) => {
         try {
           const preloaded = await event.preloadResponse;
           const response = preloaded || await fetch(event.request);
-          const clone = response.clone();
-          caches.open(CACHE).then((cache) => cache.put(event.request, clone));
+          // Nur brauchbare Antworten cachen — eine gecachte Fehlerseite wäre
+          // offline schlimmer als der Rückfall auf die Startseite.
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE).then((cache) => cache.put(event.request, clone));
+          }
           return response;
         } catch {
           const cached = await caches.match(event.request);
@@ -93,8 +104,10 @@ self.addEventListener('fetch', (event) => {
       caches.match(event.request).then((cached) => {
         if (cached) return cached;
         return fetch(event.request).then((response) => {
-          const clone = response.clone();
-          caches.open(CACHE).then((cache) => cache.put(event.request, clone));
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE).then((cache) => cache.put(event.request, clone));
+          }
           return response;
         });
       })
