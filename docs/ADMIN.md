@@ -10,7 +10,6 @@ Im Adminbereich gibt es fünf Bereiche:
 
 1. **Stundenplan** — PDF-Dateien mit dem aktuellen Stundenplan hochladen und freischalten
 2. **Ankündigungen** — Nachrichten erstellen, die auf der Startseite und der Pinnwand erscheinen
-3. **Termine** — Kalendereinträge pflegen (z. B. Klausuren, Projekte, Feiertage)
 4. **Bilder** — Fotos hochladen, die auf dem Wandbildschirm (`/tv`) durchlaufen
 5. **Einstellungen** — Google-Kalender, Ferienzeiträume, Tagesmeldungen, Schulname, Passwort ändern
 
@@ -102,7 +101,6 @@ Fülle die folgenden Felder aus:
 | **Titel** | Ja | Eine kurze Überschrift für die Ankündigung |
 | **Start (Datum + Uhrzeit)** | Ja | Ab wann die Ankündigung sichtbar sein soll |
 | **Ende/Ablauf** | Nein | Wann die Ankündigung automatisch verschwinden soll. Wenn du nichts einträgst, bleibt sie dauerhaft sichtbar. |
-| **Zielgruppe** | Nein | Für wen die Ankündigung gedacht ist. Auswahl: **alle**, **Schülerinnen und Schüler**, **Lehrkräfte**, **Eltern**, **Ausbildungspartner** |
 | **Klassen** | Nein | Wenn die Ankündigung nur bestimmte Klassen betrifft, trage die Klassenkürzel ein, getrennt durch Kommas. Beispiel: `HT11, G21`. Wenn du das Feld leer lässt, sehen alle Klassen die Ankündigung. |
 | **Als Sondertermin anzeigen** | Nein | Wenn du dieses Häkchen setzt, wird die Ankündigung **besonders hervorgehoben oberhalb des Stundenplans** angezeigt. Nutze das für wichtige Meldungen. |
 | **Text** | Nein | Der ausführliche Inhalt der Ankündigung (mehrzeilig möglich) |
@@ -124,31 +122,6 @@ Klicke anschließend auf **Erstellen**.
 ### Neues Formular
 
 Wenn du gerade eine Ankündigung bearbeitest und stattdessen eine neue erstellen möchtest, klicke auf **Neues Formular** — das setzt alle Felder zurück.
-
----
-
-## Termine verwalten
-
-Wechsle zum Tab **Termine**. Die Bedienung ist ähnlich wie bei Ankündigungen.
-
-### Neuen Termin erstellen
-
-| Feld | Pflicht? | Erklärung |
-|---|---|---|
-| **Titel** | Ja | Name des Termins (z. B. „Klausur Mathematik") |
-| **Startdatum** | Ja | An welchem Tag der Termin stattfindet |
-| **Enddatum** | Nein | Falls der Termin über mehrere Tage geht (z. B. eine Projektwoche) |
-| **Kategorie** | Nein | Art des Termins. Auswahl: **Allgemein**, **Klausur/Prüfung**, **Feiertag/Frei**, **Projekt**, **Sonstiges** |
-| **Klassen** | Nein | Für welche Klassen der Termin gilt, getrennt durch Kommas (z. B. `HT11, G21`). Leer = alle Klassen. |
-| **Beschreibung** | Nein | Zusätzliche Details zum Termin |
-
-Klicke auf **Erstellen**.
-
-### Termin bearbeiten oder löschen
-
-Funktioniert genauso wie bei Ankündigungen:
-- **Bearbeiten**: Auf den Titel rechts klicken → Formular anpassen → **Aktualisieren**
-- **Löschen**: Roten **Löschen**-Button klicken → Bestätigen
 
 ---
 
@@ -177,7 +150,7 @@ Bilder hochgeladen sind, zeigt die TV-Ansicht einfach keine Slideshow.
 ## Einstellungen
 
 Im Tab **Einstellungen** pflegst du alles, was nicht Stundenplan, Ankündigung
-oder Termin ist. Änderungen werden erst mit **Alles speichern** übernommen.
+ist. Änderungen werden erst mit **Alles speichern** übernommen.
 
 ### Google-Kalender
 
@@ -272,7 +245,7 @@ Dafür gibt es bewusst keinen Selbstbedienungsweg (kein Mailversand, keine
 Sicherheitsfragen). Die IT-Betreuung setzt das Konto zurück:
 
 ```bash
-# Konto löschen — die Stundenpläne, Ankündigungen und Termine bleiben erhalten
+# Konto löschen — die Stundenpläne und Ankündigungen bleiben erhalten
 npx wrangler d1 execute hgh-app-db --remote \
   --command "DELETE FROM users WHERE username = 'Admin'"
 ```
@@ -284,7 +257,7 @@ Benutzernamen aus `ADMIN_USER` (Standard `Admin`) und dem Standardpasswort
 **Melde dich unmittelbar nach dem Löschen an.** In der Zeit dazwischen steht der
 Adminbereich offen: Wer den Benutzernamen kennt, kann sich das Konto nehmen. Der
 Adminbereich lässt nach dieser Anmeldung ohnehin nichts anderes zu, als ein
-Passwort zu vergeben — erst danach sind Stundenplan, Ankündigungen und Termine
+Passwort zu vergeben — erst danach sind Stundenplan und Ankündigungen
 wieder erreichbar.
 
 ### Sitzung abgelaufen

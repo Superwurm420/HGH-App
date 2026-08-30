@@ -236,7 +236,7 @@ export function AdminSettingsEditor() {
         ) : (
           <div className={styles.stack}>
             {form.holidays.map((range, index) => (
-              <div key={index} className={styles.row}>
+              <div key={index} className={styles.rangeRow}>
                 <Field label="Von">
                   <TextInput
                     type="date"
@@ -255,6 +255,7 @@ export function AdminSettingsEditor() {
                   type="button"
                   onClick={() => removeHoliday(index)}
                   className={`${styles.smallBtn} ${styles.danger}`}
+                  aria-label={`Zeitraum ${index + 1} entfernen`}
                 >
                   Entfernen
                 </button>

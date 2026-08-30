@@ -60,24 +60,8 @@ export interface Announcement {
   body: string;
   date: string;
   expires: string | null;
-  audience: string;
   classes: string;
   highlight: number;
-  created_by: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-/** Termin aus D1. */
-export interface EventRecord {
-  id: string;
-  title: string;
-  description: string;
-  start_date: string;
-  end_date: string | null;
-  all_day: number;
-  category: string;
-  classes: string;
   created_by: string | null;
   created_at: string;
   updated_at: string;
@@ -87,7 +71,7 @@ export interface EventRecord {
  * Rückmeldung aus der App.
  *
  * `contact` und `klasse` sind freiwillig und bleiben leer, wenn jemand anonym
- * schreibt — deshalb leerer String statt NULL, wie bei `classes` der Termine.
+ * schreibt — deshalb leerer String statt NULL, wie bei `classes` der Ankündigungen.
  */
 export interface FeedbackRecord {
   id: string;

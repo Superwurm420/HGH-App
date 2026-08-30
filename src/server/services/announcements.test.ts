@@ -39,7 +39,7 @@ describe('matchesClass', () => {
 function fakeDb(rows: Partial<Announcement>[]): D1Database {
   const results = rows.map((row) => ({
     id: 'x', title: 'T', body: '', date: '', expires: null,
-    audience: '', classes: '', highlight: 0,
+    classes: '', highlight: 0,
     created_by: null, created_at: '', updated_at: '',
     ...row,
   })) as Announcement[];

@@ -18,7 +18,6 @@ export type ParsedSchedule = Record<string, WeekPlan>;
 export type SpecialEvent = {
   id: string;
   title: string;
-  audience?: string;
   classes: SchoolClass[] | 'alle';
   startsAt: string;
   endsAt?: string;

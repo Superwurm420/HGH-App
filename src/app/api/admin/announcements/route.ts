@@ -11,7 +11,6 @@ export interface AnnouncementInput {
   body?: string;
   date?: string;
   expires?: string;
-  audience?: string;
   classes?: string;
   highlight?: boolean;
 }
@@ -35,15 +34,14 @@ export async function POST(request: Request): Promise<Response> {
     if (!date) return errorResponse('Datum ist erforderlich.', 400);
 
     const created = await db.prepare(
-      `INSERT INTO announcements (title, body, date, expires, audience, classes, highlight, created_by)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `INSERT INTO announcements (title, body, date, expires, classes, highlight, created_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?)
        RETURNING *`
     ).bind(
       title,
       (body.body ?? '').trim(),
       date,
       (body.expires ?? '').trim() || null,
-      (body.audience ?? 'alle').trim(),
       (body.classes ?? '').trim(),
       body.highlight ? 1 : 0,
       auth.userId,

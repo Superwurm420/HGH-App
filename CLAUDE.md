@@ -65,9 +65,9 @@ npm run setup:cloudflare # Cloudflare-Ersteinrichtung (D1, R2, Migration)
     │   │   └── ui/            # AdminWorkspace + Tabs (Upload, Inhalte,
     │   │                      #   Bilder, Einstellungen), parts.tsx
     │   └── api/               # ── die komplette API ──
-    │       ├── bootstrap/ timetable/ announcements/ events/ settings/ media/
+    │       ├── bootstrap/ timetable/ announcements/ settings/ media/
     │       └── admin/         # login, logout, session, setup-status,
-    │                          #   announcements, events, uploads, media,
+    │                          #   announcements, uploads, media,
     │                          #   settings, audit
     │
     ├── server/                # Serverseitige Logik (nur im Worker)
@@ -78,7 +78,7 @@ npm run setup:cloudflare # Cloudflare-Ersteinrichtung (D1, R2, Migration)
     │   ├── guard.ts           # withAdmin() — Bindings + Auth + Fehlerbehandlung
     │   ├── responses.ts       # jsonResponse, errorResponse, withErrorHandling
     │   ├── page-data.ts       # Datenbeschaffung der Server Components
-    │   └── services/          # timetable, schedule, announcements, events,
+    │   └── services/          # timetable, schedule, announcements,
     │                          #   settings, media, password, audit
     │
     ├── components/
@@ -121,7 +121,9 @@ Das ist kein Stilfrage, sondern notwendig: Ein `fetch('/api/…')` mit relativer
 
 - **Stundenplan**: Admin wählt PDF → **Auswertung im Browser** (`parse-pdf-browser.ts`) → Vorschau → PDF + JSON an `POST /api/admin/uploads` → Server validiert (`services/schedule.ts`) → `timetable_entries` in D1, PDF in R2 → Aktivieren.
 - **Anzeige**: Server Components lesen den aktiven Upload aus D1. Fällt zurück auf den zuletzt geparsten/archivierten Plan, wenn keiner aktiviert wurde.
-- **Ankündigungen/Termine/Einstellungen**: D1, gepflegt über den Adminbereich.
+- **Ankündigungen/Einstellungen**: D1, gepflegt über den Adminbereich.
+  Hervorgehobene Ankündigungen erscheinen zusätzlich als Sondertermin über dem
+  Stundenplan (`announcementsToEvents` in `page-data.ts`).
 - **Bilder**: R2 + `media_files`, ausgeliefert über `GET /api/media/:id` (Bucket bleibt privat).
 - **Rückmeldungen**: Formular unter `/weiteres` → `POST /api/feedback` (ohne Anmeldung) →
   `feedback` in D1 → Reiter „Rückmeldungen" im Adminbereich.
@@ -200,14 +202,17 @@ Alle Seiten werden ausgewertet und zusammengeführt.
   Anmeldung gerade nicht klappt — inklusive `needsPassword`.
 - Jeder Admin-Handler ist in `withAdmin()` aus `src/server/guard.ts` gekapselt — Bindings, Auth und Fehlerbehandlung an einer Stelle.
 - Alle Änderungen landen im `audit_logs`.
-- Tabs: Stundenplan · Ankündigungen & Termine · Bilder · Rückmeldungen · Einstellungen.
+- Tabs: Stundenplan · Ankündigungen · Bilder · Rückmeldungen · Einstellungen.
 - **Gemeinsame Oberfläche**: `src/app/admin/ui/parts.tsx` und `admin.module.css`
   liefern Karten, Felder, Schalter, Listen und die Klassenauswahl. Der
   Adminbereich benutzt damit dieselben Tokens wie der Rest der App statt
   eigener Grautöne.
-- Ankündigungen und Termine liegen unter **einem** Reiter (`AdminContentEditor`,
-  Umschalter oben). Die Daten bleiben getrennt — Ankündigungen laufen ab und
-  stehen auf der Pinnwand, Termine haben ein Datum —, die Bedienung nicht.
+- **Termine gibt es nicht mehr.** Tabelle `events`, `/api/events`,
+  `/api/admin/events` und der zweite Zweig des `AdminContentEditor` sind
+  entfernt: Angezeigt wurden sie nirgends — die Sondertermine über dem
+  Stundenplan stammen aus hervorgehobenen Ankündigungen. Eine Ankündigung mit
+  „Sichtbar ab“/„Läuft ab“ leistet dasselbe. Ebenso weg ist die **Zielgruppe**;
+  gefiltert wird nur nach Klassen.
 - **Klassen wählt man aus**, statt sie zu tippen: `ClassPicker` liest die
   Klassen des aktiven Plans aus `GET /api/timetable/classes`. Gespeichert wird
   weiterhin die Liste `HT11, G21`, weil die Filter der öffentlichen Seiten
@@ -242,13 +247,11 @@ Alle Seiten werden ausgewertet und zusammengeführt.
 | `/api/timetable` | GET | Aktiver Stundenplan, optional `?klasse=` |
 | `/api/timetable/classes` | GET | Klassen im aktiven Plan |
 | `/api/announcements` | GET | Aktive Ankündigungen, optional `?klasse=` |
-| `/api/events` | GET | Anstehende Termine, optional `?klasse=` |
 | `/api/settings` | GET | Öffentliche Einstellungen |
 | `/api/media/:id` | GET | Bild aus R2 (dauerhaft cachebar) |
 | `/api/feedback` | POST | Rückmeldung abgeben — ohne Anmeldung |
 | `/api/admin/login` · `logout` · `session` · `setup-status` | POST/GET | Anmeldung |
 | `/api/admin/announcements[/:id]` | GET/POST/PUT/DELETE | Ankündigungen |
-| `/api/admin/events[/:id]` | GET/POST/PUT/DELETE | Termine |
 | `/api/admin/uploads[/:id]` | GET/POST/DELETE | Stundenplan-Uploads |
 | `/api/admin/uploads/:id/activate` | POST | Plan aktivieren |
 | `/api/admin/media[/:id]` | GET/POST/DELETE | Bilder |
@@ -330,8 +333,7 @@ dem Deploy anzumelden.
 - **Ankündigungen speichern ihr Datum als `TT.MM.JJJJ HH:mm`** — ein Erbe aus der
   Zeit der TXT-Dateien. In diesem Format ist die Zeichenkette nicht sortierbar
   (sie beginnt mit dem Tag im Monat). Ablauf und Reihenfolge werden deshalb in
-  `services/announcements.ts` in TypeScript ausgewertet, **nicht im SQL**. Termine
-  benutzen dagegen ISO und dürfen im SQL verglichen werden.
+  `services/announcements.ts` in TypeScript ausgewertet, **nicht im SQL**.
 - **Dunkelmodus ist die Voreinstellung**: `tokens.css` setzt die dunklen Werte auf
   `:root` und schaltet über die Klasse `light` auf hell um. Eine Klasse `dark`
   gibt es nicht — deshalb steht in `tailwind.config.ts`
@@ -348,7 +350,9 @@ dem Deploy anzumelden.
 - **Tote Teile im Schema** (bewusst nicht migriert, weil ein Eingriff in die
   Live-Datenbank mehr Risiko wäre als Nutzen): die Tabelle `classes` wird nicht
   mehr beschrieben und nie gelesen — die Klassenliste kommt aus
-  `timetable_entries`. Ebenso ungenutzt: `users.role`,
+  `timetable_entries`; die Tabelle `events` und die Spalte
+  `announcements.audience` seit dem Wegfall der Termine und der Zielgruppe.
+  Ebenso ungenutzt: `users.role`,
   `timetable_uploads.parse_started_at` und die Status-Werte `'uploaded'` und
   `'parsing'`, die seit dem Parsen im Browser nicht mehr entstehen.
 - `public/sw.js` und `public/pdfjs/` werden von `scripts/prebuild.mjs` erzeugt und sind **nicht eingecheckt**. Änderungen am Service Worker gehören in `scripts/sw.template.js`.

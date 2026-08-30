@@ -8,7 +8,7 @@ import styles from './admin.module.css';
 /**
  * Gemeinsame Bausteine des Adminbereichs.
  *
- * Ankündigungen, Termine, Uploads und Einstellungen bauten dieselben Karten,
+ * Ankündigungen, Uploads und Einstellungen bauten dieselben Karten,
  * Felder und Listen jeweils neu aus Tailwind-Klassen zusammen — und jede
  * Abschrift wich ein wenig ab. Hier steht das Aussehen einmal.
  */
@@ -152,7 +152,7 @@ export function Notice({
 }
 
 /**
- * Klassenauswahl für Ankündigungen und Termine.
+ * Klassenauswahl für Ankündigungen.
  *
  * Gespeichert wird weiterhin eine Liste wie „HT11, G21" — das Format liegt so
  * in der Datenbank und wird von den Filtern der öffentlichen Seiten erwartet.

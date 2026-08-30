@@ -1,6 +1,6 @@
 # HGH-App — Der digitale Stundenplan
 
-Die HGH-App ist die Stundenplan-App der **HGH Holztechnik und Gestaltung Hildesheim**. Sie zeigt den aktuellen Stundenplan, Ankündigungen, Termine und einen Kalender an — direkt im Browser, auf jedem Gerät.
+Die HGH-App ist die Stundenplan-App der **HGH Holztechnik und Gestaltung Hildesheim**. Sie zeigt den aktuellen Stundenplan, Ankündigungen und einen Kalender an — direkt im Browser, auf jedem Gerät.
 
 ---
 
@@ -27,7 +27,7 @@ Die App lässt sich wie eine normale App auf dem Startbildschirm ablegen:
 
 ## Für die Redaktion: Inhalte verwalten
 
-Die Redaktion verwaltet Stundenpläne, Ankündigungen, Termine und Bilder über den **Adminbereich**:
+Die Redaktion verwaltet Stundenpläne, Ankündigungen und Bilder über den **Adminbereich**:
 
 1. Öffne die App im Browser
 2. Hänge `/admin` an die Adresse an (z. B. `https://deine-app.de/admin`)
@@ -51,7 +51,7 @@ Tagesmeldungen und Ferienzeiträume pflegst du ebenfalls im Adminbereich, unter 
 Die App läuft vollständig auf Cloudflare, in **einem** Worker:
 
 - **Oberfläche und Schnittstelle**: Next.js 16, ausgeliefert als Cloudflare Worker
-- **Datenbank**: Cloudflare D1 (SQLite) — Stundenpläne, Ankündigungen, Termine, Einstellungen
+- **Datenbank**: Cloudflare D1 (SQLite) — Stundenpläne, Ankündigungen, Einstellungen
 - **Dateien**: Cloudflare R2 — hochgeladene PDFs und Bilder
 
 Es gibt keine getrennte API mehr und damit auch keine API-Adresse zu konfigurieren.
