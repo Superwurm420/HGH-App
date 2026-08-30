@@ -612,3 +612,39 @@
   }
 
 }
+
+/* ── Listen, die sich die Breite teilen ───────────────────────────────────────
+   Alle drei benutzen `auto-fill` statt einer festen Spaltenzahl: dieselben
+   Komponenten stehen mal ueber die volle Breite (/pinnwand, /weiteres), mal in
+   einer schmalen Spalte (Ankuendigungen auf der Startseite). Reicht der Platz
+   nicht fuer zwei Spalten, bleibt es von allein einspaltig — ein zweiter Satz
+   Klassen fuer den schmalen Fall waere unnoetig. */
+.announcement-list {
+  display: grid;
+  gap: 8px;
+}
+
+.link-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.page-split-grid {
+  display: grid;
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .announcement-list {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
+
+  .link-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
+
+  .page-split-grid {
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    align-items: start;
+  }
+}
