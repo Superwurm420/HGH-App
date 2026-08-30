@@ -1,0 +1,32 @@
+/* Eingabefelder des Rückmeldeformulars.
+   Dieselben Tokens wie im Adminbereich — nur gibt es für die öffentlichen
+   Seiten bisher keine gemeinsame Feldklasse, deshalb hier lokal. */
+
+.input,
+.textarea {
+  width: 100%;
+  margin-top: 4px;
+  padding: 10px 12px;
+  border-radius: var(--radius2);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.input:focus-visible,
+.textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.error {
+  font-size: 13px;
+  color: #ff6b6b;
+}

@@ -83,6 +83,23 @@ export interface EventRecord {
   updated_at: string;
 }
 
+/**
+ * Rückmeldung aus der App.
+ *
+ * `contact` und `klasse` sind freiwillig und bleiben leer, wenn jemand anonym
+ * schreibt — deshalb leerer String statt NULL, wie bei `classes` der Termine.
+ */
+export interface FeedbackRecord {
+  id: string;
+  message: string;
+  category: string;
+  contact: string;
+  klasse: string;
+  page: string;
+  status: 'new' | 'done';
+  created_at: string;
+}
+
 /** Datei im Medienarchiv (Bilder für die TV-Slideshow). */
 export interface MediaFile {
   id: string;

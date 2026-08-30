@@ -41,7 +41,8 @@ npm run setup:cloudflare # Cloudflare-Ersteinrichtung (D1, R2, Migration)
 ├── tsconfig.json              # Strict TS, Pfad-Alias @/* → ./src/*
 │
 ├── migrations/
-│   └── 0001_initial_schema.sql
+│   ├── 0001_initial_schema.sql
+│   └── 0002_feedback.sql
 │
 ├── scripts/
 │   ├── setup.mjs              # Ersteinrichtung lokal / auf Cloudflare
@@ -122,6 +123,8 @@ Das ist kein Stilfrage, sondern notwendig: Ein `fetch('/api/…')` mit relativer
 - **Anzeige**: Server Components lesen den aktiven Upload aus D1. Fällt zurück auf den zuletzt geparsten/archivierten Plan, wenn keiner aktiviert wurde.
 - **Ankündigungen/Termine/Einstellungen**: D1, gepflegt über den Adminbereich.
 - **Bilder**: R2 + `media_files`, ausgeliefert über `GET /api/media/:id` (Bucket bleibt privat).
+- **Rückmeldungen**: Formular unter `/weiteres` → `POST /api/feedback` (ohne Anmeldung) →
+  `feedback` in D1 → Reiter „Rückmeldungen" im Adminbereich.
 - **Klassenauswahl**: `localStorage` im Client, per `?klasse=` in der URL gespiegelt.
 
 ### PDF-Parsing läuft im Browser
@@ -197,7 +200,7 @@ Alle Seiten werden ausgewertet und zusammengeführt.
   Anmeldung gerade nicht klappt — inklusive `needsPassword`.
 - Jeder Admin-Handler ist in `withAdmin()` aus `src/server/guard.ts` gekapselt — Bindings, Auth und Fehlerbehandlung an einer Stelle.
 - Alle Änderungen landen im `audit_logs`.
-- Tabs: Stundenplan · Ankündigungen & Termine · Bilder · Einstellungen.
+- Tabs: Stundenplan · Ankündigungen & Termine · Bilder · Rückmeldungen · Einstellungen.
 - **Gemeinsame Oberfläche**: `src/app/admin/ui/parts.tsx` und `admin.module.css`
   liefern Karten, Felder, Schalter, Listen und die Klassenauswahl. Der
   Adminbereich benutzt damit dieselben Tokens wie der Rest der App statt
@@ -226,7 +229,7 @@ Alle Seiten werden ausgewertet und zusammengeführt.
 | `/stundenplan` | Tagesweise Ansicht |
 | `/woche` | Ganze Woche |
 | `/pinnwand` | Alle aktiven Ankündigungen |
-| `/weiteres` | Zusatzinfos, Links |
+| `/weiteres` | Zusatzinfos, Links, Rückmeldeformular |
 | `/galerie` | Bildergalerie (dieselben Bilder wie die TV-Slideshow), verlinkt aus `/weiteres` |
 | `/tv` | Wandbildschirm — Uhr, Pinnwand, Bilder-Slideshow, Stundenplan-Raster |
 | `/admin` | Adminbereich |
@@ -242,12 +245,14 @@ Alle Seiten werden ausgewertet und zusammengeführt.
 | `/api/events` | GET | Anstehende Termine, optional `?klasse=` |
 | `/api/settings` | GET | Öffentliche Einstellungen |
 | `/api/media/:id` | GET | Bild aus R2 (dauerhaft cachebar) |
+| `/api/feedback` | POST | Rückmeldung abgeben — ohne Anmeldung |
 | `/api/admin/login` · `logout` · `session` · `setup-status` | POST/GET | Anmeldung |
 | `/api/admin/announcements[/:id]` | GET/POST/PUT/DELETE | Ankündigungen |
 | `/api/admin/events[/:id]` | GET/POST/PUT/DELETE | Termine |
 | `/api/admin/uploads[/:id]` | GET/POST/DELETE | Stundenplan-Uploads |
 | `/api/admin/uploads/:id/activate` | POST | Plan aktivieren |
 | `/api/admin/media[/:id]` | GET/POST/DELETE | Bilder |
+| `/api/admin/feedback[/:id]` | GET/PUT/DELETE | Rückmeldungen (PUT setzt nur den Status) |
 | `/api/admin/settings` | GET/PUT | Einstellungen |
 | `/api/admin/password` | POST | Eigenes Passwort ändern |
 | `/api/admin/audit` | GET | Audit-Log |

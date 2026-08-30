@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import { AdminContentEditor } from './AdminContentEditor';
 import { AdminUploadManager } from './AdminUploadManager';
 import { AdminMediaManager } from './AdminMediaManager';
+import { AdminFeedbackInbox } from './AdminFeedbackInbox';
 import { AdminSettingsEditor } from './AdminSettingsEditor';
 import { AdminPasswordChange } from './AdminPasswordChange';
 import { Card, Field, Notice, Segmented, Status, TextInput, adminStyles as styles } from './parts';
@@ -23,12 +24,13 @@ import {
   type SetupStatus,
 } from '@/lib/api/client';
 
-type Tab = 'uploads' | 'content' | 'media' | 'settings';
+type Tab = 'uploads' | 'content' | 'media' | 'feedback' | 'settings';
 
 const TABS: { value: Tab; label: string }[] = [
   { value: 'uploads', label: 'Stundenplan' },
   { value: 'content', label: 'Ankündigungen & Termine' },
   { value: 'media', label: 'Bilder' },
+  { value: 'feedback', label: 'Rückmeldungen' },
   { value: 'settings', label: 'Einstellungen' },
 ];
 
@@ -243,6 +245,7 @@ export function AdminWorkspace() {
       {activeTab === 'uploads' && <AdminUploadManager />}
       {activeTab === 'content' && <AdminContentEditor />}
       {activeTab === 'media' && <AdminMediaManager />}
+      {activeTab === 'feedback' && <AdminFeedbackInbox />}
       {activeTab === 'settings' && <AdminSettingsEditor />}
     </section>
   );

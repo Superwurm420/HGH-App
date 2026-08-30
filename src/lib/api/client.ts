@@ -205,6 +205,46 @@ export async function adminDeleteEvent(id: string): Promise<void> {
   await apiFetch(`/api/admin/events/${id}`, { method: 'DELETE' });
 }
 
+// ── Rückmeldungen ──────────────────────────────────────────────────
+
+export interface FeedbackData {
+  id: string;
+  message: string;
+  category: string;
+  contact: string;
+  klasse: string;
+  page: string;
+  status: 'new' | 'done';
+  created_at: string;
+}
+
+/**
+ * Rückmeldung absenden — der einzige Aufruf hier, der keine Anmeldung braucht.
+ * Er steht trotzdem in dieser Datei, weil das Formular im Browser läuft und
+ * dieselbe Fehlerbehandlung bekommen soll wie der Rest.
+ */
+export async function submitFeedback(data: {
+  message: string;
+  category: string;
+  contact?: string;
+  klasse?: string;
+  page?: string;
+}): Promise<void> {
+  await apiFetch('/api/feedback', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export function adminFetchFeedback(): Promise<{ feedback: FeedbackData[] }> {
+  return apiFetch('/api/admin/feedback');
+}
+
+export function adminSetFeedbackStatus(id: string, status: 'new' | 'done'): Promise<FeedbackData> {
+  return apiFetch(`/api/admin/feedback/${id}`, { method: 'PUT', body: JSON.stringify({ status }) });
+}
+
+export async function adminDeleteFeedback(id: string): Promise<void> {
+  await apiFetch(`/api/admin/feedback/${id}`, { method: 'DELETE' });
+}
+
 // ── Stundenplan-Uploads ────────────────────────────────────────────
 
 export function adminFetchUploads(): Promise<{ uploads: UploadData[] }> {
