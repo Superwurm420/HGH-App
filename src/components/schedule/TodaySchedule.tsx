@@ -1,7 +1,7 @@
 'use client';
 
 import { LessonEntry, SpecialEvent, Weekday } from '@/lib/timetable/types';
-import { isLessonRunning } from '@/lib/timetable/lesson-times';
+import { formatPeriodLabel, isLessonRunning } from '@/lib/timetable/lesson-times';
 import { LessonRow } from './LessonRow';
 import { SpecialEventBanner } from './SpecialEventBanner';
 import { useMinutesOfDay } from './use-berlin-minutes';
@@ -29,7 +29,7 @@ export function TodaySchedule({
             <LessonRow
               key={`${lesson.period}-${lesson.time}`}
               lesson={lesson}
-              periodLabel={lesson.periodEnd ? `Std. ${lesson.period}/${lesson.periodEnd}` : `Std. ${lesson.period}`}
+              periodLabel={formatPeriodLabel(lesson.period, lesson.periodEnd)}
               isCurrent={nowMinutes !== null && isLessonRunning(lesson, nowMinutes)}
             />
           ))}

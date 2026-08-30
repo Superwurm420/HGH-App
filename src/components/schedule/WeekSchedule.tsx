@@ -1,4 +1,5 @@
 import { LessonEntry, WeekPlan, WEEKDAYS, Weekday } from '@/lib/timetable/types';
+import { collectPeriodStartTimes } from '@/lib/timetable/lesson-times';
 import { formatSubject } from './format-subject';
 import styles from './WeekSchedule.module.css';
 
@@ -10,30 +11,29 @@ const DAY_FULL: Record<Weekday, string> = {
   MO: 'Montag', DI: 'Dienstag', MI: 'Mittwoch', DO: 'Donnerstag', FR: 'Freitag',
 };
 
-/** "8.00 - 9.30" → "8:00" */
-function timeStart(time: string): string {
-  return time.split('-')[0].trim().replace('.', ':');
-}
-
 type PeriodSlot = { period: number; time: string };
 
+/**
+ * Die Stundenzeilen der Woche — je Stunde die eigene Anfangszeit.
+ *
+ * Die Zeiten kommen aus `collectPeriodStartTimes` über alle Tage hinweg: Eine
+ * Stunde, die montags im Block steckt, hat dienstags oft eine echte Einzelzeit.
+ */
 function collectPeriodSlots(week: WeekPlan): PeriodSlot[] {
-  const seen = new Map<number, string>();
+  const lessons = WEEKDAYS.flatMap((day) => week[day]);
+  const startTimes = collectPeriodStartTimes(lessons);
 
-  for (const day of WEEKDAYS) {
-    for (const lesson of week[day]) {
-      const periodEnd = lesson.periodEnd ?? lesson.period;
-      for (let period = lesson.period; period <= periodEnd; period += 1) {
-        if (!seen.has(period)) {
-          seen.set(period, lesson.time);
-        }
-      }
+  const periods = new Set<number>();
+  for (const lesson of lessons) {
+    const periodEnd = lesson.periodEnd ?? lesson.period;
+    for (let period = lesson.period; period <= periodEnd; period += 1) {
+      periods.add(period);
     }
   }
 
-  return Array.from(seen.entries())
-    .map(([period, time]) => ({ period, time }))
-    .sort((a, b) => a.period - b.period);
+  return [...periods]
+    .sort((a, b) => a - b)
+    .map((period) => ({ period, time: startTimes.get(period) ?? '' }));
 }
 
 function findLessonForPeriod(lessons: LessonEntry[], period: number): LessonEntry | null {
@@ -109,8 +109,8 @@ export function WeekSchedule({
                 className={hasBreakBeforePeriod(slot.period) ? `${styles.row} ${styles.rowAfterBreak}` : styles.row}
               >
                 <td className={styles.periodCell}>
-                  <span className={styles.periodNum}>{slot.period}</span>
-                  <span className={styles.periodTime}>{timeStart(slot.time)}</span>
+                  <span className={styles.periodNum}>{slot.period}.</span>
+                  {slot.time && <span className={styles.periodTime}>{slot.time}</span>}
                 </td>
                 {WEEKDAYS.map((day) => {
                   const isToday = day === todayKey;

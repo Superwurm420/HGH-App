@@ -537,11 +537,13 @@
 .tv-period {
   display: block;
   font-size: 15px;
+  font-variant-numeric: tabular-nums;
 }
 
 .tv-period-time {
   display: block;
   margin-top: 2px;
+  font-variant-numeric: tabular-nums;
   font-size: 12px;
   font-weight: 500;
   color: var(--muted);
