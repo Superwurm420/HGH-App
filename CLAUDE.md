@@ -231,7 +231,7 @@ Alle Seiten werden ausgewertet und zusammengeführt.
 | `/pinnwand` | Alle aktiven Ankündigungen |
 | `/weiteres` | Zusatzinfos, Links, Rückmeldeformular |
 | `/galerie` | Bildergalerie (dieselben Bilder wie die TV-Slideshow), verlinkt aus `/weiteres` |
-| `/tv` | Wandbildschirm — Uhr, Pinnwand, Bilder-Slideshow, Stundenplan-Raster |
+| `/tv` | Wandbildschirm — Uhr, Pinnwand, Bilder-Slideshow, Stundenplan. Während des Schultags je Klasse nur die laufende und die nächste Stunde (`TvNextLessons`), nach Schulschluss das ganze Tagesraster (`TvTimetableGrid`); `TvSchedulePanel` schaltet um. Das Schullogo führt zurück auf `/`. |
 | `/admin` | Adminbereich |
 
 ### API Routes

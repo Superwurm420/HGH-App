@@ -4,18 +4,19 @@ import { useMemo } from 'react';
 import { LessonEntry, ParsedSchedule, Weekday } from '@/lib/timetable/types';
 import { collectPeriodStartTimes, isLessonRunning } from '@/lib/timetable/lesson-times';
 import { formatSubject } from './format-subject';
-import { useMinutesOfDay } from './use-berlin-minutes';
 
 type TvTimetableGridProps = {
   schedulesByClass: ParsedSchedule;
   day: Weekday;
+  /**
+   * Berliner Uhrzeit in Minuten seit Mitternacht, oder `null`, wenn `day` nicht
+   * der heutige Wochentag ist (am Wochenende zeigt der Wandbildschirm den
+   * Montagsplan — dort läuft keine Stunde).
+   */
+  nowMinutes: number | null;
 };
 
-export function TvTimetableGrid({ schedulesByClass, day }: TvTimetableGridProps) {
-  // Null am Wochenende: Der Wandbildschirm zeigt dann den Montagsplan, in dem
-  // keine Stunde laufen kann.
-  const nowMinutes = useMinutesOfDay(day);
-
+export function TvTimetableGrid({ schedulesByClass, day, nowMinutes }: TvTimetableGridProps) {
   const classes = useMemo(() => Object.keys(schedulesByClass).sort(), [schedulesByClass]);
 
   const periods = useMemo(() => {
@@ -101,6 +102,14 @@ export function TvTimetableGrid({ schedulesByClass, day }: TvTimetableGridProps)
   return (
     <div className="tv-table-wrap" role="region" aria-label="Stundenplan aller Klassen">
       <table className="tv-table">
+        {/* Feste Spaltenbreiten: schmale Stundenspalte, der Rest zu gleichen
+            Teilen auf die Klassen (siehe `table-layout: fixed`). */}
+        <colgroup>
+          <col className="tv-col-period" />
+          {classes.map((schoolClass) => (
+            <col key={schoolClass} />
+          ))}
+        </colgroup>
         <thead>
           <tr>
             <th scope="col">Stunde</th>
@@ -133,15 +142,15 @@ export function TvTimetableGrid({ schedulesByClass, day }: TvTimetableGridProps)
                       key={`${schoolClass}-${period}`}
                       rowSpan={rowSpan}
                       data-double={rowSpan > 1 ? 'true' : 'false'}
-                      className={lesson ? 'tv-lesson-cell' : undefined}
+                      className={lesson ? 'tv-lesson-cell' : 'tv-empty-cell'}
                     >
                       {lesson ? (
                         <div className="tv-cell-content">
-                          <span className="tv-subject">{lesson.subject ? formatSubject(lesson.subject) : '—'}</span>
+                          <span className="tv-subject">{lesson.subject ? formatSubject(lesson.subject) : 'Unterricht'}</span>
                           {lesson.room ? <span className="tv-room">Raum {lesson.room}</span> : null}
                         </div>
                       ) : (
-                        <span className="text-muted">—</span>
+                        <span className="tv-empty-mark" aria-hidden="true" />
                       )}
                     </td>
                   );
